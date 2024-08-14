@@ -40,10 +40,7 @@ document.addEventListener("dragstart", function(event) {
 
 document.addEventListener("DOMContentLoaded", () => {
     // Edit
-    const characterCreateSheet = document.createElement("div");
-    document.body.appendChild(characterCreateSheet);
-
-    createCharacterCreateSheet(characterCreateSheet);
+    createCharacterCreateSheet(document.body);
 
     gameboardContent.style.transform = `translate(0px, 0px) scale(1)`;
 

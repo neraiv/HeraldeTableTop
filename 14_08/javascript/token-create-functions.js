@@ -98,15 +98,24 @@ function createCharacterSheet(parent) {
     characterSheet.className = 'character-sheet';
 
     const button = document.createElement('button');
-    button.textContent = 'Save';
+    button.textContent = 'New';
 
     button.onclick = function(event){
         event.preventDefault();
         selectedCharacterSheetId = characterSheet.id;
         open_CharacterCreatePage();
     }
+    const exitButton = document.createElement('button');
+    exitButton.textContent = 'Exit';
+
+    exitButton.onclick = function(event){
+        event.preventDefault();
+        selectedCharacterSheetId = characterSheet.id;
+        close_CharacterSheet(selectedCharacterSheetId);
+    }
 
     characterSheet.appendChild(button);
+    characterSheet.appendChild(exitButton);
 
     parent.appendChild(characterSheet);
 }
@@ -218,23 +227,25 @@ function createCharacterCreateSheet_SecondColumn(parent){
     const form = document.createElement('form');
     form.className = 'character-sheet-spell-form';
 
+
     const column = document.createElement('div');
     column.className = 'column';
     column.style.height = '100%';
-    column.style.alignItems = 'flex-start'
+    column.style.width  = '95%'
 
     const row = document.createElement('div');
     row.className = 'row';
-    row.style.alignItems = 'flex-start'
+    row.style.width  = '95%'
 
-    const select = createSelector(spells_list.map(spell => spell.name), spells_list.map(spell => spell.name), 'select');
+
+    const select = createSelector(level2_spell_list.map(spell => spell.name), level2_spell_list.map(spell => spell.name), 'select');
     select.id = 'spell-list';
     const imageButton = createImageButton(24,'➕');
 
     imageButton.onclick = function(event){
         event.preventDefault();
         const currentSelectedSpell = document.getElementById('spell-list').value;
-        createSpellContainer(column, spells_list, currentSelectedSpell);
+        createSpellContainer(column, level2_spell_list, currentSelectedSpell);
     }
 
     row.appendChild(select);
@@ -250,7 +261,7 @@ function createCharacterCreateSheet_SecondColumn(parent){
 function createCharacterCreateSheet(parent) {
     const characterSheet = document.createElement('div');
     characterSheet.id = `character-create-sheet`;
-    characterSheet.className = 'character-sheet';
+    characterSheet.className = 'character-create-sheet';
 
     const characterSheetContent = document.createElement('div');
     characterSheetContent.className = 'character-sheet-content';
