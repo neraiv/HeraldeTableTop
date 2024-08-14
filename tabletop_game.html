@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabletop Board</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="top-bar-layer-select">
+        <label for="layer-select">Select Layer:</label>
+        <select id="layer-select">
+            <option value="character-layer">Character</option>
+            <option value="background-layer">Background</option>
+            <option value="fog-layer">Fog</option>
+        </select>
+    </div>
+    <div class="board-container">
+        <div id="drive-images-bar">
+            <h2>Char Library</h2>
+            <div id="character-list" class="image-bank"></div>
+            <h2>Background Library</h2>
+            <div id="background-list" class="image-bank"></div>
+        </div>
+        <div id="gameboard" class="board">
+            <div id="gameboard-content">
+                <div id="grid-background" class="grid"></div>
+                <div id="background-layer" class="layer"></div>
+                <div id="character-layer" class="layer"></div>
+                <div id="fog-layer" class="layer"></div>
+                <div id="drag-overlay" class="drag-circle"></div>
+            </div>
+        </div>
+    </div>
+    <script src="javascript/spells.js"></script>
+    <script src="javascript/globals.js"></script>
+    <script src="javascript/shared-functions.js"></script>
+    <script src="javascript/image-loading-functions.js"></script>
+    <script src="javascript/token-create-functions.js"></script>
+    <script src="javascript/sheet-functions.js"></script>
+    <script src="javascript/main.js"></script>
+</body>
+</html>
