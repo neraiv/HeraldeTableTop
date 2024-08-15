@@ -34,7 +34,7 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
     column.className = 'column';
 
     const form = document.createElement('form');
-    form.className = 'character-sheet-form-1';
+    form.className = 'character-sheet-form';
 
     function createFormGroup(id, label, type = 'text', isReadOnly = false) {
         const formGroup = document.createElement('div');
@@ -135,29 +135,53 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
 }
 
 function createCharacterCreateSheet_SecondColumn(parent, characterSheet){
-    const form = document.createElement('form');
-    form.className = 'character-sheet-spell-form';
 
+    let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
+
+    const form = document.createElement('form');
+    form.className = 'character-sheet-form';
 
     const column = document.createElement('div');
     column.className = 'column';
-    column.style.height = '100%';
-    column.style.width  = '95%'
 
     const row = document.createElement('div');
     row.className = 'row';
-    row.style.width  = '95%'
 
+    let selectedSpellLevelList = level1_spell_list;
 
-    const select = createSelector(level2_spell_list.map(spell => spell.name), level2_spell_list.map(spell => spell.name), 'select');
+    const levelSelect = createSelector(Object.keys(characterCreateSettings.AVAILABLE_SPELL_LEVELS), Object.keys(characterCreateSettings.AVAILABLE_SPELL_LEVELS), null);
+    levelSelect.style.width = '5%';
+    levelSelect.style.minWidth = '50px'
+    levelSelect.style.maxWidth = '90px'
+    levelSelect.addEventListener('change', function(event) {
+        event.preventDefault();
+        let valueList;
+        let textList;
+        if(event.target.value == '1'){
+            valueList = level1_spell_list.map(spell => spell.name);
+            textList = level1_spell_list.map(spell => spell.name);
+            selectedSpellLevelList = level1_spell_list;
+        }
+        else if(event.target.value == '2'){
+            valueList = level2_spell_list.map(spell => spell.name);
+            textList = level2_spell_list.map(spell => spell.name);
+            selectedSpellLevelList = level2_spell_list;
+        }
+        updateSelector(valueList, textList, 'select',characterSheet+'-spell-select');
+    });
+
+    const select = createSelector(selectedSpellLevelList.map(spell => spell.name), selectedSpellLevelList.map(spell => spell.name), 'select', characterSheet+'-spell-select');
+    select.style.width = '50%';
+    select.style.maxWidth = '320px'
     const imageButton = createImageButton(24,'➕');
 
     imageButton.onclick = function(event){
         event.preventDefault();
         const currentSelectedSpell = select.value;
-        createSpellContainer(column, level2_spell_list, currentSelectedSpell, characterSheet);
+        createSpellContainer(column, selectedSpellLevelList, currentSelectedSpell, characterSheet);
     }
 
+    row.appendChild(levelSelect);
     row.appendChild(select);
     row.appendChild(imageButton);
 
@@ -179,12 +203,10 @@ function createCharacterCreateSheet(parent) {
     const characterSheetContent = document.createElement('div');
     characterSheetContent.className = 'character-sheet-content';
 
-    const closeButton = createImageButton(24, '✕');
-    Object.assign(closeButton.style, {
-        position: 'absolute',
-        right: '10px',
-        top: '10px'
-    });
+    const closeButton = createImageButton(24, '✕');  
+    closeButton.style.position= 'absolute';
+    closeButton.style.right= '10px';
+    closeButton.style.top= '10px';
 
     closeButton.onclick = () => close_CharacterSheet(characterSheet.id);
 
@@ -252,7 +274,7 @@ function createSpellContainer(parent, spellList, spellName = null, characterShee
         const effectsElement = document.createElement('div');
         effectsElement.classList.add('spell-effects');
 
-        effectsElement.innerHTML = `<strong>Additional Effects:</strong><br>${characterSettings.AVALIABLE_SPELL_LEVELS.map(level => {  
+        effectsElement.innerHTML = `<strong>Additional Effects:</strong><br>${Object.keys(characterSettings.AVAILABLE_SPELL_LEVELS).map(level => {  
             return spell.additionalEffects.getManaEffects(level);
         }).join('<br>')}`;
 

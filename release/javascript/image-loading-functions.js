@@ -23,7 +23,7 @@ function addAvaliableImagesSelector(parentElement, imageFiles, label_text) {
     // Create the label element
     const label = document.createElement('label');
     label.setAttribute('for', parentElement.id + '-selector');
-    label.textContent = label_text;
+    label.innerHTML = label_text;
     
     let classNamePrefix;
     let folder;
@@ -48,49 +48,25 @@ function addAvaliableImagesSelector(parentElement, imageFiles, label_text) {
     let firstChangeNotOccurred = true;
 
     select.addEventListener('change', function(event) {
-        if (!firstChangeNotOccurred) {
-            firstChangeNotOccurred = false;
-            selectElement.remove(0);
-        }
         selectedFile = event.target.value;
-        console.log('Selected: ' + selectedFile);
+        if (firstChangeNotOccurred) {
+            firstChangeNotOccurred = false;
+            select.remove(0);
+        }
     });
 
-    const defaultButton = createImageButton(30, '➕');
-
-    defaultButton.onclick = () => createDriveImageContainer(selectedFile, classNamePrefix, folder, parentElement);
+    const addToGameButton = createImageButton(30, `<img src="${iconsFolder+icon_downArrowGreen}" width="30" height="30">`);
+    addToGameButton.onclick = () => createDriveImageContainer(selectedFile, classNamePrefix, folder, parentElement);
+    
+    const newCharacterButton = createImageButton(30, `<img src="${iconsFolder+icon_newFile}" width="30" height="30">`);
     
     // Append the label and select to the row
     row.appendChild(label);
     row.appendChild(select);
-    row.appendChild(defaultButton);
+    row.appendChild(addToGameButton);
+    row.appendChild(newCharacterButton);
     selectorDiv.appendChild(row);
     parentElement.appendChild(selectorDiv);
-}
-
-function createSelector(valueList, textList, defaultValue, id) {
-    // Create the select element
-    const selector = document.createElement('select');
-    selector.id = id;
-    selector.className = 'token-selector-combobox';
-
-    // Create and add the default option
-    const defaultOption = document.createElement('option');
-    defaultOption.value = ''; // Empty value for default
-    defaultOption.textContent = defaultValue;
-    defaultOption.disabled = true; // Make it non-selectable
-    defaultOption.selected = true; // Set as the default selected option
-    selector.appendChild(defaultOption);
-
-    // Add options based on valueList and textList
-    valueList.forEach((value, index) => {
-        const option = document.createElement('option');
-        option.value = value;
-        option.textContent = textList[index] || value; // Use value if textList is shorter
-        selector.appendChild(option);
-    });
-
-    return selector;
 }
 
 function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targetElement) {
@@ -138,37 +114,37 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
 
     // Create and append buttons with icons
     if(classNamePrefix == 'character'){
-        const defaultButton = createImageButton(24, '📄');
+        const defaultButton = createImageButton(36, `<img src="${iconsFolder+icon_characterSheet}" width="36" height="36">`);
         defaultButton.onclick = () => open_CharacterSheet(`${imageAndButtonsContainer.id}-character-sheet`);
         buttonContainer.appendChild(defaultButton);
 
-        const exportButton = createImageButton(24, '⬇️');
+        const exportButton = createImageButton(36, '⬇️');
         exportButton.onclick = () => export_CharacterSheet(`${imageAndButtonsContainer.id}-character-sheet`);
         buttonContainer.appendChild(exportButton);
 
-        const importButton = createImageButton(24, '⬆️');
+        const importButton = createImageButton(36, '⬆️');
         importButton.onclick = () => import_CharacterSheet(`${imageAndButtonsContainer.id}-character-sheet`);
         buttonContainer.appendChild(importButton);
 
-        const removeButton = createImageButton(24, '❌');
+        const removeButton = createImageButton(36, '❌');
         removeButton.onclick = () => remove_CharacterSheet(imageAndButtonsContainer);
         buttonContainer.appendChild(removeButton);
 
         createCharacterSheet(imageAndButtonsContainer);
     }else if(classNamePrefix == 'background'){
-        const defaultButton = createImageButton(24, '📄');
+        const defaultButton = createImageButton(36, '📄');
         defaultButton.onclick = () => open_BackgroundSheet(`${imageAndButtonsContainer.id}-background-sheet`);
         buttonContainer.appendChild(defaultButton);
 
-        const exportButton = createImageButton(24, '⬇️');
+        const exportButton = createImageButton(36, '⬇️');
         exportButton.onclick = () => export_BackgroundSheet(`${imageAndButtonsContainer.id}-background-sheet`);
         buttonContainer.appendChild(exportButton);
         
-        const importButton = createImageButton(24, '⬆️');
+        const importButton = createImageButton(36, '⬆️');
         importButton.onclick = () => import_BackgroundSheet(`${imageAndButtonsContainer.id}-background-sheet`);
         buttonContainer.appendChild(importButton);
         
-        const removeButton = createImageButton(24, '❌');
+        const removeButton = createImageButton(36, '❌');
         removeButton.onclick = () => remove_BackgroundSheet(imageAndButtonsContainer);
         buttonContainer.appendChild(removeButton)
     }

@@ -1,10 +1,51 @@
 function setup(){
     //loadImagesWithURL();
     //loadLocalImages();
-    addAvaliableImagesSelector(charImageList, charImageFilesList, "Select Character");
-    addAvaliableImagesSelector(backgroundImgList, backgroundImageFilesList, "Select Background");
+    addAvaliableImagesSelector(charImageList, charImageFilesList, "Select<br>Character");
+    addAvaliableImagesSelector(backgroundImgList, backgroundImageFilesList, "Select<br>Background");
+    addLayerSelecetor();
     layerChange();
     
+}
+
+function addLayerSelecetor() {
+    const parent = document.getElementById("top-bar-layer-select");
+    
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const label =  document.createElement("label");
+    label.textContent = "Layer: ";
+
+    const select = document.createElement("select");
+    select.id = "layer-select";
+    select.addEventListener("change", function(event) {
+        event.preventDefault();
+        currentLayer = this.value;
+        layerChange();
+    });
+
+    const option1 = document.createElement("option");
+    option1.value = "character-layer";
+    option1.textContent = "Character";
+    select.appendChild(option1);
+
+    const option2 = document.createElement("option");
+    option2.value = "background-layer";
+    option2.textContent = "Background";
+    select.appendChild(option2);
+    
+    const option3 = document.createElement("option");
+    option3.value = "fog-layer";
+    option3.textContent = "Fog";
+    select.appendChild(option3);
+
+    row.appendChild(label);
+    row.appendChild(select);
+
+    label.setAttribute('for', parent.id);
+
+    parent.appendChild(row);
 }
 
 function layerChange() {
@@ -229,9 +270,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     setup();
-});
-
-document.getElementById('layer-select').addEventListener('change', function(event) {
-    currentLayer = event.target.value;
-    layerChange();
 });

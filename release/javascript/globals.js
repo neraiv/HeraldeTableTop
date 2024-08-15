@@ -30,7 +30,7 @@ class SettingsGame {
         minCharacterLevel = 1,
         maxSubClassCount = 2,
         minSubClassCount = 0,
-        includedSpellLevels = [1, 2, 3, 4, 5]
+        includedSpellLevels = ['1', '2', '3', '4', '5']
     } = {}) {
         this.MAX_STAT_POINT = maxStatPoint;
         this.MIN_STAT_POINT = minStatPoint;
@@ -62,7 +62,11 @@ class Character {
         wis = gameSettings.MIN_STAT_POINT,
         cha = gameSettings.MIN_STAT_POINT,
         str = gameSettings.MIN_STAT_POINT,
-        avaliableSpellLevels = [1],
+        availableSpellLevels = {
+            '1': 2,
+            '2': 2
+        },
+        learnedSpells = []
     } = {}) {
         this.ID = id;
         this.MAX_STAT_POINT = maxStatPoint;
@@ -83,7 +87,11 @@ class Character {
         this.WIS = wis;
         this.CHA = cha;
         this.STR = str;
-        this.AVALIABLE_SPELL_LEVELS = avaliableSpellLevels;
+        this.AVAILABLE_SPELL_LEVELS = availableSpellLevels;
+        this.LEARNED_SPELLS= learnedSpells;
+        this.CURRENT_MANA = {};
+        this.BUFFS = {};
+        this.DEBUFFS = {};
     }
 
     // Example method to check if a level is valid

@@ -75,5 +75,63 @@ function createImageButton(fontSize, icon) {
     button.style.background = 'none'; // Ensure background is none
     button.style.border = 'none'; // Ensure border is none
     button.style.cursor = 'pointer'; // Ensure cursor is pointer
+    button.style.width = fontSize;
+    button.style.height = fontSize; // Set the height to match the font size
     return button;
+}
+
+function createSelector(valueList, textList, defaultValue, id) {
+    // Create the select element
+    const selector = document.createElement('select');
+    selector.id = id;
+    selector.className = 'token-selector-combobox';
+
+
+    // Create and add the default option
+    if(defaultValue != null){
+        const defaultOption = document.createElement('option');
+        defaultOption.value = ''; // Empty value for default
+        defaultOption.textContent = defaultValue; 
+        defaultOption.disabled = true; // Make it non-selectable
+        defaultOption.selected = true; // Set as the default selected option
+        selector.appendChild(defaultOption);
+    }
+
+    // Add options based on valueList and textList
+    valueList.forEach((value, index) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = textList[index] || value; // Use value if textList is shorter
+        selector.appendChild(option);
+    });
+
+    return selector;
+}
+
+function updateSelector(valueList, textList, defaultValue, id) {
+    // Get the select element
+    const selector = document.getElementById(id);
+    
+    // Clear all existing options
+    selector.innerHTML = '';
+
+    // Create and add the default option
+    if(defaultValue != null){
+        const defaultOption = document.createElement('option');
+        defaultOption.value = ''; // Empty value for default
+        defaultOption.textContent = defaultValue; 
+        defaultOption.disabled = true; // Make it non-selectable
+        defaultOption.selected = true; // Set as the default selected option
+        selector.appendChild(defaultOption);
+    }
+
+    // Add options based on valueList and textList
+    valueList.forEach((value, index) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = textList[index] || value; // Use value if textList is shorter
+        selector.appendChild(option);
+    });
+
+    return selector;
 }
