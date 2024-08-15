@@ -81,6 +81,7 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
     const imageAndButtonsContainer = document.createElement('div');
     imageAndButtonsContainer.id = `drive-${imageName}`
     imageAndButtonsContainer.className = 'image-and-buttons-container';
+    imageAndButtonsContainer.style.backgroundColor = getRandomColor();
 
     const imgContainer = document.createElement('div');
     imgContainer.className = 'image-container';
@@ -149,7 +150,16 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
         buttonContainer.appendChild(removeButton)
     }
 
+    const containerBackgroundColorChange = createImageButton(24, `<img src="${iconsFolder+icon_rainbowDice}" width="24" height="24">`);
+    containerBackgroundColorChange.style.position = 'absolute';
+    containerBackgroundColorChange.style.top = '2px';
+    containerBackgroundColorChange.style.left = '2px';
+    containerBackgroundColorChange.onclick = () => {
+        imageAndButtonsContainer.style.backgroundColor = getRandomColor();
+    };
+
     // Append button container to the main container
+    imageAndButtonsContainer.appendChild(containerBackgroundColorChange);
     imageAndButtonsContainer.appendChild(buttonContainer);
     
     // Append the main container to the target element

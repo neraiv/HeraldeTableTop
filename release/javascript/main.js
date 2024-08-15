@@ -1,6 +1,8 @@
 function setup(){
     //loadImagesWithURL();
     //loadLocalImages();
+    createTopBar();
+    createBottomBar();
     addAvaliableImagesSelector(charImageList, charImageFilesList, "Select<br>Character");
     addAvaliableImagesSelector(backgroundImgList, backgroundImageFilesList, "Select<br>Background");
     addLayerSelecetor();
@@ -271,3 +273,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setup();
 });
+
+
+

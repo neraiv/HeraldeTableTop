@@ -286,3 +286,98 @@ function createSpellContainer(parent, spellList, spellName = null, characterShee
         parent.appendChild(spellDiv);
     };
 }
+
+function createTopBar() {
+    const topBar = document.getElementById('drive-images-bar-top-bar');
+    topBar.className = 'row';
+    topBar.style.width = '95%'
+    topBar.style.border = '2px solid';
+    topBar.style.borderRadius = '10px';
+    topBar.style.backgroundColor = 'gold';
+
+    const label = document.createElement('div');
+    label.innerText = 'Drive Images Bar';
+    label.style.fontSize = '24px';
+    label.style.paddingLeft = '10px';
+
+    const closeButton = createImageButton(24, `<img src="${iconsFolder+icon_closeBar}" width="24" height="24">`);
+    closeButton.onclick = () =>{
+        togglePage('drive-images-bar', false);
+    };
+
+    const spacer1 = document.createElement('div');
+    spacer1.className = 'spacer';
+
+    topBar.appendChild(label);
+    topBar.appendChild(spacer1);
+    topBar.appendChild(closeButton);
+}
+
+function createBottomBar() {
+    const bottomBarPageSelect = document.getElementById('bottom-bar-page-select');
+    bottomBarPageSelect.className = 'row';
+
+    const button1column = document.createElement('div');
+    button1column.innerText = "Chars";
+    button1column.className = 'column';
+    button1column.style.gap = "3px";
+    button1column.style.border = '2px solid';
+    button1column.style.borderRadius = '10px';
+    button1column.style.backgroundColor = 'gold';
+
+    const button2column = document.createElement('div');
+    button2column.innerText = "Log";
+    button2column.className = 'column';
+    button2column.style.gap = "3px";
+    button2column.style.border = '2px solid';
+    button2column.style.borderRadius = '10px';
+    button2column.style.backgroundColor = 'gold';
+
+    const button3column = document.createElement('div');
+    button3column.innerText = "Some"
+    button3column.className = 'column';
+    button3column.style.gap = "3px";
+    button3column.style.border = '2px solid';
+    button3column.style.borderRadius = '10px';
+    button3column.style.backgroundColor = 'gold';
+
+    const characterPageButton = createImageButton(24, `<img src="${iconsFolder+icon_closeBar}" width="24" height="24" alt="Close">`);
+    characterPageButton.style.paddingRight = '10px';
+    characterPageButton.style.paddingLeft = '10px';
+    characterPageButton.onclick = () => togglePage('drive-images-bar');
+    button1column.appendChild(characterPageButton);
+
+    const combatLogPageButton = createImageButton(24, `<img src="${iconsFolder+icon_closeBar}" width="24" height="24" alt="Close">`);
+    combatLogPageButton.style.paddingRight = '10px';
+    combatLogPageButton.style.paddingLeft = '10px';
+    combatLogPageButton.onclick = () => togglePage(id);
+    button2column.appendChild(combatLogPageButton);
+
+    const someButton = createImageButton(24, `<img src="${iconsFolder+icon_closeBar}" width="24" height="24" alt="Close">`); 
+    someButton.style.paddingRight = '10px';   
+    someButton.style.paddingLeft = '10px';                 
+    someButton.onclick = () => togglePage(id);
+    button3column.appendChild(someButton);
+
+    bottomBarPageSelect.appendChild(button1column);
+    bottomBarPageSelect.appendChild(button2column);
+    bottomBarPageSelect.appendChild(button3column);   
+}
+
+function togglePage(id, open= null) {
+    const page = document.getElementById(id);
+    if(open != null){
+        if(open){
+            page.style.left = '0%';
+        }else{
+            page.style.left = '-100%';
+        }
+        return;
+    }
+
+    if(page.style.left == '-100%'){
+        page.style.left = '0%'; // Slide in the screen
+    }else {
+        page.style.left = '-100%'; // Slide out the screen
+    }
+}

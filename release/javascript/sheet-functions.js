@@ -34,3 +34,11 @@ function open_CharacterCreatePage() {
     const characterCreateSheet = document.getElementById('character-create-sheet');
     characterCreateSheet.style.display = 'flex';
 }
+
+function open_ScreenWithId(id) {
+    document.getElementById(id).style.left = '0';
+}
+
+function close_ScreenWithId(id) {
+    document.getElementById(id).style.left = '-100%';
+}

@@ -17,10 +17,10 @@ const backgroundImageFilesList = ['green.png', 'p.webp'];
 const gameboard = document.getElementById('gameboard');
 const gameboardContent = document.getElementById('gameboard-content');
 const dragOverlay = document.getElementById('drag-overlay');
+const driveImagesBar = document.getElementById('drive-images-bar');
 const charImageList = document.getElementById('character-list');
 const backgroundImgList = document.getElementById('background-list');
 const layerSelect = document.getElementById('layer-select');
-
 
 class SettingsGame {
     constructor({

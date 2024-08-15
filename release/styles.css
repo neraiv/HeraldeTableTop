@@ -7,6 +7,12 @@ body {
     overflow: hidden; /* Prevent scrolling of the body */
 }
 
+h2 {
+    padding: 5px; /* Reduce the padding inside the h2 element */
+    margin: 10px 0; /* Adjust the margin outside the h2 element */
+    /* You can customize the padding and margin values as needed */
+}
+
 #top-bar-layer-select {
     position: absolute;
     top: 10px;
@@ -15,24 +21,39 @@ body {
     z-index: 50;
 }
 
+#bottom-bar-page-select {
+    position: absolute;
+    top: 92.5%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50; 
+}
+
 /* Image Banks START*/
 #drive-images-bar {
+    position: fixed;
+    top: 0;
+    left: 0px; /* Start off-screen to the left */
     min-width: 330px;
     height: 100%; /* Full height of the container */
     background-color: #fff;
     border-right: 1px solid black;
-    display: fixed;
     flex-direction: column;
     justify-content: center;
     text-align: center;
     overflow-y: auto; /* Allows vertical scrolling if needed */
+    transition: left 0.3s ease-in-out; /* Smooth sliding effect */
     z-index: 50;
 }
 
 #character-list , #background-list{
-    height: 40%;
+    height: 45%;
+    border: 2px solid black;
+    border-top-left-radius: 10px; /* Adjust as needed */
+    border-bottom-left-radius: 10px; /* Adjust as needed */
     object-fit: contain; /* Ensures image scales within its container */
 }
+
 #gameboard-content {
     width: 4000px;
     height: 4000px;
@@ -72,6 +93,10 @@ body {
     cursor: pointer;
 }
 
+.top-bar {
+    width: 95%;
+}
+
 .image-bank {
     width: 95%;
     display: flex;
@@ -83,13 +108,22 @@ body {
     text-align: center; /* Center text content horizontally */
 }
 
+.splitter {
+    width: 5px; /* Width of the splitter bar */
+    background-color: #eb0f0f;
+    cursor: ew-resize; /* Cursor changes to indicate resize */
+    position: relative;
+    z-index: 1000;
+}
 
 .image-and-buttons-container {
+    position: relative;
     display: flex;
     align-items: center;
     width: 95%;
     height: 200px;
     border: 2px solid black;
+    border-radius: 5%;
     box-sizing: border-box; /* Ensures padding is included in the container's width */
     margin-bottom: 10px;
 }
@@ -131,7 +165,7 @@ body {
 }
 
 .token-selector {
-    height: 100px;
+    height: 50px;
     width: 100%;
     display: flex;
     align-items: center;
@@ -151,6 +185,21 @@ body {
 }
 
 /* Image Banks END*/
+.page-button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s;
+}
+
+.page-button:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+}
 
 .row {
     display: flex; /* Ensure it's a flex container */
@@ -360,3 +409,35 @@ body {
     color: #555;
 }
 /* END OF SPELLS*/
+
+/* CUSTOM SCROLL BAR*/
+
+/* Target the scrollbar */
+::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+}
+
+/* Track of the scrollbar */
+::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Color of the track */
+}
+
+/* Handle of the scrollbar */
+::-webkit-scrollbar-thumb {
+    background-color: #888; /* Color of the handle */
+    border-radius: 10px; /* Roundness of the handle */
+    border: 2px solid #f1f1f1; /* Padding around handle */
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* Color of the handle when hovered */
+}
+
+/* For other browsers, such as Firefox */
+.scroll-container {
+    scrollbar-width: thin; /* 'thin' or 'auto' */
+    scrollbar-color: #888 #f1f1f1; /* Handle and track colors */
+}
+
+/* END OF CUSTOM SCROLL BAR*/
