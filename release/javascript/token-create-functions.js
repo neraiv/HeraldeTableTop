@@ -1,97 +1,3 @@
-function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targetElement) {
-    // const container = document.createElement('div');
-    // container.className = 'image-container';
-
-    // Create image element
-    const imageName = fileName.split('.')[0];
-    // Create image element
-
-    if (document.getElementById(`drive-${imageName}`)) {
-        return
-    }
-
-    // Create a div to hold the image and buttons
-    const imageAndButtonsContainer = document.createElement('div');
-    imageAndButtonsContainer.id = `drive-${imageName}`
-    imageAndButtonsContainer.className = 'image-and-buttons-container';
-
-    const imgContainer = document.createElement('div');
-    imgContainer.className = 'image-container';
-    targetElement.appendChild(imgContainer);
-
-    const img = document.createElement('img');
-    img.src = `${imageFolder}${fileName}`;
-    img.className = `drive-${classNamePrefix}-image`;
-    img.id = imageName;
-    img.dataset.filename = imageName;
-    img.draggable = true;
-
-    // img.addEventListener('load', function() {
-    //     // Set image size based on scaling factor and preserve aspect ratio
-    //     const scalingFactor = getScalingFactor(targetElement, 80);
-    //     setImageSize(img, scalingFactor.widthFactor, scalingFactor.heightFactor);
-    // });
-
-    img.addEventListener('dragstart', function (event) {
-        event.dataTransfer.setData('text/plain', event.target.dataset.filename);
-        event.dataTransfer.effectAllowed = 'move';
-    });
-
-    // Append image to the container
-    imgContainer.appendChild(img)
-    imageAndButtonsContainer.appendChild(imgContainer);
-
-    // Create button container
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'button-container';
-
-    // Create and append buttons with icons
-    const defaultButton = createImageButton(24, '📄');
-    if (classNamePrefix == 'character') {
-        defaultButton.onclick = () => open_CharacterSheet(`${imageAndButtonsContainer.id}-character-sheet`);
-    } else {
-        defaultButton.onclick = () => open_BackgroundSheet(`${imageAndButtonsContainer.id}-character-sheet`);
-    }
-    buttonContainer.appendChild(defaultButton);
-
-    const exportButton = createImageButton(24, '⬇️');
-    if (classNamePrefix == 'character') {
-        exportButton.onclick = () => export_CharacterSheet(`${imageAndButtonsContainer.id}-character-sheet`);
-    } else {
-        exportButton.onclick = () => export_BackgroundSheet(`${imageAndButtonsContainer.id}-character-sheet`);
-    }
-    buttonContainer.appendChild(exportButton);
-
-    const importButton = createImageButton(24, '⬆️');
-    if (classNamePrefix == 'character') {
-        importButton.onclick = () => import_CharacterSheet(`${imageAndButtonsContainer.id}-character-sheet`);
-    } else {
-        importButton.onclick = () => import_BackgroundSheet(`${imageAndButtonsContainer.id}-character-sheet`);
-    }
-    buttonContainer.appendChild(importButton);
-
-    const removeButton = createImageButton(24, '❌');
-    if (classNamePrefix == 'character') {
-        removeButton.onclick = () => remove_CharacterSheet(imageAndButtonsContainer);
-    } else {
-        removeButton.onclick = () => remove_BackgroundSheet(imageAndButtonsContainer);
-    }
-    buttonContainer.appendChild(removeButton);
-
-
-    // Append button container to the main container
-    imageAndButtonsContainer.appendChild(buttonContainer);
-
-    if (classNamePrefix == 'character'){
-        createCharacterSheet(imageAndButtonsContainer);
-        //createCharacterCreateSheet(imageAndButtonsContainer);
-    }
-    
-    // Append the main container to the target element
-    targetElement.appendChild(imageAndButtonsContainer);
-}
-
-
 function createCharacterSheet(parent) {
     const characterSheet = document.createElement('div');
     characterSheet.id = `${parent.id}-character-sheet`;
@@ -120,7 +26,10 @@ function createCharacterSheet(parent) {
     parent.appendChild(characterSheet);
 }
 
-function createCharacterCreateSheet_FirstColumn(parent){
+function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
+
+    let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
+   
     const column = document.createElement('div');
     column.className = 'column';
 
@@ -140,6 +49,7 @@ function createCharacterCreateSheet_FirstColumn(parent){
         inputElement.type = type;
         inputElement.id = id;
         inputElement.name = id;
+
         if (isReadOnly) {
             inputElement.readOnly = true;
         }
@@ -165,24 +75,25 @@ function createCharacterCreateSheet_FirstColumn(parent){
             const controls = document.createElement('div');
             controls.className = 'number-controls';
 
+            const max = id.includes('level') ? characterCreateSettings.MAX_CHARACTER_LVL  : characterCreateSettings.MAX_STAT_POINT ;
+            const min = id.includes('level') ? characterCreateSettings.MIN_CHARACTER_LVL  : characterCreateSettings.MIN_STAT_POINT;
+
+            inputElement.value = min;
+            
             const buttonUp = document.createElement('button');
             buttonUp.innerHTML = '&#9650;';
             buttonUp.onclick = function(event) {
                 event.preventDefault();
-                inrementWithId(id, 1);
-                const max = id.includes('level') ? MAX_CHARACTER_LVL : MAX_STAT_POINT;
-                const min = id.includes('level') ? MIN_CHARACTER_LVL : MIN_STAT_POINT;
-                keepNumberInLimits(document.getElementById(id), max, min);
+                incrementWithId(id, 1);
+                keepNumberInLimits(id, max, min);
             };
 
             const buttonDown = document.createElement('button');
             buttonDown.innerHTML = '&#9660;';
             buttonDown.onclick = function(event) {
                 event.preventDefault();
-                inrementWithId(id, -1);
-                const max = id.includes('level') ? MAX_CHARACTER_LVL : MAX_STAT_POINT;
-                const min = id.includes('level') ? MIN_CHARACTER_LVL : MIN_STAT_POINT;
-                keepNumberInLimits(document.getElementById(id), max, min);
+                incrementWithId(id, -1);
+                keepNumberInLimits(id, max, min);
             };
 
             controls.appendChild(buttonUp);
@@ -191,11 +102,11 @@ function createCharacterCreateSheet_FirstColumn(parent){
 
             if (id.includes('level')) {
                 inputElement.oninput = function() {
-                    keepNumberInLimits(this, MAX_CHARACTER_LVL, MIN_CHARACTER_LVL);
+                    keepNumberInLimits(id, max, min);
                 };
             } else {
                 inputElement.oninput = function() {
-                    keepNumberInLimits(this, MAX_STAT_POINT, MIN_STAT_POINT);
+                    keepNumberInLimits(id, max, min);
                 };
             }
         }
@@ -204,17 +115,17 @@ function createCharacterCreateSheet_FirstColumn(parent){
     }
 
     const formGroups = [
-        { id: `${parent.id}-character-name`, label: 'Character Name:'},
-        { id: `${parent.id}-character-class`, label: 'Class:' , isReadOnly: true},
-        { id: `${parent.id}-character-sub-class`, label: 'Sub Class(s):', type: 'text', isReadOnly: true},
-        { id: `${parent.id}-character-race`, label: 'Race:', isReadOnly: true},
-        { id: `${parent.id}-character-level`, label: 'Level:', type: 'number' },
-        { id: `${parent.id}-character-stat-strength`, label: 'Strength:', type: 'number' },
-        { id: `${parent.id}-character-stat-dexterity`, label: 'Dexterity:', type: 'number' },
-        { id: `${parent.id}-character-stat-constitution`, label: 'Constitution:', type: 'number' },
-        { id: `${parent.id}-character-stat-intelligence`, label: 'Intelligence:', type: 'number' },
-        { id: `${parent.id}-character-stat-wisdom`, label: 'Wisdom:', type: 'number' },
-        { id: `${parent.id}-character-stat-charisma`, label: 'Charisma:', type: 'number' }
+        { id: `character-create-name`, label: 'Character Name:'},
+        { id: `character-create-class`, label: 'Class:' , isReadOnly: true},
+        { id: `character-create-sub-class`, label: 'Sub Class(s):', type: 'text', isReadOnly: true},
+        { id: `character-create-race`, label: 'Race:', isReadOnly: true},
+        { id: `character-create-level`, label: 'Level:', type: 'number' },
+        { id: `character-create-stat-strength`, label: 'Strength:', type: 'number' },
+        { id: `character-create-stat-dexterity`, label: 'Dexterity:', type: 'number' },
+        { id: `character-create-stat-constitution`, label: 'Constitution:', type: 'number' },
+        { id: `character-create-stat-intelligence`, label: 'Intelligence:', type: 'number' },
+        { id: `character-create-stat-wisdom`, label: 'Wisdom:', type: 'number' },
+        { id: `character-create-stat-charisma`, label: 'Charisma:', type: 'number' }
     ];
 
     formGroups.forEach(group => column.appendChild(createFormGroup(group.id, group.label, group.type, group.isReadOnly)));
@@ -223,7 +134,7 @@ function createCharacterCreateSheet_FirstColumn(parent){
     parent.appendChild(form);
 }
 
-function createCharacterCreateSheet_SecondColumn(parent){
+function createCharacterCreateSheet_SecondColumn(parent, characterSheet){
     const form = document.createElement('form');
     form.className = 'character-sheet-spell-form';
 
@@ -239,13 +150,12 @@ function createCharacterCreateSheet_SecondColumn(parent){
 
 
     const select = createSelector(level2_spell_list.map(spell => spell.name), level2_spell_list.map(spell => spell.name), 'select');
-    select.id = 'spell-list';
     const imageButton = createImageButton(24,'➕');
 
     imageButton.onclick = function(event){
         event.preventDefault();
-        const currentSelectedSpell = document.getElementById('spell-list').value;
-        createSpellContainer(column, level2_spell_list, currentSelectedSpell);
+        const currentSelectedSpell = select.value;
+        createSpellContainer(column, level2_spell_list, currentSelectedSpell, characterSheet);
     }
 
     row.appendChild(select);
@@ -262,6 +172,9 @@ function createCharacterCreateSheet(parent) {
     const characterSheet = document.createElement('div');
     characterSheet.id = `character-create-sheet`;
     characterSheet.className = 'character-create-sheet';
+
+    const characterCreateSettings = new Character(characterSheet.id);
+    characterSheet.dataset.characterSettings = JSON.stringify(characterCreateSettings);
 
     const characterSheetContent = document.createElement('div');
     characterSheetContent.className = 'character-sheet-content';
@@ -290,9 +203,9 @@ function createCharacterCreateSheet(parent) {
     const columnRow = document.createElement('div');
     columnRow.className = 'row';
 
-    createCharacterCreateSheet_FirstColumn(columnRow);
-    createCharacterCreateSheet_SecondColumn(columnRow);
-
+    createCharacterCreateSheet_FirstColumn(columnRow, characterSheet);
+    createCharacterCreateSheet_SecondColumn(columnRow, characterSheet);
+    
     characterSheetContent.appendChild(closeButton);
     characterSheetContent.appendChild(header);
     characterSheetContent.appendChild(columnRow);
@@ -301,8 +214,10 @@ function createCharacterCreateSheet(parent) {
     parent.appendChild(characterSheet);
 }
 
-function createSpellContainer(parent, spellList, spellName = null) {
+function createSpellContainer(parent, spellList, spellName = null, characterSheet) {
 
+    let characterSettings = JSON.parse(characterSheet.dataset.characterSettings);
+    
     for (let spell of spellList){
         if(spellName != null){
             if(spell.name != spellName){
@@ -337,7 +252,7 @@ function createSpellContainer(parent, spellList, spellName = null) {
         const effectsElement = document.createElement('div');
         effectsElement.classList.add('spell-effects');
 
-        effectsElement.innerHTML = `<strong>Additional Effects:</strong><br>${allLevels.map(level => {  
+        effectsElement.innerHTML = `<strong>Additional Effects:</strong><br>${characterSettings.AVALIABLE_SPELL_LEVELS.map(level => {  
             return spell.additionalEffects.getManaEffects(level);
         }).join('<br>')}`;
 

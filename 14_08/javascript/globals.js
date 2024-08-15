@@ -9,8 +9,8 @@ const imageChars = [
 const imageBackgrounds = [
     '1rKoD9A2tZ0dEnpL4tGzVc1YlE4v6Rbpt',
 ];
-
 /* Google Drive Reletad END*/
+
 let dragStartX, dragStartY; // Variables to store the drag start position
 let currentLayer = 'character-layer'; // Default to character layer
 let objectsPositions = new Map(); // Store original positions for each image

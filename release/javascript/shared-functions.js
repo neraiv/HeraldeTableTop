@@ -27,7 +27,7 @@ function setImageSize(img, maxWidth, maxHeight, extra_ratio = NaN) {
     img.style.height = `${newHeight}px`;
 }
 
-function inrementWithId(inputId, increment) {
+function incrementWithId(inputId, increment) {
     // Get the input element by its ID
     const inputElement = document.getElementById(inputId);
 
@@ -43,7 +43,9 @@ function inrementWithId(inputId, increment) {
     }
 }
 
-function keepNumberInLimits(input, MAX, MIN) {
+function keepNumberInLimits(id, MAX, MIN) {
+    const input = document.getElementById(id);
+    
     if (input.value > MAX){
         input.value = MAX;
     }else if (input.value < MIN){

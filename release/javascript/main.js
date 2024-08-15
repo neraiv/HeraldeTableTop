@@ -1,8 +1,8 @@
 function setup(){
     //loadImagesWithURL();
     //loadLocalImages();
-    addAvaliableImagesSelector(charImageList, charImageFiles, "Select Character");
-    addAvaliableImagesSelector(backgroundImgList, backgroundImageFiles, "Select Background");
+    addAvaliableImagesSelector(charImageList, charImageFilesList, "Select Character");
+    addAvaliableImagesSelector(backgroundImgList, backgroundImageFilesList, "Select Background");
     layerChange();
     
 }

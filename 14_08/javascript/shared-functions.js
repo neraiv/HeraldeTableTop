@@ -43,7 +43,9 @@ function inrementWithId(inputId, increment) {
     }
 }
 
-function keepNumberInLimits(input, MAX, MIN) {
+function keepNumberInLimits(id, MAX, MIN) {
+    const input = document.getElementById(id);
+    
     if (input.value > MAX){
         input.value = MAX;
     }else if (input.value < MIN){
