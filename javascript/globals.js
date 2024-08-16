@@ -66,7 +66,7 @@ class Character {
             '1': 2,
             '2': 2
         },
-        learnedSpells = []
+        learnedSpells = ['Animal Friendship', 'Acid Arrow']
     } = {}) {
         this.ID = id;
         this.MAX_STAT_POINT = maxStatPoint;

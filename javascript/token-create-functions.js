@@ -35,6 +35,7 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
 
     const form = document.createElement('form');
     form.className = 'character-sheet-form';
+    form.style.overflowY = 'auto';
 
     function createFormGroup(id, label, type = 'text', isReadOnly = false) {
         const formGroup = document.createElement('div');
@@ -143,11 +144,24 @@ function createCharacterCreateSheet_SecondColumn(parent, characterSheet){
 
     const column = document.createElement('div');
     column.className = 'column';
+    column.style.overflowY = 'auto';
+    column.style.maxHeight = '100%';
 
     const row = document.createElement('div');
     row.className = 'row';
+    row.position = 'fixed';
 
     let selectedSpellLevelList = level1_spell_list;
+
+    const learnedSpells = characterCreateSettings.LEARNED_SPELLS;
+
+    // Iterate through AVAILABLE_SPELL_LEVELS and append "/ known" if it's in LEARNED_SPELLS
+    const spellList = selectedSpellLevelList.map(spell => {
+        if (learnedSpells.includes(spell.name)) {
+            return `${spell.name} / known`;
+        }
+        return spell.name;
+    });
 
     const levelSelect = createSelector(Object.keys(characterCreateSettings.AVAILABLE_SPELL_LEVELS), Object.keys(characterCreateSettings.AVAILABLE_SPELL_LEVELS), null);
     levelSelect.style.width = '5%';
@@ -170,7 +184,7 @@ function createCharacterCreateSheet_SecondColumn(parent, characterSheet){
         updateSelector(valueList, textList, 'select',characterSheet+'-spell-select');
     });
 
-    const select = createSelector(selectedSpellLevelList.map(spell => spell.name), selectedSpellLevelList.map(spell => spell.name), 'select', characterSheet+'-spell-select');
+    const select = createSelector(selectedSpellLevelList.map(spell => spell.name), spellList, 'select', characterSheet+'-spell-select');
     select.style.width = '50%';
     select.style.maxWidth = '320px'
     const imageButton = createImageButton(24,'➕');
