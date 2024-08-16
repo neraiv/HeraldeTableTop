@@ -395,3 +395,47 @@ function togglePage(id, open= null) {
         page.style.left = '-100%'; // Slide out the screen
     }
 }
+
+function createGameBoardImage(parent, src, x, y){
+    if (!document.getElementById(`token-${src.id}`)) {
+        const img = document.createElement('img');
+        img.src = src.src;
+        img.id = `token-${src.id}`;
+        img.style.left = `${x}px`;
+        img.style.top = `${y}px`;
+        img.className = src.className.replace("drive", "token");
+        img.draggable = true;
+
+        const image_size = 100
+        
+        if(layer.id == 'character-layer') {
+            img.addEventListener('load', function() {
+                // Set image size based on scaling factor and preserve aspect ratio
+                setImageSize(img, image_size, image_size);
+            });
+        }
+
+        const pageButton = document.createElement('button');
+        const angle = 30* Math.PI / 180;
+        const x = centerX + radius * Math.cos(angle) - 25; // 25 is half of button width/height
+        const y = centerY + radius * Math.sin(angle) - 25;
+
+        img.addEventListener('dragstart', function (event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
+            event.dataTransfer.effectAllowed = "move";
+        });
+
+        img.addEventListener('dragend', function (event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
+        });
+        
+        img.addEventListener("hover", function (event) {
+            event.preventDefault();
+        });
+
+        parent.appendChild(img);
+
+        // Store original positions
+        objectsPositions.set(img.id, { x: x, y: y });
+    }
+}
