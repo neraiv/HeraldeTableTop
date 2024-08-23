@@ -3,8 +3,8 @@ function setup(){
     //loadLocalImages();
     createTopBar();
     createBottomBar();
-    addAvaliableImagesSelector(charImageList, charImageFilesList, "Select<br>Character");
-    addAvaliableImagesSelector(backgroundImgList, backgroundImageFilesList, "Select<br>Background");
+    addAvaliableImagesSelector(charImageList, "Select<br>Character");
+    addAvaliableImagesSelector(backgroundImgList, "Select<br>Background");
     addLayerSelecetor();
     layerChange();
     

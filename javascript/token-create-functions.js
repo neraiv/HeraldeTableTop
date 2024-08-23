@@ -43,7 +43,7 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
     
     const image = document.createElement('img')
     image.className = `drive-image`;
-    image.src = `${charImagesFolder}/${charImageFilesList[0]}`
+    image.src = `${tokenPaths.FOLDER_MENUICONS}/${tokenPaths.IMAGELIST_CHARACTER[0]}`
 
     imageContainer.appendChild(image);
 
@@ -369,7 +369,7 @@ function createTopBar() {
     label.style.fontSize = '24px';
     label.style.paddingLeft = '10px';
 
-    const closeButton = createImageButton(24, `<img src="${iconsFolder+icon_closeBar}" width="24" height="24">`);
+    const closeButton = createImageButton(24, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}" width="24" height="24">`);
     closeButton.onclick = () =>{
         togglePage('drive-images-bar', false);
     };
@@ -410,19 +410,19 @@ function createBottomBar() {
     button3column.style.borderRadius = '10px';
     button3column.style.backgroundColor = 'gold';
 
-    const characterPageButton = createImageButton(24, `<img src="${iconsFolder+icon_closeBar}" width="24" height="24" alt="Close">`);
+    const characterPageButton = createImageButton(24, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}" width="24" height="24" alt="Close">`);
     characterPageButton.style.paddingRight = '10px';
     characterPageButton.style.paddingLeft = '10px';
     characterPageButton.onclick = () => togglePage('drive-images-bar');
     button1column.appendChild(characterPageButton);
 
-    const combatLogPageButton = createImageButton(24, `<img src="${iconsFolder+icon_closeBar}" width="24" height="24" alt="Close">`);
+    const combatLogPageButton = createImageButton(24, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}" width="24" height="24" alt="Close">`);
     combatLogPageButton.style.paddingRight = '10px';
     combatLogPageButton.style.paddingLeft = '10px';
     combatLogPageButton.onclick = () => togglePage(id);
     button2column.appendChild(combatLogPageButton);
 
-    const someButton = createImageButton(24, `<img src="${iconsFolder+icon_closeBar}" width="24" height="24" alt="Close">`); 
+    const someButton = createImageButton(24, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}" width="24" height="24" alt="Close">`); 
     someButton.style.paddingRight = '10px';   
     someButton.style.paddingLeft = '10px';                 
     someButton.onclick = () => togglePage(id);

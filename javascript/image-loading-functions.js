@@ -11,7 +11,7 @@ function loadAllLocalImages() {
     });
 }
 
-function addAvaliableImagesSelector(parentElement, imageFiles, label_text) {
+function addAvaliableImagesSelector(parentElement, label_text) {
     // Create the label element
     const selectorDiv = document.createElement('div');
     selectorDiv.className = 'token-selector';
@@ -27,13 +27,16 @@ function addAvaliableImagesSelector(parentElement, imageFiles, label_text) {
     
     let classNamePrefix;
     let folder;
+    let imageFiles;
     
     if (parentElement.id === 'character-list') {
         classNamePrefix = "character";
-        folder = charImagesFolder;
+        folder = tokenPaths.FOLDER_CHARTOKEN;
+        imageFiles = tokenPaths.IMAGELIST_CHARACTER
     } else if (parentElement.id === 'background-list') {
         classNamePrefix = "background";
-        folder = backgroundImagesFolder;
+        folder = tokenPaths.FOLDER_BACKGROUNDTOKEN;
+        imageFiles = tokenPaths.IMAGELIST_BACKGROUND;      
     }
 
     let labelsList = [];
@@ -55,10 +58,10 @@ function addAvaliableImagesSelector(parentElement, imageFiles, label_text) {
         }
     });
 
-    const addToGameButton = createImageButton(30, `<img src="${iconsFolder+icon_downArrowGreen}" width="30" height="30">`);
+    const addToGameButton = createImageButton(30, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_DOWNARROWGREEN}" width="30" height="30">`);
     addToGameButton.onclick = () => createDriveImageContainer(selectedFile, classNamePrefix, folder, parentElement);
     
-    const newCharacterButton = createImageButton(30, `<img src="${iconsFolder+icon_newFile}" width="30" height="30">`);
+    const newCharacterButton = createImageButton(30, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_NEWFILE}" width="30" height="30">`);
     
     // Append the label and select to the row
     row.appendChild(label);
@@ -88,7 +91,18 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
     targetElement.appendChild(imgContainer);
 
     const img = document.createElement('img');
-    img.src = `${imageFolder}${fileName}`;
+    let imgPrefix;
+    if(classNamePrefix == 'background'){
+        if(environment.TIME > 6.00 && environment.TIME < 20.00){
+            imgPrefix = 'light.jpg';
+        }else{
+            imgPrefix = 'dark.jpg';
+        }
+    }else if(classNamePrefix == "character"){
+        imgPrefix = "char.jpg"
+    }
+
+    img.src = `${imageFolder}/${fileName}/${imgPrefix}`;
     img.className = `drive-${classNamePrefix}-image`;
     img.id = imageName;
     img.dataset.filename = imageName;
@@ -115,7 +129,7 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
 
     // Create and append buttons with icons
     if(classNamePrefix == 'character'){
-        const defaultButton = createImageButton(36, `<img src="${iconsFolder+icon_characterSheet}" width="36" height="36">`);
+        const defaultButton = createImageButton(36, `<img src="${tokenPaths.FOLDER_MENUICONS+"/"+userIntarfaceSettings.ICON_CHARACTERSHEET}" width="36" height="36">`);
         defaultButton.onclick = () => open_CharacterSheet(`${imageAndButtonsContainer.id}-character-sheet`);
         buttonContainer.appendChild(defaultButton);
 
@@ -150,7 +164,7 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
         buttonContainer.appendChild(removeButton)
     }
 
-    const containerBackgroundColorChange = createImageButton(24, `<img src="${iconsFolder+icon_rainbowDice}" width="24" height="24">`);
+    const containerBackgroundColorChange = createImageButton(24, `<img src="${tokenPaths.FOLDER_MENUICONS+"/"+userIntarfaceSettings.ICON_RAINBOWDICE}" width="24" height="24">`);
     containerBackgroundColorChange.style.position = 'absolute';
     containerBackgroundColorChange.style.top = '2px';
     containerBackgroundColorChange.style.left = '2px';
