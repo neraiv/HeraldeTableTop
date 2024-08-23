@@ -27,6 +27,80 @@ function createCharacterSheet(parent) {
 }
 
 function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
+    let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
+
+    const column = document.createElement('div');
+    column.className = 'column';
+
+    const form = document.createElement('form');
+    form.className = 'character-sheet-form';
+    form.style.overflowY = 'auto';
+    
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'image-container';
+    imageContainer.style.backgroundColor = getRandomColor();
+    imageContainer.style.width = '200px';
+    
+    const image = document.createElement('img')
+    image.className = `drive-image`;
+    image.src = `${charImagesFolder}/${charImageFilesList[0]}`
+
+    imageContainer.appendChild(image);
+
+    column.appendChild(imageContainer);
+
+    function createFormGroup(id, label, type = 'text', isReadOnly = false) {
+        const formGroup = document.createElement('div');
+        formGroup.className = 'form-group';
+
+        const labelElement = document.createElement('label');
+        labelElement.setAttribute('for', id);
+        labelElement.textContent = label;
+        formGroup.appendChild(labelElement);
+
+        const inputElement = document.createElement('input');
+        inputElement.type = type;
+        inputElement.id = id;
+        inputElement.name = id;
+
+        if (isReadOnly) {
+            inputElement.readOnly = true;
+        }
+        formGroup.appendChild(inputElement);
+
+        if(id.includes('name')){
+            inputElement.style.width = '150px';
+        }
+        else if (['class', 'race'].some(key => id.includes(key))) {
+            inputElement.style.width = '150px';
+
+            const selectButton = document.createElement('button');
+            selectButton.className = 'image-button';
+            selectButton.appendChild(document.createTextNode('\u25BC'));
+            selectButton.onclick = (event) => {
+                event.preventDefault();
+                id.includes('class') ? open_ClassSelectSheet(characterSheet.id) : open_RaceSelectSheet(characterSheet.id);
+            };
+            formGroup.appendChild(selectButton);
+        }
+
+        return formGroup;
+    }
+
+    const formGroups = [
+        { id: `character-create-name`, label: 'Character Name:'},
+        { id: `character-create-class`, label: 'Class:' , isReadOnly: true},
+        { id: `character-create-sub-class`, label: 'Sub Class(s):', type: 'text', isReadOnly: true},
+        { id: `character-create-race`, label: 'Race:', isReadOnly: true},
+    ];
+
+    formGroups.forEach(group => column.appendChild(createFormGroup(group.id, group.label, group.type, group.isReadOnly)));
+
+    form.appendChild(column);
+    parent.appendChild(form);
+}
+
+function createCharacterCreateSheet_SecondColumn(parent, characterSheet){
 
     let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
    
@@ -56,23 +130,7 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
         }
         formGroup.appendChild(inputElement);
 
-        if(id.includes('name')){
-            inputElement.style.width = '150px';
-        }
-
-        else if (['class', 'race'].some(key => id.includes(key))) {
-            inputElement.style.width = '150px';
-
-            const selectButton = document.createElement('button');
-            selectButton.className = 'image-button';
-            selectButton.appendChild(document.createTextNode('\u25BC'));
-            selectButton.onclick = (event) => {
-                event.preventDefault();
-                id.includes('class') ? open_ClassSelectSheet(characterSheet.id) : open_RaceSelectSheet(characterSheet.id);
-            };
-            formGroup.appendChild(selectButton);
-        }
-        else if (id.includes('level') || id.includes('stat')) {
+        if (id.includes('stat') || id.includes('level')) {
             const controls = document.createElement('div');
             controls.className = 'number-controls';
 
@@ -116,10 +174,6 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
     }
 
     const formGroups = [
-        { id: `character-create-name`, label: 'Character Name:'},
-        { id: `character-create-class`, label: 'Class:' , isReadOnly: true},
-        { id: `character-create-sub-class`, label: 'Sub Class(s):', type: 'text', isReadOnly: true},
-        { id: `character-create-race`, label: 'Race:', isReadOnly: true},
         { id: `character-create-level`, label: 'Level:', type: 'number' },
         { id: `character-create-stat-strength`, label: 'Strength:', type: 'number' },
         { id: `character-create-stat-dexterity`, label: 'Dexterity:', type: 'number' },
@@ -135,7 +189,7 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
     parent.appendChild(form);
 }
 
-function createCharacterCreateSheet_SecondColumn(parent, characterSheet){
+function createCharacterCreateSheet_ThirdColumn(parent, characterSheet){
 
     let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
 
@@ -241,6 +295,7 @@ function createCharacterCreateSheet(parent) {
 
     createCharacterCreateSheet_FirstColumn(columnRow, characterSheet);
     createCharacterCreateSheet_SecondColumn(columnRow, characterSheet);
+    createCharacterCreateSheet_ThirdColumn(columnRow, characterSheet);
     
     characterSheetContent.appendChild(closeButton);
     characterSheetContent.appendChild(header);

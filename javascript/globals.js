@@ -4,9 +4,9 @@ let currentLayer = 'character-layer'; // Default to character layer
 let objectsPositions = new Map(); // Store original positions for each image
 
 /* IMAGES PATH */
-const pathCharImages = 'images/chars/';
-const pathClassIconsImages = 'images/class-icons/';
-const pathBackgroundImages = 'images/backgrounds/';
+const charImagesFolder = 'images/chars/';
+const classIcondFolder = 'images/class-icons/';
+const backgroundImagesFolder = 'images/backgrounds/';
 
 /* IMAGES ARRAYS */
 const charImageFilesList = ['bobin.jpg', 'dedektor.png', 'druid-woman.png', 'ThugElfFemaleMelee.png']

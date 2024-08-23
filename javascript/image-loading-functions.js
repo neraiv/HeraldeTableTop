@@ -1,12 +1,12 @@
 function loadAllLocalImages() {
     // Load character images
     charImageFiles.forEach(fileName => {
-        createDriveImageContainer(fileName, 'character', pathCharImages, charImageList);
+        createDriveImageContainer(fileName, 'character', charImagesFolder, charImageList);
     });
 
     // Load background images
     backgroundImageFiles.forEach(fileName => {
-        createDriveImageContainer(fileName, 'background', pathBackgroundImages, backgroundImgList);
+        createDriveImageContainer(fileName, 'background', backgroundImagesFolder, backgroundImgList);
     
     });
 }
@@ -30,10 +30,10 @@ function addAvaliableImagesSelector(parentElement, imageFiles, label_text) {
     
     if (parentElement.id === 'character-list') {
         classNamePrefix = "character";
-        folder = pathCharImages;
+        folder = charImagesFolder;
     } else if (parentElement.id === 'background-list') {
         classNamePrefix = "background";
-        folder = pathBackgroundImages;
+        folder = backgroundImagesFolder;
     }
 
     let labelsList = [];
