@@ -1,0 +1,62 @@
+.row {
+    display: flex; /* Ensure it's a flex container */
+    align-items: center; /* Center items along the cross axis (vertical if flex-direction is row) */
+    justify-content: center; /* Center items along the main axis (horizontal if flex-direction is row) */
+    text-align: center; /* Center text content horizontally */
+    flex-direction: row; /* This is the default, so you can omit it */
+    overflow-y: hidden; /* Prevent vertical scrolling */
+    gap: 10px;
+}
+
+.column {
+    display: flex; /* Ensure it's a flex container */
+    align-items: center; /* Center items along the cross axis (vertical if flex-direction is row) */
+    text-align: center; /* Center text content horizontally */
+    justify-content: center;
+    flex-direction: column; /* This is the default, so you can omit it */
+    overflow-y: hidden; /* Prevent vertical scrolling */
+    gap: 10px;
+}
+
+.spacer {
+    width: 5px; /* Width of the splitter bar */
+    background-color: #eb0f0f;
+    cursor: ew-resize; /* Cursor changes to indicate resize */
+    position: relative;
+    flex-grow: 1; /* Allow this element to take up all available space */
+}
+
+.image-container {
+    object-fit: contain; /* Ensures image scales within its container */
+    width: 80%; /* Adjust as needed */
+    height: 80%;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Ensures image scales within its container */
+}
+
+.image-button {
+    background: none;
+    border: none;
+    font-size: 24px; /* Adjust as needed */
+    cursor: pointer;
+}
+
+.image-button-24:hover, .image-button-30:hover {
+    color: blue; /* Change color on hover for visual feedback */
+}
+
+.combobox {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #0f0f0f; /* Optional: add a border */
+    border-radius: 4px; /* Optional: round the corners */
+}

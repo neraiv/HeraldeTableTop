@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabletop Board</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles/general.css">
+    <link rel="stylesheet" href="styles/mainBoardElements.css">
+    <link rel="stylesheet" href="styles/spell.css">
+    <link rel="stylesheet" href="styles/character_sheet.css">
 </head>
 <body>
-    <div id="top-bar-layer-select"></div>
+    <div id="top-bar-gameboard-options" class="row"></div>
+    <div id="top-bar-layer-select">
+        <div class="row">
+            <label for="top-bar-layer-select">Layer: </label>
+            <select id="layer-select">
+                <option value="character-layer">Character</option>
+                <option value="background-layer">Background</option>
+                <option value="fog-layer">Fog</option>
+            </select>
+        </div>
+    </div>
     <div class="board-container">
         <div id="drive-images-bar" class="column">
             <div id="drive-images-bar-top-bar" class="row"></div>
@@ -28,15 +41,11 @@
                 <div id="drag-overlay" class="drag-circle"></div>
             </div>
         </div>
-        <div id="bottom-bar-page-select"></div>
     </div>
-    <script src="javascript/icons.js"></script>
-    <script src="javascript/spells.js"></script>
+    <div id="bottom-bar-page-select"></div>
+    <script src="javascript/classes.js"></script>
     <script src="javascript/globals.js"></script>
-    <script src="javascript/shared-functions.js"></script>
-    <script src="javascript/image-loading-functions.js"></script>
-    <script src="javascript/token-create-functions.js"></script>
-    <script src="javascript/sheet-functions.js"></script>
-    <script src="javascript/main.js"></script>
+    <script src="javascript/user_interface_bringup.js"></script>
+    <script src="javascript/gameboard.js"></script>
 </body>
 </html>
