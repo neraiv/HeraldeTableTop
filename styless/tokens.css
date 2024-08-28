@@ -1,0 +1,41 @@
+/* Drive Token */
+.drive-image-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 95%;
+    height: 120px;
+    border: 2px solid black;
+    border-radius: 5px;
+    box-sizing: border-box; /* Ensures padding is included in the container's width */
+    margin-bottom: 10px;
+}
+
+.image-container {
+    object-fit: contain; /* Ensures image scales within its container */
+    width: 80%; /* Adjust as needed */
+    height: 80%;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-container img {
+    background-color: aliceblue;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Ensures image scales within its container */
+}
+
+/* End Drive Token */
+
+/* Char Token */
+.circular-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 50%; /* Makes the image circular */
+    object-fit: cover; /* Ensures the image covers the circle area */
+    display: block; /* Remove any extra space below the image */
+}
+/* End Char Token */

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabletop Board</title>
+    <link rel="stylesheet" href="styless/shared.css">
+    <link rel="stylesheet" href="styless/sheets.css">
+    <link rel="stylesheet" href="styless/tokens.css">
+    <link rel="stylesheet" href="styless/board.css">
+</head>
+<body>
+    <div id="top-menu-bar"></div>  
+    <div id="drive-images-bar">
+        <div id="drive-images-bar-top-bar" class="row"></div>
+        <div id="character-list-container" class="image-bank active">
+            <h2>Char Library</h2>
+            <div id="character-select-bar"></div>
+            <div id="character-list" class="column vertical"></div>   
+        </div>    
+        <div id="npc-list-container" class="image-bank">
+            <h2>Boot Library</h2>
+            <div id="npc-select-bar"></div>
+            <div id="npc-list" class="column vertical"></div>  
+        </div>         
+        <div id="background-list-container" class="image-bank">
+            <h2>Background Library</h2>
+            <div id="background-select-bar"></div>
+            <div id="background-list" class="column vertical"></div>
+        </div>
+    </div>
+    <div id="gameboard" class="board">
+        <div id="gameboard-content">
+            <div id="grid-background" class="grid"></div>
+            <div id="background-layer" class="layer"></div>
+            <div id="character-layer" class="layer"></div>
+            <div id="fog-layer" class="layer"></div>
+            <div id="drag-overlay" class="drag-circle"></div>
+        </div>
+    </div>
+    <div id="bottom-menu-bar"></div>
+
+    <script src="javascript/classess.js"></script>
+    <script src="javascript/globals.js"></script>  
+    <script src="javascript/shared/shared_functions.js"></script>
+    <script src="javascript/sheets/sheet__functions.js"></script>
+    <script src="javascript/sheets/sheet_character_page.js"></script>
+    <script src="javascript/sheets/sheet_drive_image_bar.js"></script>
+    <script src="javascript/sheets/sheet_create_character.js"></script>
+    <script src="javascript/game/_globals.js"></script>
+    <script src="javascript/game/classes.js"></script>
+    <script src="javascript/game/spells.js"></script>
+    <script src="javascript/game/weapons.js"></script>
+    <script src="javascript/game/character_token.js"></script>
+    <script src="javascript/game/bottom_bar.js"></script>
+    <script src="javascript/game/top_bar.js"></script>
+    <script src="javascript/game/gameboard.js"></script>
+    <script src="javascript/game/main.js"></script>
+</body>
+</html>

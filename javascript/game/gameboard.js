@@ -1,72 +1,6 @@
-function setup(){
-    //loadImagesWithURL();
-    //loadLocalImages();
-    createTopBar();
-    createBottomBar();
-    addAvaliableImagesSelector(charImageList, "Select<br>Character");
-    addAvaliableImagesSelector(backgroundImgList, "Select<br>Background");
-    addLayerSelecetor();
-    layerChange();
-    
-}
-
-function addLayerSelecetor() {
-    const parent = document.getElementById("top-bar-layer-select");
-    
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const label =  document.createElement("label");
-    label.textContent = "Layer: ";
-
-    const select = document.createElement("select");
-    select.id = "layer-select";
-    select.addEventListener("change", function(event) {
-        event.preventDefault();
-        currentLayer = this.value;
-        layerChange();
-    });
-
-    const option1 = document.createElement("option");
-    option1.value = "character-layer";
-    option1.textContent = "Character";
-    select.appendChild(option1);
-
-    const option2 = document.createElement("option");
-    option2.value = "background-layer";
-    option2.textContent = "Background";
-    select.appendChild(option2);
-    
-    const option3 = document.createElement("option");
-    option3.value = "fog-layer";
-    option3.textContent = "Fog";
-    select.appendChild(option3);
-
-    row.appendChild(label);
-    row.appendChild(select);
-
-    label.setAttribute('for', parent.id);
-
-    parent.appendChild(row);
-}
-
-function layerChange() {
-    // Get all layers
-    const layers = document.querySelectorAll('.layer');
-
-    // Loop through all layers and disable interactions
-    layers.forEach(layer => {
-        if (layer.id === currentLayer) {
-            layer.style.pointerEvents = 'auto'; // Enable interactions for the selected layer
-        } else {
-            layer.style.pointerEvents = 'none'; // Disable interactions for other layers
-        }
-    });
-}
-
 // Add dragstart event listener to images
 document.addEventListener("dragstart", function(event) {
-    if (event.target.tagName === 'IMG') {
+    if (event.target.id.includes('token') || event.target.tagName === 'IMG') {
         const img = event.target;
         
         // Calculate and store the offset between the mouse position and the image position
@@ -82,16 +16,18 @@ document.addEventListener("dragstart", function(event) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Edit
-    createCharacterCreateSheet(document.body);
 
+    gridBackground.style.backgroundSize = `${userIntarfaceSettings.GRID_SIZE}px ${userIntarfaceSettings.GRID_SIZE}px`;
+    const boardSize = userIntarfaceSettings.BOARD_SIZE;
+    
+    console.log(`${startX} ${startY} ${boardSize}`);
+
+    gameboardContent.style.width = `${boardSize}px`
+    gameboardContent.style.height = `${boardSize}px`;
+    gameboardContent.style.left = `${-boardSize/2}px`;
+    gameboardContent.style.top = `${-boardSize/2}px`;
+  
     gameboardContent.style.transform = `translate(0px, 0px) scale(1)`;
-
-    let isPanning = false;
-    let startX, startY;
-    let scale = 1;
-    let panX = 0;
-    let panY = 0;
 
     function checkIfValidMove(img, mouseX, mouseY) {
         //const overlayRect = dragOverlay.getBoundingClientRect();
@@ -113,45 +49,19 @@ document.addEventListener("DOMContentLoaded", () => {
     function addImageToBoard(src, x, y) {
         let layer;
         if (src.className.includes('character')) {
-            layer = document.getElementById('character-layer');
+            createCharacterToken(src, x, y);
         } else if (src.className.includes('background')) {
             layer = document.getElementById('background-layer');
-        }
-
-        if (!document.getElementById(`token-${src.id}`)) {
-            const img = document.createElement('img');
-            img.src = src.src;
-            img.id = `token-${src.id}`;
-            img.style.left = `${x}px`;
-            img.style.top = `${y}px`;
-            img.className = src.className.replace("drive", "token");
-            img.draggable = true;
-            
-            if(layer.id == 'character-layer') {
-                img.addEventListener('load', function() {
-                    // Set image size based on scaling factor and preserve aspect ratio
-                    setImageSize(img, 100, 100);
-                });
-            }
-
-            img.addEventListener('dragstart', function (event) {
-                event.dataTransfer.setData("text/plain", event.target.id);
-                event.dataTransfer.effectAllowed = "move";
-            });
-
-            img.addEventListener('dragend', function (event) {
-                event.dataTransfer.setData("text/plain", event.target.id);
-            });
-
-            layer.appendChild(img);
-
-            // Store original positions
-            objectsPositions.set(img.id, { x: x, y: y });
         }
     }
 
     gameboard.addEventListener('mousedown', (event) => {
-        if (event.button === 1) { // Middle mouse button
+        if (event.button === 0 && gameboard.style.cursor === 'move') { // Middle mouse button
+            isPanning = true;
+            startX = event.clientX - panX;
+            startY = event.clientY - panY;
+        }
+        if (event.button === 1 && gameboard.style.cursor !== 'move') { // Middle mouse button
             isPanning = true;
             startX = event.clientX - panX;
             startY = event.clientY - panY;
@@ -159,9 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    gameboard.addEventListener('mouseup', () => {
+    gameboard.addEventListener('mouseup', (event) => {
         isPanning = false;
-        gameboard.style.cursor = 'grab';
+        if (event.button === 1 && gameboard.style.cursor !== 'move') gameboard.style.cursor = 'auto';
     });
 
     gameboard.addEventListener('mousemove', (event) => {
@@ -175,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gameboard.addEventListener('wheel', (event) => {
         event.preventDefault();
         const scaleAmount = -event.deltaY * 0.001;
-        scale = Math.min(Math.max(0.6, scale + scaleAmount), 4);
+        scale = Math.min(Math.max(userIntarfaceSettings.MAX_ZOOM_OUT, scale + scaleAmount), userIntarfaceSettings.MAX_ZOOM_IN);
         gameboardContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
     });
 
@@ -200,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (img.className.includes('drive')) {
                 addImageToBoard(img, x, y);
             } else {
-                if (img.className.includes('character')){
+                if (img.id.includes('character')){
                     if(checkIfValidMove(img, x, y)){
                         img.style.position = 'absolute'; // Ensure the image is positioned absolutely
                         img.style.left = `${x}px`;
@@ -221,7 +131,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     gameboard.addEventListener("dragstart", function(event) {
-        if (event.target.tagName === 'IMG') {
+        if(gameboard.style.cursor === 'move') return;
+        if (event.target.id.includes("token")) {
             // Get element
             const id = event.dataTransfer.getData("text/plain");
             const element = document.getElementById(id);
@@ -235,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const y = (imgRect.top - rect.top + (imgRect.height / 2)) / scale;
             
             
-            if(element.className.includes("character")) {
+            if(element.id.includes("character")) {
                 // Show the overlay circle at the position
                 dragOverlay.style.display = 'block';
                 dragOverlay.style.left = `${x - dragOverlay.offsetWidth / 2}px`; // Center the circle
@@ -256,10 +167,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event listener for when dragging ends
     gameboard.addEventListener("dragend", function(event) {
         event.preventDefault();
-        if (event.target.tagName === 'IMG') {
-
+        if (event.target.id.includes("token")) {
             // Hide and remove the overlay
-            if(event.target.className.includes("character")) {
+            if(event.target.id.includes("character")) {
                 // POP UP ERROR HERE
                 dragOverlay.style.display = 'none';
             }  
@@ -270,8 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
     gameboard.addEventListener("dragover", function(event) {
         event.preventDefault();
     });
-
-    setup();
 });
 
 

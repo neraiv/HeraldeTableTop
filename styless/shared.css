@@ -1,0 +1,63 @@
+/* Row class that centers items both horizontally and vertically */
+.row{
+    display: flex; /* Use flexbox layout */
+    flex-direction: row; /* Arrange items in a row */
+    overflow-y: hidden; /* Prevent vertical scrolling */
+}
+
+.column {
+    display: flex; /* Ensure it's a flex container */
+    flex-direction: column; /* This is the default, so you can omit it */
+    overflow-y: hidden; /* Prevent vertical scrolling */
+}
+
+.spacer {
+    flex-grow: 1; /* Allow this element to take up all available space */
+}
+
+.horizantal {
+    justify-content: center; /* Centers content horizontally */
+}
+
+.vertical {
+    align-items: center; /* Centers content vertically */
+}
+
+.centered {
+    display: flex; /* Use flexbox layout */
+    justify-content: center; /* Center items horizontally */
+    text-align: center;
+    align-items: center; /* Center items vertically */
+}
+
+.box-circular-border {
+    border-radius: 5px;
+    border: 2px solid black;
+}
+
+.selection-bar{
+    width: 99%;
+    height: 50px;
+    display: flex; /* Use flexbox layout */
+    flex-direction: row; /* Arrange items in a row */
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    overflow-y: auto; /* Prevent vertical scrolling */
+    gap: 10px;
+}
+
+.image-button {
+    display: flex;
+    background: none;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+.highlight {
+    border-radius: 5px;
+    border: 2px solid orange !important;
+    background-color: yellow !important;
+}

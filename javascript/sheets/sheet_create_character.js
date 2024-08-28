@@ -1,55 +1,39 @@
-function createCharacterSheet(parent) {
-    const characterSheet = document.createElement('div');
-    characterSheet.id = `${parent.id}-character-sheet`;
-    characterSheet.className = 'character-sheet';
-
-    const button = document.createElement('button');
-    button.textContent = 'New';
-
-    button.onclick = function(event){
-        event.preventDefault();
-        selectedCharacterSheetId = characterSheet.id;
-        open_CharacterCreatePage();
-    }
-    const exitButton = document.createElement('button');
-    exitButton.textContent = 'Exit';
-
-    exitButton.onclick = function(event){
-        event.preventDefault();
-        selectedCharacterSheetId = characterSheet.id;
-        close_CharacterSheet(selectedCharacterSheetId);
-    }
-
-    characterSheet.appendChild(button);
-    characterSheet.appendChild(exitButton);
-
-    parent.appendChild(characterSheet);
-}
-
-function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
+function createCharacterCreateSheet_FirstColumn(parent, characterSheet, width){
     let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
-
-    const column = document.createElement('div');
-    column.className = 'column';
 
     const form = document.createElement('form');
     form.className = 'character-sheet-form';
-    form.style.overflowY = 'auto';
-    
+    form.classList.add('box-circular-border');
+    form.style.width  = width;
+    form.style.height = "100%";
+    form.style.flexGrow = "1";
+
+    const column = document.createElement('div');
+    column.classList.add('column');
+    column.classList.add('centered');
+    column.style.height = "100%";
+    column.style.gap = '10px';
+
     const imageContainer = document.createElement('div');
     imageContainer.className = 'image-container';
     imageContainer.style.backgroundColor = getRandomColor();
     imageContainer.style.width = '200px';
     
     const image = document.createElement('img')
-    image.className = `drive-image`;
-    image.src = `${tokenPaths.FOLDER_MENUICONS}/${tokenPaths.IMAGELIST_CHARACTER[0]}`
+    image.src = `${tokenPaths.DEFAULT_CHAR_PROFILE}`
 
     imageContainer.appendChild(image);
 
     column.appendChild(imageContainer);
 
     function createFormGroup(id, label, type = 'text', isReadOnly = false) {
+
+        if(id == "spacer"){
+            const spacer = document.createElement('div');
+            spacer.className = 'spacer';
+            return spacer;
+        }
+
         const formGroup = document.createElement('div');
         formGroup.className = 'form-group';
 
@@ -83,6 +67,44 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
             };
             formGroup.appendChild(selectButton);
         }
+        else if (id.includes('stat') || id.includes('level')) {
+            const controls = document.createElement('div');
+            controls.className = 'number-controls';
+
+            const max = id.includes('level') ? characterCreateSettings.MAX_CHARACTER_LVL  : characterCreateSettings.MAX_STAT_POINT ;
+            const min = id.includes('level') ? characterCreateSettings.MIN_CHARACTER_LVL  : characterCreateSettings.MIN_STAT_POINT;
+
+            inputElement.value = min;
+            
+            const size = labelElement.getBoundingClientRect();
+            const buttonUp = createImageButton(`${12}px`, '&#9650;');  
+            buttonUp.onclick = function(event) {
+                event.preventDefault();
+                incrementWithId(id, 1);
+                keepNumberInLimits(id, max, min);
+            };
+
+            const buttonDown = createImageButton(`${12}px`, '&#9660;');  
+            buttonDown.onclick = function(event) {
+                event.preventDefault();
+                incrementWithId(id, -1);
+                keepNumberInLimits(id, max, min);
+            };
+
+            controls.appendChild(buttonUp);
+            controls.appendChild(buttonDown);
+            formGroup.appendChild(controls);
+
+            if (id.includes('level')) {
+                inputElement.oninput = function() {
+                    keepNumberInLimits(id, max, min);
+                };
+            } else {
+                inputElement.oninput = function() {
+                    keepNumberInLimits(id, max, min);
+                };
+            }
+        }
 
         return formGroup;
     }
@@ -92,6 +114,19 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
         { id: `character-create-class`, label: 'Class:' , isReadOnly: true},
         { id: `character-create-sub-class`, label: 'Sub Class(s):', type: 'text', isReadOnly: true},
         { id: `character-create-race`, label: 'Race:', isReadOnly: true},
+        { id: `character-create-level`, label: 'Level:', type: 'number' },
+        { id: `spacer`},
+        { id: `character-create-stat-strength`, label: 'Strength:', type: 'number' },
+        { id: `spacer`},
+        { id: `character-create-stat-dexterity`, label: 'Dexterity:', type: 'number' },
+        { id: `spacer`},
+        { id: `character-create-stat-constitution`, label: 'Constitution:', type: 'number' },
+        { id: `spacer`},
+        { id: `character-create-stat-intelligence`, label: 'Intelligence:', type: 'number' },
+        { id: `spacer`},
+        { id: `character-create-stat-wisdom`, label: 'Wisdom:', type: 'number' },
+        { id: `spacer`},
+        { id: `character-create-stat-charisma`, label: 'Charisma:', type: 'number' }
     ];
 
     formGroups.forEach(group => column.appendChild(createFormGroup(group.id, group.label, group.type, group.isReadOnly)));
@@ -100,18 +135,26 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet){
     parent.appendChild(form);
 }
 
-function createCharacterCreateSheet_SecondColumn(parent, characterSheet){
+function createCharacterCreateSheet_SecondColumn(parent, characterSheet, width){
 
     let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
    
     const column = document.createElement('div');
-    column.className = 'column';
+    column.classList.add('column');
+    column.classList.add('centered');
+    column.style.height = "100%";
 
     const form = document.createElement('form');
-    form.className = 'character-sheet-form';
+    form.classList.add('character-sheet-form');
     form.style.overflowY = 'auto';
 
     function createFormGroup(id, label, type = 'text', isReadOnly = false) {
+
+        if(id == "spacer"){
+            const spacer = document.createElement('div');
+            spacer.className = 'spacer';
+            return spacer;
+        }
         const formGroup = document.createElement('div');
         formGroup.className = 'form-group';
 
@@ -139,16 +182,15 @@ function createCharacterCreateSheet_SecondColumn(parent, characterSheet){
 
             inputElement.value = min;
             
-            const buttonUp = document.createElement('button');
-            buttonUp.innerHTML = '&#9650;';
+            const size = labelElement.getBoundingClientRect();
+            const buttonUp = createImageButton(`${12}px`, '&#9650;');  
             buttonUp.onclick = function(event) {
                 event.preventDefault();
                 incrementWithId(id, 1);
                 keepNumberInLimits(id, max, min);
             };
 
-            const buttonDown = document.createElement('button');
-            buttonDown.innerHTML = '&#9660;';
+            const buttonDown = createImageButton(`${12}px`, '&#9660;');  
             buttonDown.onclick = function(event) {
                 event.preventDefault();
                 incrementWithId(id, -1);
@@ -175,34 +217,51 @@ function createCharacterCreateSheet_SecondColumn(parent, characterSheet){
 
     const formGroups = [
         { id: `character-create-level`, label: 'Level:', type: 'number' },
+        { id: `spacer`},
         { id: `character-create-stat-strength`, label: 'Strength:', type: 'number' },
+        { id: `spacer`},
         { id: `character-create-stat-dexterity`, label: 'Dexterity:', type: 'number' },
+        { id: `spacer`},
         { id: `character-create-stat-constitution`, label: 'Constitution:', type: 'number' },
+        { id: `spacer`},
         { id: `character-create-stat-intelligence`, label: 'Intelligence:', type: 'number' },
+        { id: `spacer`},
         { id: `character-create-stat-wisdom`, label: 'Wisdom:', type: 'number' },
+        { id: `spacer`},
         { id: `character-create-stat-charisma`, label: 'Charisma:', type: 'number' }
     ];
 
-    formGroups.forEach(group => column.appendChild(createFormGroup(group.id, group.label, group.type, group.isReadOnly)));
+    formGroups.forEach(group => {
+        column.appendChild(createFormGroup(group.id, group.label, group.type, group.isReadOnly));
+    });
 
     form.appendChild(column);
     parent.appendChild(form);
 }
 
-function createCharacterCreateSheet_ThirdColumn(parent, characterSheet){
+function createCharacterCreateSheet_ThirdColumn(parent, characterSheet, width){
 
     let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
 
     const form = document.createElement('form');
-    form.className = 'character-sheet-form';
+    form.classList.add('character-sheet-form');
+    form.classList.add('box-circular-border');
+    form.style.width  = width;
+    form.style.height = "100%";
 
     const column = document.createElement('div');
     column.className = 'column';
-    column.style.overflowY = 'auto';
-    column.style.maxHeight = '100%';
+    column.style.overflowY = 'fixed';
+
+    const spellColumn = document.createElement('div');
+    spellColumn.className = 'column';
+    spellColumn.style.overflowY = 'auto';
+    spellColumn.style.maxHeight = '80%';
 
     const row = document.createElement('div');
-    row.className = 'row';
+    row.classList.add('row');
+    row.classList.add('centered');
+    row.style.minHeight = "20%"
     row.position = 'fixed';
 
     let selectedSpellLevelList = level1_spell_list;
@@ -246,63 +305,22 @@ function createCharacterCreateSheet_ThirdColumn(parent, characterSheet){
     imageButton.onclick = function(event){
         event.preventDefault();
         const currentSelectedSpell = select.value;
-        createSpellContainer(column, selectedSpellLevelList, currentSelectedSpell, characterSheet);
+        createSpellContainer(spellColumn, selectedSpellLevelList, currentSelectedSpell, characterSheet);
     }
 
+    addSpacer(row);
     row.appendChild(levelSelect);
+    addSpacer(row);
     row.appendChild(select);
+    addSpacer(row);
     row.appendChild(imageButton);
+    addSpacer(row);
 
     form.appendChild(row);
-    form.appendChild(column);
+    form.appendChild(spellColumn);
 
 
     parent.appendChild(form);
-}
-
-function createCharacterCreateSheet(parent) {
-    const characterSheet = document.createElement('div');
-    characterSheet.id = `character-create-sheet`;
-    characterSheet.className = 'character-create-sheet';
-
-    const characterCreateSettings = new Character(characterSheet.id);
-    characterSheet.dataset.characterSettings = JSON.stringify(characterCreateSettings);
-
-    const characterSheetContent = document.createElement('div');
-    characterSheetContent.className = 'character-sheet-content';
-
-    const closeButton = createImageButton(24, '✕');  
-    closeButton.style.position= 'absolute';
-    closeButton.style.right= '10px';
-    closeButton.style.top= '10px';
-
-    closeButton.onclick = () => close_CharacterSheet(characterSheet.id);
-
-    const header = document.createElement('h1');
-    header.innerText = 'Create Character Sheet';
-
-    const saveButton = document.createElement('button');
-    saveButton.type = 'submit';
-    saveButton.innerText = 'Save';
-    saveButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        save_CharacterSheet(characterSheet.id);
-    });
-
-    // Contents
-    const columnRow = document.createElement('div');
-    columnRow.className = 'row';
-
-    createCharacterCreateSheet_FirstColumn(columnRow, characterSheet);
-    createCharacterCreateSheet_SecondColumn(columnRow, characterSheet);
-    createCharacterCreateSheet_ThirdColumn(columnRow, characterSheet);
-    
-    characterSheetContent.appendChild(closeButton);
-    characterSheetContent.appendChild(header);
-    characterSheetContent.appendChild(columnRow);
-
-    characterSheet.appendChild(characterSheetContent);
-    parent.appendChild(characterSheet);
 }
 
 function createSpellContainer(parent, spellList, spellName = null, characterSheet) {
@@ -356,141 +374,60 @@ function createSpellContainer(parent, spellList, spellName = null, characterShee
     };
 }
 
-function createTopBar() {
-    const topBar = document.getElementById('drive-images-bar-top-bar');
-    topBar.className = 'row';
-    topBar.style.width = '95%'
-    topBar.style.border = '2px solid';
-    topBar.style.borderRadius = '10px';
-    topBar.style.backgroundColor = 'gold';
+function addCharacterCreateSheet(parent) {
+    const characterSheet = document.createElement('div');
+    characterSheet.id = `character-create-sheet`;
+    characterSheet.className = 'character-create-sheet';
 
-    const label = document.createElement('div');
-    label.innerText = 'Drive Images Bar';
-    label.style.fontSize = '24px';
-    label.style.paddingLeft = '10px';
+    const characterCreateSettings = new Character(characterSheet.id);
+    characterSheet.dataset.characterSettings = JSON.stringify(characterCreateSettings);
 
-    const closeButton = createImageButton(24, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}" width="24" height="24">`);
-    closeButton.onclick = () =>{
-        togglePage('drive-images-bar', false);
-    };
+    const characterSheetContent = document.createElement('div');
+    characterSheetContent.classList.add('character-sheet-content')
+    characterSheetContent.classList.add('box-circular-border')
+    characterSheetContent.style.overflowY = 'auto';
 
-    const spacer1 = document.createElement('div');
-    spacer1.className = 'spacer';
+    const closeButton = createImageButton(24, null, `${userIntarfaceSettings.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}`);  
+    closeButton.style.position= 'absolute';
+    closeButton.style.right= '10px';
+    closeButton.style.top= '10px';
+    closeButton.onclick = () => toggleDisplay_SheetWithId(characterSheet.id, false);
 
-    topBar.appendChild(label);
-    topBar.appendChild(spacer1);
-    topBar.appendChild(closeButton);
+    const column = document.createElement('div');
+    column.classList.add('column');
+    column.classList.add('centered');
+    column.style.width = '100%';
+
+    const header = document.createElement('h1');
+    header.innerText = 'Create Account Sheet';
+
+    const saveButton = document.createElement('button');
+    saveButton.type = 'submit';
+    saveButton.innerText = 'Save';
+    saveButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        save_CharacterSheet(characterSheet.id);
+    });
+
+    // Contents
+    const columnRow = document.createElement('div');
+    columnRow.className = 'row';
+    column.classList.add('centered');
+    columnRow.style.width = '100%';
+
+    addSpacer(columnRow);
+    createCharacterCreateSheet_FirstColumn(columnRow, characterSheet, '30%');
+    addSpacer(columnRow);
+    //createCharacterCreateSheet_SecondColumn(columnRow, characterSheet, '70%');
+    createCharacterCreateSheet_ThirdColumn(columnRow, characterSheet, '60%');
+    addSpacer(columnRow);
+    
+    characterSheetContent.appendChild(closeButton);
+    column.appendChild(header);
+    column.appendChild(columnRow);
+    characterSheetContent.appendChild(column);
+
+    characterSheet.appendChild(characterSheetContent);
+    parent.appendChild(characterSheet);
 }
 
-function createBottomBar() {
-    const bottomBarPageSelect = document.getElementById('bottom-bar-page-select');
-    bottomBarPageSelect.className = 'row';
-
-    const button1column = document.createElement('div');
-    button1column.innerText = "Chars";
-    button1column.className = 'column';
-    button1column.style.gap = "3px";
-    button1column.style.border = '2px solid';
-    button1column.style.borderRadius = '10px';
-    button1column.style.backgroundColor = 'gold';
-
-    const button2column = document.createElement('div');
-    button2column.innerText = "Log";
-    button2column.className = 'column';
-    button2column.style.gap = "3px";
-    button2column.style.border = '2px solid';
-    button2column.style.borderRadius = '10px';
-    button2column.style.backgroundColor = 'gold';
-
-    const button3column = document.createElement('div');
-    button3column.innerText = "Some"
-    button3column.className = 'column';
-    button3column.style.gap = "3px";
-    button3column.style.border = '2px solid';
-    button3column.style.borderRadius = '10px';
-    button3column.style.backgroundColor = 'gold';
-
-    const characterPageButton = createImageButton(24, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}" width="24" height="24" alt="Close">`);
-    characterPageButton.style.paddingRight = '10px';
-    characterPageButton.style.paddingLeft = '10px';
-    characterPageButton.onclick = () => togglePage('drive-images-bar');
-    button1column.appendChild(characterPageButton);
-
-    const combatLogPageButton = createImageButton(24, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}" width="24" height="24" alt="Close">`);
-    combatLogPageButton.style.paddingRight = '10px';
-    combatLogPageButton.style.paddingLeft = '10px';
-    combatLogPageButton.onclick = () => togglePage(id);
-    button2column.appendChild(combatLogPageButton);
-
-    const someButton = createImageButton(24, `<img src="${tokenPaths.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}" width="24" height="24" alt="Close">`); 
-    someButton.style.paddingRight = '10px';   
-    someButton.style.paddingLeft = '10px';                 
-    someButton.onclick = () => togglePage(id);
-    button3column.appendChild(someButton);
-
-    bottomBarPageSelect.appendChild(button1column);
-    bottomBarPageSelect.appendChild(button2column);
-    bottomBarPageSelect.appendChild(button3column);   
-}
-
-function togglePage(id, open= null) {
-    const page = document.getElementById(id);
-    if(open != null){
-        if(open){
-            page.style.left = '0%';
-        }else{
-            page.style.left = '-100%';
-        }
-        return;
-    }
-
-    if(page.style.left == '-100%'){
-        page.style.left = '0%'; // Slide in the screen
-    }else {
-        page.style.left = '-100%'; // Slide out the screen
-    }
-}
-
-function createGameBoardImage(parent, src, x, y){
-    if (!document.getElementById(`token-${src.id}`)) {
-        const img = document.createElement('img');
-        img.src = src.src;
-        img.id = `token-${src.id}`;
-        img.style.left = `${x}px`;
-        img.style.top = `${y}px`;
-        img.className = src.className.replace("drive", "token");
-        img.draggable = true;
-
-        const image_size = 100
-        
-        if(layer.id == 'character-layer') {
-            img.addEventListener('load', function() {
-                // Set image size based on scaling factor and preserve aspect ratio
-                setImageSize(img, image_size, image_size);
-            });
-        }
-
-        const pageButton = document.createElement('button');
-        const angle = 30* Math.PI / 180;
-        const x = centerX + radius * Math.cos(angle) - 25; // 25 is half of button width/height
-        const y = centerY + radius * Math.sin(angle) - 25;
-
-        img.addEventListener('dragstart', function (event) {
-            event.dataTransfer.setData("text/plain", event.target.id);
-            event.dataTransfer.effectAllowed = "move";
-        });
-
-        img.addEventListener('dragend', function (event) {
-            event.dataTransfer.setData("text/plain", event.target.id);
-        });
-        
-        img.addEventListener("hover", function (event) {
-            event.preventDefault();
-        });
-
-        parent.appendChild(img);
-
-        // Store original positions
-        objectsPositions.set(img.id, { x: x, y: y });
-    }
-}
