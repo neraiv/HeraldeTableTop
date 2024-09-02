@@ -56,6 +56,17 @@ function createCharacterToken(img_src_element, x, y) {
 
     // Buttons with their respective angles
     const characterInventoryButton = createButton(userIntarfaceSettings.FOLDER_MENUICONS + "/" + userIntarfaceSettings.ICON_INVENTORY, 45);
+    characterInventoryButton.onclick = function(event){
+        console.log(inGameCharacters);
+        const char = getCharacterById(img_src_element.id+'-character-sheet');
+
+        // Future
+        char.INVENTORY.addItem(listWeapons.HAMMER.name, 1);
+        char.INVENTORY.addItem(listWeapons.SWORD.name, 1);
+
+        displayInventory(char.INVENTORY, event.clientX, event.clientY);
+    }
+
     const characterSpellbookButton = createButton(userIntarfaceSettings.FOLDER_MENUICONS + "/" + userIntarfaceSettings.ICON_SPELLBOOK, 90);
     const characterSheetButton = createButton(userIntarfaceSettings.FOLDER_MENUICONS + "/" + userIntarfaceSettings.ICON_SWORD, 135);
 
@@ -93,3 +104,4 @@ function createCharacterToken(img_src_element, x, y) {
         });
     });
 }
+

@@ -10,3 +10,5 @@ let gameSettings = new SettingsGame();
 let userIntarfaceSettings = new SettingsUI();
 let tokenPaths = new TokenPaths();
 let environment = new Environment();
+
+let inGameCharacters = [];
