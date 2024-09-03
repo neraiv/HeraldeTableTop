@@ -61,8 +61,9 @@ function createCharacterToken(img_src_element, x, y) {
         const char = getCharacterById(img_src_element.id+'-character-sheet');
 
         // Future
-        char.INVENTORY.addItem(listWeapons.HAMMER.name, 1);
-        char.INVENTORY.addItem(listWeapons.SWORD.name, 1);
+        char.INVENTORY.addItem(listWeapons["Hammer Of Mouse"], 1);
+        char.INVENTORY.addItem(listWeapons.Sword, 1);
+        char.INVENTORY.addItem(listConsumables["Healing Potion"], 4);
 
         displayInventory(char.INVENTORY, event.clientX, event.clientY);
     }

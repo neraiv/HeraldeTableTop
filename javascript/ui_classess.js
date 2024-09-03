@@ -41,6 +41,9 @@ class SettingsUI {
         icon_inventory = "inventory.png",
         icon_spellbook = "spellbook.png",
         icon_sword = "sword.png",
+        icon_gold = "gold.png",
+        icon_silver = "silver.png",
+        icon_bronze = "bronze.png",
         board_size = 3000,    
         grid_size = 100,
         max_zoom_in = 6,
@@ -57,6 +60,9 @@ class SettingsUI {
         this.ICON_INVENTORY         = icon_inventory;
         this.ICON_SPELLBOOK        = icon_spellbook      ;
         this.ICON_SWORD            = icon_sword          ;
+        this.ICON_GOLD             = icon_gold           ;
+        this.ICON_SILVER           = icon_silver           ;
+        this.ICON_BRONZE           = icon_bronze           ;
         this.FOLDER_MENUICONS        = folderMenuIcons;
         this.BOARD_SIZE          = board_size;
         this.GRID_SIZE           = grid_size;

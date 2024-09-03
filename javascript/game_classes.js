@@ -66,18 +66,22 @@ class Character {
 class Inventory {
     constructor() {
         this.items = []; // Initialize an empty array to store inventory items
+        this.currency = {
+            gold: 0,
+            silver: 0,
+            bronze: 0
+        };
     }
 
     // Add an item to the inventory
-    addItem(itemName, quantity = 1) {
-        // Check if the item already exists
-        const existingItem = this.items.find(item => item.name === itemName);
+    addItem(item, quantity = 1) {
+        const existingItem = this.items.find(exItem => exItem.name === item.name);
         if (existingItem) {
             existingItem.quantity += quantity; // Increase quantity if item exists
         } else {
-            this.items.push({ name: itemName, quantity }); // Add new item to the inventory
+            this.items.push({ name: item.name, itemType: item.itemType, quantity }); // Add new item to the inventory
         }
-        console.log(`${itemName} added. Quantity: ${quantity}`);
+        console.log(`${item.name} added. Quantity: ${quantity}`);
     }
 
     // Remove an item from the inventory
@@ -109,6 +113,7 @@ class Inventory {
         this.items.forEach(item => {
             console.log(`- ${item.name}: ${item.quantity}`);
         });
+        console.log(`Currency: ${this.currency.gold} Gold, ${this.currency.silver} Silver, ${this.currency.bronze} Bronze`);
     }
 
     // Get the quantity of a specific item
@@ -116,7 +121,63 @@ class Inventory {
         const item = this.items.find(item => item.name === itemName);
         return item ? item.quantity : 0;
     }
+
+    // Add currency
+    addCurrency(gold = 0, silver = 0, bronze = 0) {
+        this.currency.gold += gold;
+        this.currency.silver += silver;
+        this.currency.bronze += bronze;
+        console.log(`Added ${gold} Gold, ${silver} Silver, ${bronze} Bronze.`);
+    }
+
+    convertCurrencyToGoldBase() {
+        // Convert bronze to silver
+        this.currency.silver += Math.floor(this.currency.bronze / 150);
+        this.currency.bronze = this.currency.bronze % 150;
+    
+        // Convert silver to gold
+        this.currency.gold += Math.floor(this.currency.silver / 1342);
+        this.currency.silver = this.currency.silver % 1342;
+    
+        console.log(`Converted to ${this.currency.gold} Gold, ${this.currency.silver} Silver, ${this.currency.bronze} Bronze.`);
+    }
+
+    convertCurrency(gold = 0, silver = 0, bronze = 0) {
+        // Convert the total value to Bronze
+        let totalBronze = (gold * 10000) + (silver * 100) + bronze;
+    
+        // Convert total Bronze to Gold, Silver, and remaining Bronze
+        const convertedGold = Math.floor(totalBronze / 10000);
+        totalBronze %= 10000;
+    
+        const convertedSilver = Math.floor(totalBronze / 100);
+        const remainingBronze = totalBronze % 100;
+    
+        console.log(`${gold} Gold, ${silver} Silver, ${bronze} Bronze equals to ${convertedGold} Gold, ${convertedSilver} Silver, and ${remainingBronze} Bronze.`);
+        return { gold: convertedGold, silver: convertedSilver, bronze: remainingBronze };
+    }
+
+    reverseConvertCurrency(gold = 0, silver = 0, bronze = 0) {
+        const totalBronze = (gold * 10000) + (silver * 100) + bronze;
+        console.log(`${gold} Gold, ${silver} Silver, ${bronze} Bronze equals to ${totalBronze} Bronze.`);
+        return totalBronze;
+    }
+    
+
+    // Remove currency
+    removeCurrency(gold = 0, silver = 0, bronze = 0) {
+        if (this.currency.gold < gold || this.currency.silver < silver || this.currency.bronze < bronze) {
+            console.log("Not enough currency to remove.");
+            return;
+        }
+
+        this.currency.gold -= gold;
+        this.currency.silver -= silver;
+        this.currency.bronze -= bronze;
+        console.log(`Removed ${gold} Gold, ${silver} Silver, ${bronze} Bronze.`);
+    }
 }
+
 
 class Environment{
     constructor({
@@ -142,6 +203,7 @@ class AdditionalEffect {
         this.characterAction = characterAction;
         this.efect = efect;
         this.value = value;
+        this.description = description;
     }
 }
 
@@ -153,7 +215,7 @@ class ManaEffect {
 }
 
 class Spell {
-    constructor(name, availableClasses, baseStatType, damageTypes, description, spendManaEffects, spellPattern, baseDamage) {
+    constructor(name, availableClasses, baseStatType, damageTypes, description, spendManaEffects, spellPattern, baseDamage, castTime=1) {
         this.name = name;
         this.availableClasses = availableClasses; // Array of ClassType enums
         this.baseStatType = baseStatType; // StatType enum (e.g., STR, DEX, CON, etc.)
@@ -162,21 +224,37 @@ class Spell {
         this.spendManaEffects = spendManaEffects;
         this.spellPattern = spellPattern;
         this.baseDamage = baseDamage;
-
+        this.castTime = castTime;
     }
 }
     
-class Weapon {
-    constructor(name, weaponType, properties, additionalEffects, weaponSkills, lore) {
+class Item {
+    constructor(name, itemType, itemSubType, properties, additionalEffects, spells, lore) {
         this.name = name,
-        this.weaponType = weaponType;
-        this.properties = properties || []; 
-        this.additionalEffects = additionalEffects || [];
-        this.weaponSkills = weaponSkills || [];
-        this.lore = lore || defaultWeaponLore;
+        this.itemType = itemType,
+        this.itemSubType = itemSubType;
+        this.properties = properties; 
+        this.additionalEffects = additionalEffects;
+        this.spells = spells;
+        this.lore = lore;
     }
 }
 
+const itemType = Object.freeze({ 
+    WEAPON: 1,
+    CONSUMABLE: 2,
+    NECKLACE: 3,
+    EARINGS: 4,
+    RING: 5,
+    CLOAK: 7,
+    GLOVES: 8,
+    ARMS: 14,
+    CHEST: 9,
+    LEGS: 10,
+    BOOTS: 6,
+    HELM: 13 
+    // Add more item types as needed
+});
 /* SPEELSS AND WEAPONS */
 const classType = Object.freeze({
     ALL: 0,
@@ -194,6 +272,7 @@ const classType = Object.freeze({
 
 const damageType = Object.freeze({
     NONE: 0,
+    HEALING: 99,
     PSYCHIC: 1,
     FIRE: 2,
     COLD: 3,
@@ -271,6 +350,7 @@ const weaponProperties = Object.freeze({
 const characterActions = Object.freeze({
     ALWAYS : 50,
     PREPARE: 99,
+    USE : 100,
     ATTACKING: 1,
     MOVING: 2,
     BLOCKING: 3,
