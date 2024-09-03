@@ -1,3 +1,7 @@
+function getCharacterById(id) {
+    return inGameCharacters.find(character => character.ID === id);
+}
+
 function getScalingFactor(container, scale) {
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;

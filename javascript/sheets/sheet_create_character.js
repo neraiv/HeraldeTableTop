@@ -269,7 +269,7 @@ function createCharacterCreateSheet_ThirdColumn(parent, characterSheet, width){
     const learnedSpells = characterCreateSettings.LEARNED_SPELLS;
 
     // Iterate through AVAILABLE_SPELL_LEVELS and append "/ known" if it's in LEARNED_SPELLS
-    const spellList = selectedSpellLevelList.map(spell => {
+    const spellList = Object.values(selectedSpellLevelList).map(spell => {
         if (learnedSpells.includes(spell.name)) {
             return `${spell.name} / known`;
         }
