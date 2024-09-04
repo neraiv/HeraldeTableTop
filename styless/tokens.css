@@ -64,8 +64,8 @@
     height: 0;
     border-color: transparent;
     background-color: transparent;
-    border-top: 0px solid #007bff; /* The color of the triangle */
-    border-bottom: 0px solid #007bff; /* The color of the triangle */
+    border-top: 0px solid #7fffd462; /* The color of the triangle */
+    border-bottom: 0px solid #7fffd462; /* The color of the triangle */
 }
 
 .spell-from-caster{

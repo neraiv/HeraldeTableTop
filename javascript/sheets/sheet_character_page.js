@@ -403,6 +403,7 @@ function displayAvaliableSpells(char, x, y) {
     castSpellButton.style.borderBottom = '1px solid #000';
     castSpellButton.onclick = () => {
         spellCast(getCharToken(char), selectedSpellLevelList[`${selectedSpell}`]);
+        spellsSheet.remove();
         dropdownMenu.style.display = 'none';
     };
 
@@ -423,7 +424,7 @@ function displayAvaliableSpells(char, x, y) {
     description.style.cursor = 'pointer';
     description.style.textAlign = 'center';
     description.onclick = (event) => {
-        displaySpellDescription(char, spellName, event.clientX, event.clientY);
+        displaySpellDescription(char, selectedSpellLevelList[`${selectedSpell}`], event.clientX, event.clientY);
         dropdownMenu.style.display = 'none';
     };
 
@@ -503,6 +504,9 @@ function displayAvaliableSpells(char, x, y) {
 
 function displaySpellDescription(char, spell, x, y) {
     // Create a container for the item description
+    const id = spell.name + '-description'
+
+    if(document.getElementById(id)) return;
     const descriptionContainer = document.createElement("div");
     descriptionContainer.id = id;
     descriptionContainer.style.position = "absolute";

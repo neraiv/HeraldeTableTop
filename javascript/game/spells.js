@@ -14,7 +14,7 @@ const level1_spell_list = {
         [damageType.COLD], 
         'A Cone of ice shoots forth from your hand.', 
         [new ManaEffect(1, new AdditionalEffect(characterActions.ATTACKING, additionalEffects.ATTACK_BONUS, 2, 'Increase Attack Damage by 2'))], 
-        new SpellPattern(patterns.CONE_DOWNWARD, 400, 100, 1, true),
+        new SpellPattern(patterns.CONE_UPWARD, 400, 100, 1, true),
         '1d6'),
     'Fire Hands' : new Spell('Fire Hands', 
         [classType.WIZARD, classType.SORCERER], 
@@ -30,6 +30,6 @@ const level1_spell_list = {
         [damageType.LIGHTNING], 
         'A bolt of lightning shoots forth from your hand.', 
         [new ManaEffect(3, new AdditionalEffect(characterActions.ATTACKING, additionalEffects.ATTACK_BONUS, 3, 'Increase Attack Damage by 3'))], 
-        new SpellPattern(patterns.CIRCULAR, 400, 100, 1, true),
+        new SpellPattern(patterns.BOX, 400, 100, 1, true),
         '3d8'),
     };

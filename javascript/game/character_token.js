@@ -144,7 +144,7 @@ function spellCast(token, spell) {
         spellCastTarget.style.top = `${tokenRect.centerY - spell.spellPattern.area/2}px`;
     }
 
-    if(spell.spellPattern.pattern != patterns.CONE_UPWARD && spell.spellPattern.pattern !== patterns.CONE_DOWNWARD){
+    if(spell.spellPattern.pattern !== patterns.CONE_UPWARD && spell.spellPattern.pattern !== patterns.CONE_DOWNWARD){
         spellCastTarget.style.width = `${spell.spellPattern.area}px`;
         spellCastTarget.style.height = `${spell.spellPattern.area}px`;
     }else{
@@ -204,6 +204,7 @@ function spellCast(token, spell) {
                     spellCastTarget.style.borderBottomWidth = `${distance}px`;
                     spellCastTarget.style.borderTop = 'none';
                 }else{
+                    spellCastTarget.style.borderBottom = 'none';
                     spellCastTarget.style.borderTopWidth = `${distance}px`;
                 }
             }
