@@ -136,6 +136,31 @@ function addLayerSelecetor() {
     parent.appendChild(layerSelect);
 }
 
+function getObjectPositionInGameboard(element) {
+    const rect = element.getBoundingClientRect(); // Get the bounding rectangle of the element
+    const gameboardRect = gameboardContent.getBoundingClientRect(); // Get the bounding rectangle of the gameboard
+
+    // Calculate the position and size relative to the gameboard
+    const left = (rect.left - gameboardRect.left) / scale;
+    const top = (rect.top - gameboardRect.top) / scale;
+    const width = rect.width / scale;
+    const height = rect.height / scale;
+    const centerX = left + width/2;
+    const centerY = top + height/2;
+
+    return { left, top, width, height, centerX, centerY};
+}
+
+function getMousePositionOnGameboard(event) {
+    const gameboardRect = gameboardContent.getBoundingClientRect(); // Get the bounding rectangle of the gameboard
+
+    // Calculate the mouse position relative to the gameboard
+    const mouseX = (event.clientX - gameboardRect.left) / scale;
+    const mouseY = (event.clientY - gameboardRect.top) / scale;
+
+    return { x: mouseX, y: mouseY };
+}
+
 function layerChange() {
     // Get all layers
     const layers = document.querySelectorAll('.layer');
@@ -248,12 +273,13 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
         
         const id = event.dataTransfer.getData("text/plain");
-        const offsetX = parseInt(event.dataTransfer.getData("offsetX"));
-        const offsetY = parseInt(event.dataTransfer.getData("offsetY"));
         const img = document.getElementById(id);
 
         if (img) {
             // Calculate the position considering the current scale and pan values
+            const offsetX = parseInt(event.dataTransfer.getData("offsetX"));
+            const offsetY = parseInt(event.dataTransfer.getData("offsetY"));
+
             const rect = gameboardContent.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;

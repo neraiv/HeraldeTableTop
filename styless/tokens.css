@@ -38,4 +38,46 @@
     object-fit: cover; /* Ensures the image covers the circle area */
     display: block; /* Remove any extra space below the image */
 }
+
+.spell-range {
+    position: absolute;
+    border-radius:50%;
+    border: 2px dashed red;
+    pointer-events: none; /* Allow mouse events to pass through */
+    z-index: 100;
+}
+
+.spell-cast{   
+    position: absolute;
+    border: 2px solid blue;
+    background-color: #7fffd462;
+    pointer-events: none; /* Allow mouse events to pass through */
+    z-index: 100;
+}
+
+.spell-circular{
+    border-radius: 50%;
+}
+
+.spell-cone{
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    background-color: transparent;
+    border-top: 0px solid #007bff; /* The color of the triangle */
+    border-bottom: 0px solid #007bff; /* The color of the triangle */
+}
+
+.spell-from-caster{
+    transform-origin: top center !important;
+}
+
+.spell-dot {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background-color: red;
+    left: 100px;
+    z-index: 1500;
+  }
 /* End Char Token */

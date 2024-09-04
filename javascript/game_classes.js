@@ -18,11 +18,15 @@ class Character {
         wis = gameSettings.MIN_STAT_POINT,
         cha = gameSettings.MIN_STAT_POINT,
         str = gameSettings.MIN_STAT_POINT,
-        availableSpellLevels = {
+        spellSlots = {
             '1': 2,
             '2': 2
         },
-        learnedSpells = ['Animal Friendship', 'Acid Arrow'],
+        availableSpells = {
+            1: ['Fireball', 'Ice Cone'],
+            2: ['Lightning Ray', 'Fire Hands']
+        },
+        learnedSpells = ['Fireball', 'Lightning Ray', 'Fire Hands', 'Ice Cone'],
         inventory = new Inventory()
     } = {}) {
         this.ID = id;
@@ -44,7 +48,8 @@ class Character {
         this.WIS = wis;
         this.CHA = cha;
         this.STR = str;
-        this.AVAILABLE_SPELL_LEVELS = availableSpellLevels;
+        this.SPELL_SLOTS = spellSlots;
+        this.AVAILABLE_SPELLS = availableSpells
         this.LEARNED_SPELLS= learnedSpells;
         this.CURRENT_MANA = {};
         this.BUFFS = {};
@@ -190,11 +195,12 @@ class Environment{
 }
 
 class SpellPattern  {
-    constructor(pattern, range, area, targetCount = 0) {
+    constructor(pattern, range, area, targetCount = 0, fromCaster = false) {
         this.pattern = pattern; // SpellPattern enum
         this.range = range;
         this.area = area;
         this.targetCount = targetCount;
+        this.fromCaster = fromCaster
     }
 }
 
@@ -377,8 +383,9 @@ const additionalEffects = Object.freeze({
 const patterns = Object.freeze({
     CIRCULAR: 1,
     BOX: 2,
-    CONE: 3,
-    TARGET: 4,
+    CONE_UPWARD: 3,
+    CONE_DOWNWARD: 4,
+    TARGET: 5,
 });
 
 const noAdditionalEffect = "No Additional Effect";

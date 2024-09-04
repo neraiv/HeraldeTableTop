@@ -264,8 +264,6 @@ function createCharacterCreateSheet_ThirdColumn(parent, characterSheet, width){
     row.style.minHeight = "20%"
     row.position = 'fixed';
 
-    let selectedSpellLevelList = level1_spell_list;
-
     const learnedSpells = characterCreateSettings.LEARNED_SPELLS;
 
     // Iterate through AVAILABLE_SPELL_LEVELS and append "/ known" if it's in LEARNED_SPELLS
