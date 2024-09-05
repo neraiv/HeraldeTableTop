@@ -29,25 +29,25 @@ class TokenPaths {
 
 class SettingsUI {
     constructor({
-        folderMenuIcons = 'tokens/menu-icons',
+        folderMenuIcons     = 'tokens/menu-icons',
         icon_downArrowGreen = "downArrowGreen.png",
-        icon_newFile = "newFile.svg",
+        icon_newFile        = "newFile.svg",
         icon_characterSheet = "sheet-icon-7.png",
-        icon_rainbowDice = "rainbow-dice.png",
-        icon_closeBar = "close-bar.png",
-        icon_panning = "move.png",
-        icon_cursor = "cursor.png",
-        icon_center = "center.png",
-        icon_inventory = "inventory.png",
-        icon_spellbook = "spellbook.png",
-        icon_sword = "sword.png",
-        icon_gold = "gold.png",
-        icon_silver = "silver.png",
-        icon_bronze = "bronze.png",
-        board_size = 3000,    
-        grid_size = 100,
-        max_zoom_in = 6,
-        max_zoom_out = 0.6,
+        icon_rainbowDice    = "rainbow-dice.png",
+        icon_closeBar       = "close-bar.png",
+        icon_panning        = "move.png",
+        icon_cursor         = "cursor.png",
+        icon_center         = "center.png",
+        icon_inventory      = "inventory.png",
+        icon_spellbook      = "spellbook.png",
+        icon_sword          = "sword.png",
+        icon_gold           = "gold.png",
+        icon_silver         = "silver.png",
+        icon_bronze         = "bronze.png",
+        board_size          = 3000,    
+        grid_size           = 100,
+        max_zoom_in         = 6,
+        max_zoom_out        = 0.6,
 } = {}) {
         this.ICON_DOWNARROWGREEN   = icon_downArrowGreen ;
         this.ICON_NEWFILE          = icon_newFile        ;
@@ -71,6 +71,14 @@ class SettingsUI {
     }
 };
 
+class GameFlags {
+    constructor({
+        useEnvorinmentTimeBasedBackground = false,
+        }={}){
+            this.USE_ENVORINMENT_TIME_BASED_BACKGROUND = useEnvorinmentTimeBasedBackground;
+        }
+}
+
 class SettingsGame {
     constructor({
         maxStatPoint = 20,
@@ -79,15 +87,31 @@ class SettingsGame {
         minCharacterLevel = 1,
         maxSubClassCount = 2,
         minSubClassCount = 0,
-        includedSpellLevels = ['1', '2', '3', '4', '5']
+        includedSpellLevels = ['1', '2', '3', '4', '5'],
+        flags, 
     } = {}) {
-        this.MAX_STAT_POINT = maxStatPoint;
-        this.MIN_STAT_POINT = minStatPoint;
-        this.MAX_CHARACTER_LVL = maxCharacterLevel;
-        this.MIN_CHARACTER_LVL = minCharacterLevel;
-        this.MAX_SUB_CLASS_COUNT = maxSubClassCount;
-        this.MIN_SUB_CLASS_COUNT = minSubClassCount;
-        this.INCLUDED_SPELL_LEVELS = includedSpellLevels;
+        this.maxStatPoint   = maxStatPoint;
+        this.minStatPoint   = minStatPoint;
+        this.maxCharacterLevel   = maxCharacterLevel;
+        this.minCharacterLevel   = minCharacterLevel;
+        this.maxSubClassCount   = maxSubClassCount;
+        this.minSubClassCount   = minSubClassCount;
+        this.includedSpellLevels   = includedSpellLevels;
+        this.flags   = flags;
+    }
+}
+
+class BackgroundFilesInfo {
+    constructor(
+        darkFiles = null,
+        lightFiles = null,
+        mapFiles = null,
+        musicFiles = null
+    ) {
+        this.DARK_FILES = darkFiles;
+        this.LIGHT_FILES = lightFiles;
+        this.MAP_FILES = mapFiles;
+        this.MUSIC_FILES = musicFiles;
     }
 }
 

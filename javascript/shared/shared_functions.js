@@ -2,6 +2,14 @@ function getCharacterById(id) {
     return inGameCharacters.find(character => character.ID === id);
 }
 
+function getCharToken(char = null, id = null){
+    if (char) {
+        id = char.ID;
+    } 
+    const token = document.getElementById(`token-character-${id}`);
+    return token;
+}
+
 function getScalingFactor(container, scale) {
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
@@ -100,6 +108,87 @@ function addToogleHighlight(element, parentElement = null) {
         element.classList.add('highlight');
     }
 }
+
+function createSelector(valueList, textList, defaultValue, id) {
+    // Create the select element
+    const selector = document.createElement('select');
+    selector.id = id;
+    selector.className = 'token-selector-combobox';
+
+
+    // Create and add the default option
+    if(defaultValue != null){
+        const defaultOption = document.createElement('option');
+        defaultOption.value = ''; // Empty value for default
+        defaultOption.textContent = defaultValue; 
+        defaultOption.disabled = true; // Make it non-selectable
+        defaultOption.selected = true; // Set as the default selected option
+        selector.appendChild(defaultOption);
+    }
+
+    // Add options based on valueList and textList
+    valueList.forEach((value, index) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = textList[index] || value; // Use value if textList is shorter
+        selector.appendChild(option);
+    });
+
+    return selector;
+}
+function convertToRoman(num) {
+    if(num >= 40){
+        console.log('cant convert to Roman');
+        return num;
+    }
+
+    const romanNumeralMap = [
+        { value: 10, symbol: 'X' },
+        { value: 9, symbol: 'IX' },
+        { value: 5, symbol: 'V' },
+        { value: 4, symbol: 'IV' },
+        { value: 1, symbol: 'I' }
+    ];
+    
+    let roman = '';
+    
+    for (let i = 0; i < romanNumeralMap.length; i++) {
+        while (num >= romanNumeralMap[i].value) {
+            roman += romanNumeralMap[i].symbol;
+            num -= romanNumeralMap[i].value;
+        }
+    }
+    
+    return roman;
+}
 function handleChange(event) {
     console.log('Change detected:', event.target.value);
+}
+
+function addDraggableRow(parent){
+    const draggableRow = document.createElement('div');
+    draggableRow.classList.add('draggable-row');
+
+    // Make the draggable row actually draggable (optional)
+    let offsetX, offsetY;
+    draggableRow.onmousedown = function (event) {
+        offsetX = event.clientX - parent.offsetLeft;
+        offsetY = event.clientY - parent.offsetTop;
+        document.onmousemove = function (event) {
+            parent.style.left = `${event.clientX - offsetX}px`;
+            parent.style.top = `${event.clientY - offsetY}px`;
+        };
+        document.onmouseup = function () {
+            document.onmousemove = null;
+            document.onmouseup = null;
+        };
+    };
+
+    parent.appendChild(draggableRow);
+}
+
+function moveObjectInGameBoardToPosition(element, x, y){
+    element.style.left = `${x}px`;
+    element.style.top = `${y}px`;
+    objectsPositions.set(element.id, { x: x, y: y });
 }

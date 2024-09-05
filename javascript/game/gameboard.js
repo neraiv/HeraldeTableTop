@@ -227,11 +227,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function addImageToBoard(src, x, y) {
-        let layer;
         if (src.className.includes('character')) {
             createCharacterToken(src, x, y);
         } else if (src.className.includes('background')) {
-            layer = document.getElementById('background-layer');
+            const parts = src.src.split('/'); // Split the path into an array
+            const secondToLastItem = parts[parts.length - 2]; // Access the second-to-last item
+            
+            askForToken(listBackgroundFiles[secondToLastItem].LIGHT_LIST.concat(listBackgroundFiles[secondToLastItem].DARK_LIST));
+            createBackgroundToken(src, x, y);
         }
     }
 
@@ -273,9 +276,9 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
         
         const id = event.dataTransfer.getData("text/plain");
-        const img = document.getElementById(id);
+        const token = document.getElementById(id);
 
-        if (img) {
+        if (token) {
             // Calculate the position considering the current scale and pan values
             const offsetX = parseInt(event.dataTransfer.getData("offsetX"));
             const offsetY = parseInt(event.dataTransfer.getData("offsetY"));
@@ -288,23 +291,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const y = (mouseY / scale) - (offsetY / scale);
             
             // Update image position or add to board
-            if (img.className.includes('drive')) {
-                addImageToBoard(img, x, y);
-            } else {
-                if (img.id.includes('character')){
-                    if(checkIfValidMove(img, x, y)){
-                        img.style.position = 'absolute'; // Ensure the image is positioned absolutely
-                        img.style.left = `${x}px`;
-                        img.style.top = `${y}px`;
-                        objectsPositions.set(img.id, { x: x, y: y });
-                    }
-                }else{
-                    img.style.position = 'absolute'; // Ensure the image is positioned absolutely
-                    img.style.left = `${x}px`;
-                    img.style.top = `${y}px`;
-                    objectsPositions.set(img.id, { x: x, y: y });
-                }
+            if (token.className.includes('drive')) {
+                if(token.className.includes('character')){
+                    addObjectToBoard(token, , x, y);
+                }else if(token.className.includes('background'){
 
+                }
+            } else {
+                if (token.className.includes('character-token')){
+                    if(checkIfValidMove(token, x, y)){
+                        moveObjectInGameBoardToPosition(token, x, y);
+                    }
+                }else if (token.className.includes('background-token')){
+                    moveObjectInGameBoardToPosition(token, x, y);
+                }
             }
         } else {
             console.log("Image not found with ID:", id);

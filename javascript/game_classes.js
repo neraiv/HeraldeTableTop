@@ -1,3 +1,153 @@
+const itemType = Object.freeze({ 
+    WEAPON: 1,
+    CONSUMABLE: 2,
+    NECKLACE: 3,
+    EARINGS: 4,
+    RING: 5,
+    CLOAK: 7,
+    GLOVES: 8,
+    ARMS: 14,
+    CHEST: 9,
+    LEGS: 10,
+    BOOTS: 6,
+    HELM: 13 
+    // Add more item types as needed
+});
+/* SPEELSS AND WEAPONS */
+const classType = Object.freeze({
+    ALL: 0,
+    WIZARD: 1,
+    CLERIC: 2,
+    ROGUE: 3,
+    DRUID: 4,
+    PALADIN: 5,
+    RANGER: 6,
+    WARLOCK: 7,
+    SORCERER: 8,
+    BARBARIAN: 9,
+    // Add more classes as needed
+});
+
+const damageType = Object.freeze({
+    NONE: 0,
+    HEALING: 99,
+    PSYCHIC: 1,
+    FIRE: 2,
+    COLD: 3,
+    LIGHTNING: 4,
+    NECROTIC: 5,
+    FORCE: 6,
+    ACID: 7,
+    POISON: 8,
+    RADIANT: 9,
+    SLASHING: 10,
+    PIERCING: 11,
+    BLUDGEONING: 12
+    // Add more damage types as needed
+});
+
+// Enum for damage types
+const statType = Object.freeze({
+    STR: 1,
+    DEX: 2,
+    CON: 3,
+    INT: 4,
+    WIS: 5,
+    CHA: 6,
+    // Add more damage types as needed
+});
+
+const weaponType = Object.freeze({
+    // Add more weapon types as needed
+    CLUB           : 1,
+    DAGGER         : 2,
+    GREATCLUB      : 3,
+    HANDAXE        : 4,
+    JAVELIN        : 5,
+    MACE           : 6,
+    QUARTERSTAFF   : 7,
+    SICKLE         : 8,
+    SPEAR          : 9,
+    LIGHTCROSSBOW  : 10,
+    DART           : 11,
+    SHORTBOW       : 12,
+    BATTLEAXE      : 13,
+    FLAIL          : 14,
+    GLAIVE         : 15,
+    GREATAXE       : 16,
+    GREATSWORD     : 17,
+    HALBERD        : 18,
+    LANCE          : 19,
+    LONGSWORD      : 20,
+    MAUL           : 21,
+    MORNINGSTAR    : 22,
+    PIKE           : 23,
+    RAPIER         : 24,
+    SCIMITAR       : 25,
+    SHORTSWORD     : 26,
+    TRIDENT        : 27,
+    WARHAMMER      : 28,
+    WHIP           : 29,
+    HEAVYCROSSBOW  : 30,
+    LONGBOW        : 31
+});
+  
+const weaponProperties = Object.freeze({
+    // Add more weapon types as needed
+    MAIN_HAND: 10,
+    OFF_HAND: 20,
+    TWO_HANDED: 30,
+    LIGHT: 1,
+    HEAVY: 2,
+    FINESSE: 3,
+    REACH: 4,
+    TWO_HANDED: 5,
+    THROWN: 6
+});
+
+const characterActions = Object.freeze({
+    ALWAYS : 50,
+    PREPARE: 99,
+    USE : 100,
+    ATTACKING: 1,
+    MOVING: 2,
+    BLOCKING: 3,
+    BLOCKED: 4,
+    ATTACKED: 5,
+    HEALING: 6,
+    HEALED: 7,
+    CASTING: 8,
+    CASTED: 9,
+    DYING: 13,
+});
+
+const additionalEffects = Object.freeze({
+    DICE_CHANGE : 1,
+    BONUS : 2,
+    ATTACK_RADIUS_BONUS : 4,
+    PATTERN_CHANGE : 5,
+    HEAL: 6,
+    DEFENSE : 7,
+    VISION : 8,
+    ATTACK_RANGE : 9,
+});
+
+const patterns = Object.freeze({
+    CIRCULAR: 1,
+    BOX: 2,
+    CONE_UPWARD: 3,
+    CONE_DOWNWARD: 4,
+    TARGET: 5,
+});
+
+const actionType = Object.freeze({
+    BONUS: 1,
+    MAIN: 2,
+});
+
+const notAvailable = "Not available";
+const defaultWeaponLore = 'Meh regular weapons, crafted by regular crafters :/ (Which Doesnt Require any skill!)';
+
 class Character {
     constructor(id ,{
         maxStatPoint = gameSettings.MAX_STAT_POINT,
@@ -19,8 +169,16 @@ class Character {
         cha = gameSettings.MIN_STAT_POINT,
         str = gameSettings.MIN_STAT_POINT,
         spellSlots = {
-            '1': 2,
-            '2': 2
+            '1':5,
+            '2':4,
+            '3':2,
+            '4':2
+        },
+        remainingSpellSlots = {
+            '1': 3,
+            '2': 3,
+            '3': 2,
+            '4': 2
         },
         availableSpells = {
             1: ['Fireball', 'Ice Cone'],
@@ -30,31 +188,29 @@ class Character {
         inventory = new Inventory()
     } = {}) {
         this.ID = id;
-        this.MAX_STAT_POINT = maxStatPoint;
-        this.MIN_STAT_POINT = minStatPoint;
-        this.MAX_CHARACTER_LVL = maxCharacterLevel;
-        this.MIN_CHARACTER_LVL = minCharacterLevel;
-        this.MAX_SUB_CLASS_COUNT = maxSubClassCount;
-        this.MIN_SUB_CLASS_COUNT = minSubClassCount;
-        this.LEVEL = level;
-        this.NAME = name;
-        this.CLASS_ = class_;
-        this.SUBCLASS = subclass;
-        this.RACE = race;
-        this.FEATS = feats;
-        this.DEX = dex;
-        this.CON = con;
-        this.INT = int;
-        this.WIS = wis;
-        this.CHA = cha;
-        this.STR = str;
-        this.SPELL_SLOTS = spellSlots;
-        this.AVAILABLE_SPELLS = availableSpells
-        this.LEARNED_SPELLS= learnedSpells;
-        this.CURRENT_MANA = {};
-        this.BUFFS = {};
-        this.DEBUFFS = {};
-        this.INVENTORY = inventory;
+        this.maxStatPoint       = maxStatPoint          ;
+        this.minStatPoint       = minStatPoint          ;
+        this.maxCharacterLevel  = maxCharacterLevel     ;   
+        this.minCharacterLevel  = minCharacterLevel     ;   
+        this.maxSubClassCount   = maxSubClassCount      ;   
+        this.minSubClassCount   = minSubClassCount      ;   
+        this.level              = level                 ;
+        this.name               = name                  ;
+        this.class_             = class_                ;
+        this.subclass           = subclass              ;
+        this.race               = race                  ;
+        this.feats              = feats                 ;
+        this.dex                = dex                   ;
+        this.con                = con                   ;
+        this.int                = int                   ;
+        this.wis                = wis                   ;
+        this.cha                = cha                   ;
+        this.str                = str                   ;
+        this.spellSlots         = spellSlots            ;
+        this.remainingSpellSlots= remainingSpellSlots   ;
+        this.availableSpells    = availableSpells       ;
+        this.learnedSpells      = learnedSpells         ;
+        this.inventory          = inventory             ;
     }
 
     // Example method to check if a level is valid
@@ -221,16 +377,17 @@ class ManaEffect {
 }
 
 class Spell {
-    constructor(name, availableClasses, baseStatType, damageTypes, description, spendManaEffects, spellPattern, baseDamage, castTime=1) {
-        this.name = name;
-        this.availableClasses = availableClasses; // Array of ClassType enums
-        this.baseStatType = baseStatType; // StatType enum (e.g., STR, DEX, CON, etc.)
-        this.damageTypes = damageTypes; // DamageType enum
-        this.description = description; // Description object with required mana levels and descriptions
-        this.spendManaEffects = spendManaEffects;
-        this.spellPattern = spellPattern;
-        this.baseDamage = baseDamage;
-        this.castTime = castTime;
+    constructor(name, availableClasses, baseStatType, damageTypes, description, spendManaEffects, spellPattern, baseDamage, castTime=1, actionCost = actionType.MAIN) {
+        this.name               = name;
+        this.availableClasses   = availableClasses; // Array of ClassType enums
+        this.baseStatType       = baseStatType; // StatType enum (e.g., STR, DEX, CON, etc.)
+        this.damageTypes        = damageTypes; // DamageType enum
+        this.description        = description; // Description object with required mana levels and descriptions
+        this.spendManaEffects   = spendManaEffects;
+        this.spellPattern       = spellPattern;
+        this.baseDamage         = baseDamage;
+        this.castTime           = castTime;
+        this.actionCost         = actionCost; // ActionType enum
     }
 }
     
@@ -245,149 +402,3 @@ class Item {
         this.lore = lore;
     }
 }
-
-const itemType = Object.freeze({ 
-    WEAPON: 1,
-    CONSUMABLE: 2,
-    NECKLACE: 3,
-    EARINGS: 4,
-    RING: 5,
-    CLOAK: 7,
-    GLOVES: 8,
-    ARMS: 14,
-    CHEST: 9,
-    LEGS: 10,
-    BOOTS: 6,
-    HELM: 13 
-    // Add more item types as needed
-});
-/* SPEELSS AND WEAPONS */
-const classType = Object.freeze({
-    ALL: 0,
-    WIZARD: 1,
-    CLERIC: 2,
-    ROGUE: 3,
-    DRUID: 4,
-    PALADIN: 5,
-    RANGER: 6,
-    WARLOCK: 7,
-    SORCERER: 8,
-    BARBARIAN: 9,
-    // Add more classes as needed
-});
-
-const damageType = Object.freeze({
-    NONE: 0,
-    HEALING: 99,
-    PSYCHIC: 1,
-    FIRE: 2,
-    COLD: 3,
-    LIGHTNING: 4,
-    NECROTIC: 5,
-    FORCE: 6,
-    ACID: 7,
-    POISON: 8,
-    RADIANT: 9,
-    SLASHING: 10,
-    PIERCING: 11,
-    BLUDGEONING: 12
-    // Add more damage types as needed
-});
-
-// Enum for damage types
-const statType = Object.freeze({
-    STR: 1,
-    DEX: 2,
-    CON: 3,
-    INT: 4,
-    WIS: 5,
-    CHA: 6,
-    // Add more damage types as needed
-});
-
-const weaponType = Object.freeze({
-    // Add more weapon types as needed
-    CLUB           : 1,
-    DAGGER         : 2,
-    GREATCLUB      : 3,
-    HANDAXE        : 4,
-    JAVELIN        : 5,
-    MACE           : 6,
-    QUARTERSTAFF   : 7,
-    SICKLE         : 8,
-    SPEAR          : 9,
-    LIGHTCROSSBOW  : 10,
-    DART           : 11,
-    SHORTBOW       : 12,
-    BATTLEAXE      : 13,
-    FLAIL          : 14,
-    GLAIVE         : 15,
-    GREATAXE       : 16,
-    GREATSWORD     : 17,
-    HALBERD        : 18,
-    LANCE          : 19,
-    LONGSWORD      : 20,
-    MAUL           : 21,
-    MORNINGSTAR    : 22,
-    PIKE           : 23,
-    RAPIER         : 24,
-    SCIMITAR       : 25,
-    SHORTSWORD     : 26,
-    TRIDENT        : 27,
-    WARHAMMER      : 28,
-    WHIP           : 29,
-    HEAVYCROSSBOW  : 30,
-    LONGBOW        : 31
-});
-  
-const weaponProperties = Object.freeze({
-    // Add more weapon types as needed
-    MAIN_HAND: 10,
-    OFF_HAND: 20,
-    TWO_HANDED: 30,
-    LIGHT: 1,
-    HEAVY: 2,
-    FINESSE: 3,
-    REACH: 4,
-    TWO_HANDED: 5,
-    THROWN: 6
-});
-
-const characterActions = Object.freeze({
-    ALWAYS : 50,
-    PREPARE: 99,
-    USE : 100,
-    ATTACKING: 1,
-    MOVING: 2,
-    BLOCKING: 3,
-    BLOCKED: 4,
-    ATTACKED: 5,
-    HEALING: 6,
-    HEALED: 7,
-    CASTING: 8,
-    CASTED: 9,
-    DYING: 13,
-});
-
-const additionalEffects = Object.freeze({
-    DICE_CHANGE : 1,
-    BONUS : 2,
-    ATTACK_RADIUS_BONUS : 4,
-    PATTERN_CHANGE : 5,
-    HEAL: 6,
-    DEFENSE : 7,
-    VISION : 8,
-    ATTACK_RANGE : 9,
-});
-
-const patterns = Object.freeze({
-    CIRCULAR: 1,
-    BOX: 2,
-    CONE_UPWARD: 3,
-    CONE_DOWNWARD: 4,
-    TARGET: 5,
-});
-
-const noAdditionalEffect = "No Additional Effect";
-const notAvailable = "Not available";
-const defaultWeaponLore = 'Meh regular weapons, crafted by regular crafters :/ (Which Doesnt Require any skill!)';

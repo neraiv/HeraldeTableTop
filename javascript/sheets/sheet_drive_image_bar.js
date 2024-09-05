@@ -1,5 +1,3 @@
-
-
 function addDriveImageBar(){
     addDriveImageTopBar()
     const characterSelectBar = document.getElementById("character-select-bar");
@@ -10,8 +8,6 @@ function addDriveImageBar(){
 
 function addSelectBar(parentElement, label_text, addIndex = null) {
 
-    // Future
-    
     parentElement.classList.add('row');
     parentElement.classList.add('centered');
     parentElement.style.gap = "5px";
@@ -95,11 +91,7 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
     const img = document.createElement('img');
     let imgPrefix;
     if(classNamePrefix == 'background'){
-        if(environment.TIME > 6.00 && environment.TIME < 20.00){
-            imgPrefix = 'light.jpg';
-        }else{
-            imgPrefix = 'dark.jpg';
-        }
+        imgPrefix = listBackgroundFiles[fileName].LIGTH_FILES[0];
     }else if(classNamePrefix == "character"){
         imgPrefix = "char.jpg"
     }
@@ -265,15 +257,3 @@ function changeCurrentDriveImageBar(index){
         }
     }
 }
-// function loadAllLocalImages() {
-//     // Load character images
-//     charImageFiles.forEach(fileName => {
-//         createDriveImageContainer(fileName, 'character', charImagesFolder, charImageList);
-//     });
-
-//     // Load background images
-//     backgroundImageFiles.forEach(fileName => {
-//         createDriveImageContainer(fileName, 'background', backgroundImagesFolder, backgroundImgList);
-    
-//     });
-// }

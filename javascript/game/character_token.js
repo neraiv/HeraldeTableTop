@@ -64,11 +64,11 @@ function createCharacterToken(img_src_element, x, y) {
         
 
         // Future
-        char.INVENTORY.addItem(listWeapons["Hammer Of Mouse"], 1);
-        char.INVENTORY.addItem(listWeapons.Sword, 1);
-        char.INVENTORY.addItem(listConsumables["Healing Potion"], 4);
+        char.inventory.addItem(listWeapons["Hammer Of Mouse"], 1);
+        char.inventory.addItem(listWeapons.Sword, 1);
+        char.inventory.addItem(listConsumables["Healing Potion"], 4);
 
-        displayInventory(char.INVENTORY, event.clientX, event.clientY);
+        displayInventory(char.inventory, event.clientX, event.clientY);
     }
 
     const characterSpellbookButton = createButton(userIntarfaceSettings.FOLDER_MENUICONS + "/" + userIntarfaceSettings.ICON_SPELLBOOK, 90);
@@ -113,7 +113,7 @@ function createCharacterToken(img_src_element, x, y) {
     });
 }
 
-function spellCast(token, spell) {
+function spellCast(token, spell, mana=null) {
 
     if (!token || !spell) return;
 
@@ -242,10 +242,14 @@ function spellCast(token, spell) {
 
     setTimeout(() => {
         gameboard.addEventListener('click', stopCasting);
-    }, 1000); 
+    }, 250); 
 }
 
-function getCharToken(char){
-    const token = document.getElementById(`token-character-${char.ID}`);
-    return token;
+function checkSpellUsable(char, spell) {
+    // Check if the character has enough spell slots
+    return Object.keys(spell.spendManaEffects).every((mana) => {
+        const val = char.spellSlots[mana];
+        return val > 0;
+    });
 }
+
