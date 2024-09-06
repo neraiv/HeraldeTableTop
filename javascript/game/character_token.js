@@ -119,49 +119,64 @@ function spellCast(token, spell, mana=null) {
 
     const tokenRect = getObjectPositionInGameboard(token);
 
+    
     // Create elements for the circles
     const spellCastTarget = document.createElement('div');
-    const spellRange = document.createElement('div');
+    const spellRangeCircle = document.createElement('div');
 
     // Set up styles for inner circle
     spellCastTarget.classList.add('spell-cast'); 
 
-    if(spell.spellPattern.pattern === patterns.CIRCULAR){
+    let spellPattern = spell.spellPattern.pattern;
+    let spellArea = spell.spellPattern.area;
+    let spellRange = spell.spellPattern.range;
+
+    if(spell.spendManaEffects[mana].effect == additionalEffects.PATTERN_CHANGE){
+        spellPattern = spell.spendManaEffects[mana].value;
+    }
+    if(spell.spendManaEffects[mana].effect == additionalEffects.ATTACK_RADIUS_BONUS){
+        spellArea = parseInt(spellArea) + parseInt(spell.spendManaEffects[mana].value);
+    }
+    if(spell.spendManaEffects[mana].effect == additionalEffects.ATTACK_RANGE_BONUS){
+        spellRange = parseInt(spellRange) + parseInt(spell.spendManaEffects[mana].value);
+    }
+
+    if(spellPattern === patterns.CIRCULAR){
         spellCastTarget.classList.add('spell-circular');
-    }else if(spell.spellPattern.pattern === patterns.BOX){
+    }else if(spellPattern === patterns.BOX){
         spellCastTarget.classList.add('spell-box');
-        spellCastTarget.style.left = `${tokenRect.centerX - spell.spellPattern.area/2}px`;
-    }else if(spell.spellPattern.pattern === patterns.CONE_UPWARD || spell.spellPattern.pattern === patterns.CONE_DOWNWARD){
+        spellCastTarget.style.left = `${tokenRect.centerX - spellArea/2}px`;
+    }else if(spellPattern === patterns.CONE_UPWARD || spellPattern === patterns.CONE_DOWNWARD){
         spellCastTarget.classList.add('spell-cone');
     }
 
-    spellCastTarget.style.left = `${tokenRect.centerX - spell.spellPattern.area/2}px`;
+    spellCastTarget.style.left = `${tokenRect.centerX - spellArea/2}px`;
 
     if(spell.spellPattern.fromCaster){
         spellCastTarget.classList.add('spell-from-caster');
         spellCastTarget.style.top = `${tokenRect.centerY}px`;
     }else{
-        spellCastTarget.style.top = `${tokenRect.centerY - spell.spellPattern.area/2}px`;
+        spellCastTarget.style.top = `${tokenRect.centerY - spellArea/2}px`;
     }
 
-    if(spell.spellPattern.pattern !== patterns.CONE_UPWARD && spell.spellPattern.pattern !== patterns.CONE_DOWNWARD){
-        spellCastTarget.style.width = `${spell.spellPattern.area}px`;
-        spellCastTarget.style.height = `${spell.spellPattern.area}px`;
+    if(spellPattern !== patterns.CONE_UPWARD && spellPattern !== patterns.CONE_DOWNWARD){
+        spellCastTarget.style.width = `${spellArea}px`;
+        spellCastTarget.style.height = `${spellArea}px`;
     }else{
         
-        if(spell.spellPattern.pattern === patterns.CONE_DOWNWARD){
-            spellCastTarget.style.borderWidth = `0px ${spell.spellPattern.area/2}px ${spell.spellPattern.area}px ${spell.spellPattern.area/2}px`;
+        if(spellPattern === patterns.CONE_DOWNWARD){
+            spellCastTarget.style.borderWidth = `0px ${spellArea/2}px ${spellArea}px ${spellArea/2}px`;
         }else{
-            spellCastTarget.style.borderWidth = `${spell.spellPattern.area}px ${spell.spellPattern.area/2}px 0px ${spell.spellPattern.area/2}px`;
+            spellCastTarget.style.borderWidth = `${spellArea}px ${spellArea/2}px 0px ${spellArea/2}px`;
         }
     }
 
     // Set up styles for outer circle
-    spellRange.classList.add('spell-range');
-    spellRange.style.left = `${tokenRect.centerX - spell.spellPattern.range}px`;
-    spellRange.style.top = `${tokenRect.centerY - spell.spellPattern.range}px`;
-    spellRange.style.width = `${spell.spellPattern.range*2}px`;
-    spellRange.style.height = `${spell.spellPattern.range*2}px`;
+    spellRangeCircle.classList.add('spell-range');
+    spellRangeCircle.style.left = `${tokenRect.centerX - spellRange}px`;
+    spellRangeCircle.style.top = `${tokenRect.centerY - spellRange}px`;
+    spellRangeCircle.style.width = `${spellRange*2}px`;
+    spellRangeCircle.style.height = `${spellRange*2}px`;
 
     const bgLayer = document.getElementById('background-layer');
 
@@ -178,7 +193,7 @@ function spellCast(token, spell, mana=null) {
     // bgLayer.appendChild(dot1);
     // bgLayer.appendChild(dot2);
     bgLayer.appendChild(spellCastTarget);
-    bgLayer.appendChild(spellRange);
+    bgLayer.appendChild(spellRangeCircle);
 
     // Update circle positions based on mouse movement
     function updatePosition(event) {
@@ -189,18 +204,18 @@ function spellCast(token, spell, mana=null) {
             Math.pow(mouse.y - tokenRect.centerY, 2)
         );
 
-        const newX = mouse.x - spell.spellPattern.area/2;
-        const newY = mouse.y - spell.spellPattern.area/2;
+        const newX = mouse.x - spellArea/2;
+        const newY = mouse.y - spellArea/2;
 
         if(spell.spellPattern.fromCaster){
-            distance = Math.min(distance, spell.spellPattern.range);
+            distance = Math.min(distance, spellRange);
             const angle = Math.atan2(mouse.y - tokenRect.centerY, mouse.x - tokenRect.centerX);
             spellCastTarget.style.transform = `rotate(${(angle * 180 / Math.PI +270)%360}deg)`;
 
-            if(spell.spellPattern.pattern !== patterns.CONE_UPWARD && spell.spellPattern.pattern !== patterns.CONE_DOWNWARD){
+            if(spellPattern !== patterns.CONE_UPWARD && spellPattern !== patterns.CONE_DOWNWARD){
                 spellCastTarget.style.height = `${distance}px`;
             }else{               
-                if(spell.spellPattern.pattern === patterns.CONE_DOWNWARD){
+                if(spellPattern === patterns.CONE_DOWNWARD){
                     spellCastTarget.style.borderBottomWidth = `${distance}px`;
                     spellCastTarget.style.borderTop = 'none';
                 }else{
@@ -215,13 +230,13 @@ function spellCast(token, spell, mana=null) {
 
         }else{
             // Check if the mouse is outside the outer circle
-            if (distance > spell.spellPattern.range) {
+            if (distance > spellRange) {
                 // Calculate the angle from the token center to the mouse position  
                 const angle = Math.atan2(mouse.y - tokenRect.centerY, mouse.x - tokenRect.centerX);
 
                 // Position the inner circle correctly
-                spellCastTarget.style.left = `${tokenRect.centerX + spell.spellPattern.range * Math.cos(angle) - spellCastTarget.offsetWidth / 2}px`;
-                spellCastTarget.style.top = `${tokenRect.centerY + spell.spellPattern.range * Math.sin(angle) - spellCastTarget.offsetHeight / 2}px`;
+                spellCastTarget.style.left = `${tokenRect.centerX + spellRange * Math.cos(angle) - spellCastTarget.offsetWidth / 2}px`;
+                spellCastTarget.style.top = `${tokenRect.centerY + spellRange * Math.sin(angle) - spellCastTarget.offsetHeight / 2}px`;
             } else {
                 // Position the inner circle directly at the new position
                 spellCastTarget.style.left = `${newX}px`;
@@ -235,7 +250,7 @@ function spellCast(token, spell, mana=null) {
     // Clean up the circles when casting is complete
     function stopCasting() {
         bgLayer.removeChild(spellCastTarget);
-        bgLayer.removeChild(spellRange);
+        bgLayer.removeChild(spellRangeCircle);
         gameboard.removeEventListener('mousemove', updatePosition);
         gameboard.removeEventListener('click', stopCasting);
     }

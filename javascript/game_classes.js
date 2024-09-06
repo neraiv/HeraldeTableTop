@@ -130,6 +130,7 @@ const additionalEffects = Object.freeze({
     DEFENSE : 7,
     VISION : 8,
     ATTACK_RANGE : 9,
+    ATTACK_RANGE_BONUS: 10
 });
 
 const patterns = Object.freeze({
@@ -361,9 +362,9 @@ class SpellPattern  {
 }
 
 class AdditionalEffect {
-    constructor(characterAction, efect, value, description) {
+    constructor(characterAction, effect, value, description) {
         this.characterAction = characterAction;
-        this.efect = efect;
+        this.effect = effect;
         this.value = value;
         this.description = description;
     }

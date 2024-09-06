@@ -226,15 +226,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return true;
     }
 
-    function addImageToBoard(src, x, y) {
+    function addObjectToBoard(src, layer, x, y) {
         if (src.className.includes('character')) {
             createCharacterToken(src, x, y);
         } else if (src.className.includes('background')) {
             const parts = src.src.split('/'); // Split the path into an array
             const secondToLastItem = parts[parts.length - 2]; // Access the second-to-last item
-            
-            askForToken(listBackgroundFiles[secondToLastItem].LIGHT_LIST.concat(listBackgroundFiles[secondToLastItem].DARK_LIST));
-            createBackgroundToken(src, x, y);
+            const list = listBackgroundFiles[secondToLastItem].LIGHT_FILES.concat(listBackgroundFiles[secondToLastItem].DARK_FILES);
+            // Example usage
+            askForListSelect(list).then(selectedValue => {
+                createBackgroundToken(src, x, y);
+            });
+
         }
     }
 
@@ -293,9 +296,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // Update image position or add to board
             if (token.className.includes('drive')) {
                 if(token.className.includes('character')){
-                    addObjectToBoard(token, , x, y);
-                }else if(token.className.includes('background'){
-
+                    addObjectToBoard(token, layers["character-layer"], x, y);
+                }else if(token.className.includes('background')){
+                    addObjectToBoard(token, layers["background-layer"], x, y);
                 }
             } else {
                 if (token.className.includes('character-token')){

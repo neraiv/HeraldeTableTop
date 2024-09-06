@@ -91,7 +91,7 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
     const img = document.createElement('img');
     let imgPrefix;
     if(classNamePrefix == 'background'){
-        imgPrefix = listBackgroundFiles[fileName].LIGTH_FILES[0];
+        imgPrefix = listBackgroundFiles[fileName].LIGHT_FILES[0];
     }else if(classNamePrefix == "character"){
         imgPrefix = "char.jpg"
     }

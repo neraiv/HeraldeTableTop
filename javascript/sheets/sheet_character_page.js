@@ -505,7 +505,7 @@ function displayAvaliableSpells(char, x, y) {
 
     for (let index = 0; index < Object.keys(manaSelect).length; index++) {
         manaSelectMenuItems[1][index].onclick = () => { 
-            spellCast(getCharToken(char), selectedSpellLevelList[selectedSpell]);
+            spellCast(getCharToken(char), selectedSpellLevelList[selectedSpell], index+1);
             spellsSheet.style.display = 'none';
         }        
     }

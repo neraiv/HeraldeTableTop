@@ -109,7 +109,7 @@ function addToogleHighlight(element, parentElement = null) {
     }
 }
 
-function createSelector(valueList, textList, defaultValue, id) {
+function createSelector(valueList, textList, defaultValue=null, id) {
     // Create the select element
     const selector = document.createElement('select');
     selector.id = id;
