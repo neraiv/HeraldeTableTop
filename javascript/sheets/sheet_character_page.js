@@ -465,7 +465,7 @@ function displayAvaliableSpells(char, x, y) {
         for (let index = 0; index < value; index++) {
             const mana = document.createElement('div');
             mana.classList.add('slot-circle');
-            if(char.remainingSpellSlots[key] < index+1){
+            if(char.remainingManaSlots[key] < index+1){
                 mana.classList.add('slot-spend');
             }else{
                 mana.classList.add('slot-mana');
@@ -514,7 +514,7 @@ function displayAvaliableSpells(char, x, y) {
         let atLeastONE = false;
         gameSettings.includedSpellLevels.forEach((level) =>{
             if(spell.spendManaEffects[level] !== undefined){
-                if(char.remainingSpellSlots[level] > 0){
+                if(char.remainingManaSlots[level] > 0){
                     manaSelectMenuItems[1][parseInt(level)-1].style.display = 'block';
                     atLeastONE = true;
                 }

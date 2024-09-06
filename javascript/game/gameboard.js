@@ -2,7 +2,7 @@ function setupUI(){
     addBottomBar();
     addTopBar();
     addDriveImageBar();
-    //addCharacterCreateSheet(document.body);
+    addCharacterCreateSheet(document.body);
 }
 /* BOTTOM BAR */
 function addBottomBar(){
@@ -228,8 +228,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function addObjectToBoard(src, layer, x, y) {
         if (src.className.includes('character')) {
+            if(objectsPositions.has('token-character-'+src.id)) return;
             createCharacterToken(src, x, y);
         } else if (src.className.includes('background')) {
+            if(objectsPositions.has('token-background-'+src.id)) return;
             const parts = src.src.split('/'); // Split the path into an array
             const secondToLastItem = parts[parts.length - 2]; // Access the second-to-last item
             const list = listBackgroundFiles[secondToLastItem].LIGHT_FILES.concat(listBackgroundFiles[secondToLastItem].DARK_FILES);

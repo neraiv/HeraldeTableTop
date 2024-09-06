@@ -10,7 +10,7 @@ const gridBackground = document.getElementById('grid-background');
 const dragOverlay = document.getElementById('drag-overlay');
 
 const layers = Object.freeze({
-    "character-layer": document.getElementById('gameboard'),
+    "character-layer": document.getElementById('character-layer'),
     "background-layer": document.getElementById('background-layer'),
     "fog-layer": document.getElementById('fog-layer')
 });

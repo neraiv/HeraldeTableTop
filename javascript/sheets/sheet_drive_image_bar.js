@@ -58,7 +58,10 @@ function addSelectBar(parentElement, label_text, addIndex = null) {
     addToGameButton.onclick = () => createDriveImageContainer(selectedFile, classNamePrefix, folder, appendParent);
     
     const newCharacterButton = createImageButton(30, `<img src="${userIntarfaceSettings.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_NEWFILE}" width="30" height="30">`);
-    
+    if(classNamePrefix = "character"){
+        newCharacterButton.onclick = () => toggleDisplay_SheetWithId('character-create-sheet', true);
+    }
+
     // Append the label and select to the row
     select.style.width = '100%';
     select.style.flexGrow = 1;

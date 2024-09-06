@@ -106,6 +106,7 @@ const weaponProperties = Object.freeze({
 });
 
 const characterActions = Object.freeze({
+    IDLE : 25,
     ALWAYS : 50,
     PREPARE: 99,
     USE : 100,
@@ -146,6 +147,11 @@ const actionType = Object.freeze({
     MAIN: 2,
 });
 
+const castType = Object.freeze({
+    ON_LOCATION:1,
+    FROM_CASTER: 2,
+    AROUND_CASTER: 3,
+});
 const notAvailable = "Not available";
 const defaultWeaponLore = 'Meh regular weapons, crafted by regular crafters :/ (Which Doesnt Require any skill!)';
 
@@ -169,13 +175,14 @@ class Character {
         wis = gameSettings.MIN_STAT_POINT,
         cha = gameSettings.MIN_STAT_POINT,
         str = gameSettings.MIN_STAT_POINT,
+        charCurrentAction = characterActions.IDLE,
         spellSlots = {
             '1':5,
             '2':4,
             '3':2,
             '4':2
         },
-        remainingSpellSlots = {
+        remainingManaSlots = {
             '1': 3,
             '2': 3,
             '3': 2,
@@ -207,8 +214,9 @@ class Character {
         this.wis                = wis                   ;
         this.cha                = cha                   ;
         this.str                = str                   ;
+        this.charCurrentAction  = charCurrentAction     ;
         this.spellSlots         = spellSlots            ;
-        this.remainingSpellSlots= remainingSpellSlots   ;
+        this.remainingManaSlots = remainingManaSlots    ;
         this.availableSpells    = availableSpells       ;
         this.learnedSpells      = learnedSpells         ;
         this.inventory          = inventory             ;
@@ -352,12 +360,11 @@ class Environment{
 }
 
 class SpellPattern  {
-    constructor(pattern, range, area, targetCount = 0, fromCaster = false) {
+    constructor(pattern, range, area, targetCount = 0, castType = false) {
         this.pattern = pattern; // SpellPattern enum
         this.range = range;
         this.area = area;
-        this.targetCount = targetCount;
-        this.fromCaster = fromCaster
+        this.castType = castType
     }
 }
 

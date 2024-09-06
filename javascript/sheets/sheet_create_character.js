@@ -1,39 +1,101 @@
-function createCharacterCreateSheet_FirstColumn(parent, characterSheet, width){
-    let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
+function addCharacterCreateSheet(parent) {
 
-    const form = document.createElement('form');
-    form.className = 'character-sheet-form';
-    form.classList.add('box-circular-border');
-    form.style.width  = width;
-    form.style.height = "100%";
-    form.style.flexGrow = "1";
+    const id = `character-create-sheet`;
+    const character = new Character(id);
 
-    const column = document.createElement('div');
-    column.classList.add('column');
-    column.classList.add('centered');
-    column.style.height = "100%";
-    column.style.gap = '10px';
+    const characterSheet = document.createElement('div');
+    characterSheet.id = id;
+
+    characterSheet.classList.add('character-create-sheet')
+    characterSheet.classList.add('box-circular-border')
+
+    const header = document.createElement('h1');
+    header.innerText = 'Create Account Sheet';
+
+    const saveButton = document.createElement('button');
+    saveButton.style.position = 'absolute';
+    saveButton.style.bottom = '10px';
+    saveButton.style.right = '10px';
+    saveButton.type = 'submit';
+    saveButton.innerText = 'Save';
+    saveButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        save_CharacterSheet(characterSheet.id);
+    });
+
+    const closeButton = createImageButton(50, null, `${userIntarfaceSettings.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}`);  
+    closeButton.style.paddingRight = '10px';
+    closeButton.onclick = () => toggleDisplay_SheetWithId(id, false);
+
+    const topRow = document.createElement('div');
+    topRow.classList.add('row');
+    topRow.classList.add('centered');
+    topRow.style.gap = '10px';
+    topRow.style.width = '100%';
+
+    const formTableColumn = document.createElement('div');
+    formTableColumn.classList.add('column');
+    formTableColumn.classList.add('horizontal');
+    formTableColumn.style.width = '100%';
+    formTableColumn.style.height = '100%';
+    formTableColumn.style.overflowY = 'auto';
+    formTableColumn.style.overflowX = 'hidden';
+
+
+    // Contents
+    const formTableRow = document.createElement('div');
+    formTableRow.classList.add('row');
+    formTableRow.classList.add('horizantal');
+    formTableRow.style.position = 'relative';
+    formTableRow.style.gap = '10px'
+    formTableRow.style.width = '100%';
+    formTableRow.style.height = '100%';
+    formTableRow.style.overflowY = 'auto';
+
+    addSpacer(formTableRow);
+    createCharacterCreateSheet_FirstColumn(formTableRow, characterSheet, character, 400, '10px', '10px');
+    createCharacterCreateSheet_SecondColumn(formTableRow, characterSheet, character, '600px', '10px', '35%');
+    //createCharacterCreateSheet_SecondColumn(formTableRow, characterSheet, '70%');
+    addSpacer(formTableRow);
+
+    addSpacer(topRow);
+    topRow.appendChild(header);
+    addSpacer(topRow);
+    topRow.appendChild(saveButton);
+    topRow.appendChild(closeButton);
+    formTableColumn.appendChild(topRow);
+    formTableColumn.appendChild(formTableRow);
+    characterSheet.appendChild(formTableColumn);
+
+    parent.appendChild(characterSheet);
+}
+
+function createCharacterCreateSheet_FirstColumn(parent, characterSheet, character, width, top, left) {
+
+    const formElementsPadding = 5;
+    const form = document.createElement('div');
+    form.style.width  = `${width + formElementsPadding}px`;
+    form.style.display = 'block';
+
+    const formElements = document.createElement('div');
+    formElements.classList.add('box-circular-border');
+    formElements.classList.add('column');
+    formElements.classList.add('centered');
+    formElements.style.gap = '5px';
+    formElements.style.padding = `${formElementsPadding}px`;
 
     const imageContainer = document.createElement('div');
     imageContainer.className = 'image-container';
     imageContainer.style.backgroundColor = getRandomColor();
     imageContainer.style.width = '200px';
+    imageContainer.style.height = '200px';
     
     const image = document.createElement('img')
     image.src = `${tokenPaths.DEFAULT_CHAR_PROFILE}`
 
     imageContainer.appendChild(image);
 
-    column.appendChild(imageContainer);
-
     function createFormGroup(id, label, type = 'text', isReadOnly = false) {
-
-        if(id == "spacer"){
-            const spacer = document.createElement('div');
-            spacer.className = 'spacer';
-            return spacer;
-        }
-
         const formGroup = document.createElement('div');
         formGroup.className = 'form-group';
 
@@ -71,20 +133,20 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet, width){
             const controls = document.createElement('div');
             controls.className = 'number-controls';
 
-            const max = id.includes('level') ? characterCreateSettings.MAX_CHARACTER_LVL  : characterCreateSettings.MAX_STAT_POINT ;
-            const min = id.includes('level') ? characterCreateSettings.MIN_CHARACTER_LVL  : characterCreateSettings.MIN_STAT_POINT;
+            const max = id.includes('level') ? character.MAX_CHARACTER_LVL  : character.MAX_STAT_POINT ;
+            const min = id.includes('level') ? character.MIN_CHARACTER_LVL  : character.MIN_STAT_POINT;
 
             inputElement.value = min;
             
             const size = labelElement.getBoundingClientRect();
-            const buttonUp = createImageButton(`${12}px`, '&#9650;');  
+            const buttonUp = createImageButton(19, '&#9650;');  
             buttonUp.onclick = function(event) {
                 event.preventDefault();
                 incrementWithId(id, 1);
                 keepNumberInLimits(id, max, min);
             };
 
-            const buttonDown = createImageButton(`${12}px`, '&#9660;');  
+            const buttonDown = createImageButton(19, '&#9660;');  
             buttonDown.onclick = function(event) {
                 event.preventDefault();
                 incrementWithId(id, -1);
@@ -115,139 +177,29 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet, width){
         { id: `character-create-sub-class`, label: 'Sub Class(s):', type: 'text', isReadOnly: true},
         { id: `character-create-race`, label: 'Race:', isReadOnly: true},
         { id: `character-create-level`, label: 'Level:', type: 'number' },
-        { id: `spacer`},
         { id: `character-create-stat-strength`, label: 'Strength:', type: 'number' },
-        { id: `spacer`},
         { id: `character-create-stat-dexterity`, label: 'Dexterity:', type: 'number' },
-        { id: `spacer`},
         { id: `character-create-stat-constitution`, label: 'Constitution:', type: 'number' },
-        { id: `spacer`},
         { id: `character-create-stat-intelligence`, label: 'Intelligence:', type: 'number' },
-        { id: `spacer`},
         { id: `character-create-stat-wisdom`, label: 'Wisdom:', type: 'number' },
-        { id: `spacer`},
         { id: `character-create-stat-charisma`, label: 'Charisma:', type: 'number' }
+
     ];
 
-    formGroups.forEach(group => column.appendChild(createFormGroup(group.id, group.label, group.type, group.isReadOnly)));
-
-    form.appendChild(column);
+    
+    formElements.appendChild(imageContainer);
+    formGroups.forEach(group => formElements.appendChild(createFormGroup(group.id, group.label, group.type, group.isReadOnly)));
+    form.appendChild(formElements);
     parent.appendChild(form);
 }
 
-function createCharacterCreateSheet_SecondColumn(parent, characterSheet, width){
-
-    let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
-   
-    const column = document.createElement('div');
-    column.classList.add('column');
-    column.classList.add('centered');
-    column.style.height = "100%";
+function createCharacterCreateSheet_SecondColumn(parent, characterSheet, character, width, top, left){
 
     const form = document.createElement('form');
-    form.classList.add('character-sheet-form');
-    form.style.overflowY = 'auto';
-
-    function createFormGroup(id, label, type = 'text', isReadOnly = false) {
-
-        if(id == "spacer"){
-            const spacer = document.createElement('div');
-            spacer.className = 'spacer';
-            return spacer;
-        }
-        const formGroup = document.createElement('div');
-        formGroup.className = 'form-group';
-
-        const labelElement = document.createElement('label');
-        labelElement.setAttribute('for', id);
-        labelElement.textContent = label;
-        formGroup.appendChild(labelElement);
-
-        const inputElement = document.createElement('input');
-        inputElement.type = type;
-        inputElement.id = id;
-        inputElement.name = id;
-
-        if (isReadOnly) {
-            inputElement.readOnly = true;
-        }
-        formGroup.appendChild(inputElement);
-
-        if (id.includes('stat') || id.includes('level')) {
-            const controls = document.createElement('div');
-            controls.className = 'number-controls';
-
-            const max = id.includes('level') ? characterCreateSettings.MAX_CHARACTER_LVL  : characterCreateSettings.MAX_STAT_POINT ;
-            const min = id.includes('level') ? characterCreateSettings.MIN_CHARACTER_LVL  : characterCreateSettings.MIN_STAT_POINT;
-
-            inputElement.value = min;
-            
-            const size = labelElement.getBoundingClientRect();
-            const buttonUp = createImageButton(`${12}px`, '&#9650;');  
-            buttonUp.onclick = function(event) {
-                event.preventDefault();
-                incrementWithId(id, 1);
-                keepNumberInLimits(id, max, min);
-            };
-
-            const buttonDown = createImageButton(`${12}px`, '&#9660;');  
-            buttonDown.onclick = function(event) {
-                event.preventDefault();
-                incrementWithId(id, -1);
-                keepNumberInLimits(id, max, min);
-            };
-
-            controls.appendChild(buttonUp);
-            controls.appendChild(buttonDown);
-            formGroup.appendChild(controls);
-
-            if (id.includes('level')) {
-                inputElement.oninput = function() {
-                    keepNumberInLimits(id, max, min);
-                };
-            } else {
-                inputElement.oninput = function() {
-                    keepNumberInLimits(id, max, min);
-                };
-            }
-        }
-
-        return formGroup;
-    }
-
-    const formGroups = [
-        { id: `character-create-level`, label: 'Level:', type: 'number' },
-        { id: `spacer`},
-        { id: `character-create-stat-strength`, label: 'Strength:', type: 'number' },
-        { id: `spacer`},
-        { id: `character-create-stat-dexterity`, label: 'Dexterity:', type: 'number' },
-        { id: `spacer`},
-        { id: `character-create-stat-constitution`, label: 'Constitution:', type: 'number' },
-        { id: `spacer`},
-        { id: `character-create-stat-intelligence`, label: 'Intelligence:', type: 'number' },
-        { id: `spacer`},
-        { id: `character-create-stat-wisdom`, label: 'Wisdom:', type: 'number' },
-        { id: `spacer`},
-        { id: `character-create-stat-charisma`, label: 'Charisma:', type: 'number' }
-    ];
-
-    formGroups.forEach(group => {
-        column.appendChild(createFormGroup(group.id, group.label, group.type, group.isReadOnly));
-    });
-
-    form.appendChild(column);
-    parent.appendChild(form);
-}
-
-function createCharacterCreateSheet_ThirdColumn(parent, characterSheet, width){
-
-    let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
-
-    const form = document.createElement('form');
-    form.classList.add('character-sheet-form');
-    form.classList.add('box-circular-border');
     form.style.width  = width;
-    form.style.height = "100%";
+    form.classList.add('column');
+    form.classList.add('box-circular-border');
+    form.style.display = 'block';
 
     const column = document.createElement('div');
     column.className = 'column';
@@ -264,20 +216,21 @@ function createCharacterCreateSheet_ThirdColumn(parent, characterSheet, width){
     row.style.minHeight = "20%"
     row.position = 'fixed';
 
-    const learnedSpells = characterCreateSettings.LEARNED_SPELLS;
+    let learnedSpells = character.learnedSpells;
+    let selectedSpellLevelList = level1_spell_list;
 
     // Iterate through AVAILABLE_SPELL_LEVELS and append "/ known" if it's in LEARNED_SPELLS
     const spellList = Object.values(selectedSpellLevelList).map(spell => {
-        if (learnedSpells.includes(spell.name)) {
-            return `${spell.name} / known`;
+        if (!learnedSpells.includes(spell.name)) {
+            return spell.name;
         }
-        return spell.name;
     });
 
-    const levelSelect = createSelector(Object.keys(characterCreateSettings.AVAILABLE_SPELL_LEVELS), Object.keys(characterCreateSettings.AVAILABLE_SPELL_LEVELS), null);
+    const levelSelect = createSelector(gameSettings.includedSpellLevels, gameSettings.includedSpellLevels);
     levelSelect.style.width = '5%';
     levelSelect.style.minWidth = '50px'
     levelSelect.style.maxWidth = '90px'
+
     levelSelect.addEventListener('change', function(event) {
         event.preventDefault();
         let valueList;
@@ -295,7 +248,7 @@ function createCharacterCreateSheet_ThirdColumn(parent, characterSheet, width){
         updateSelector(valueList, textList, 'select',characterSheet+'-spell-select');
     });
 
-    const select = createSelector(selectedSpellLevelList.map(spell => spell.name), spellList, 'select', characterSheet+'-spell-select');
+    const select = createSelector(Object.values(spellList).map(spell => spell.name), spellList, 'select', characterSheet+'-spell-select');
     select.style.width = '50%';
     select.style.maxWidth = '320px'
     const imageButton = createImageButton(24,'➕');
@@ -303,7 +256,7 @@ function createCharacterCreateSheet_ThirdColumn(parent, characterSheet, width){
     imageButton.onclick = function(event){
         event.preventDefault();
         const currentSelectedSpell = select.value;
-        createSpellContainer(spellColumn, selectedSpellLevelList, currentSelectedSpell, characterSheet);
+        createSpellContainer(spellColumn, selectedSpellLevelList, currentSelectedSpell, character);
     }
 
     addSpacer(row);
@@ -321,10 +274,8 @@ function createCharacterCreateSheet_ThirdColumn(parent, characterSheet, width){
     parent.appendChild(form);
 }
 
-function createSpellContainer(parent, spellList, spellName = null, characterSheet) {
+function createSpellContainer(parent, spellList, spellName = null, character) {
 
-    let characterSettings = JSON.parse(characterSheet.dataset.characterSettings);
-    
     for (let spell of spellList){
         if(spellName != null){
             if(spell.name != spellName){
@@ -372,60 +323,112 @@ function createSpellContainer(parent, spellList, spellName = null, characterShee
     };
 }
 
-function addCharacterCreateSheet(parent) {
-    const characterSheet = document.createElement('div');
-    characterSheet.id = `character-create-sheet`;
-    characterSheet.className = 'character-create-sheet';
 
-    const characterCreateSettings = new Character(characterSheet.id);
-    characterSheet.dataset.characterSettings = JSON.stringify(characterCreateSettings);
 
-    const characterSheetContent = document.createElement('div');
-    characterSheetContent.classList.add('character-sheet-content')
-    characterSheetContent.classList.add('box-circular-border')
-    characterSheetContent.style.overflowY = 'auto';
 
-    const closeButton = createImageButton(24, null, `${userIntarfaceSettings.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}`);  
-    closeButton.style.position= 'absolute';
-    closeButton.style.right= '10px';
-    closeButton.style.top= '10px';
-    closeButton.onclick = () => toggleDisplay_SheetWithId(characterSheet.id, false);
 
-    const column = document.createElement('div');
-    column.classList.add('column');
-    column.classList.add('centered');
-    column.style.width = '100%';
 
-    const header = document.createElement('h1');
-    header.innerText = 'Create Account Sheet';
 
-    const saveButton = document.createElement('button');
-    saveButton.type = 'submit';
-    saveButton.innerText = 'Save';
-    saveButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        save_CharacterSheet(characterSheet.id);
-    });
+// function createCharacterCreateSheet_SecondColumn(parent, characterSheet, width){
 
-    // Contents
-    const columnRow = document.createElement('div');
-    columnRow.className = 'row';
-    column.classList.add('centered');
-    columnRow.style.width = '100%';
+//     let characterCreateSettings = JSON.parse(characterSheet.dataset.characterSettings);
+   
+//     const column = document.createElement('div');
+//     column.classList.add('column');
+//     column.classList.add('centered');
+//     column.style.height = "100%";
 
-    addSpacer(columnRow);
-    createCharacterCreateSheet_FirstColumn(columnRow, characterSheet, '30%');
-    addSpacer(columnRow);
-    //createCharacterCreateSheet_SecondColumn(columnRow, characterSheet, '70%');
-    createCharacterCreateSheet_ThirdColumn(columnRow, characterSheet, '60%');
-    addSpacer(columnRow);
-    
-    characterSheetContent.appendChild(closeButton);
-    column.appendChild(header);
-    column.appendChild(columnRow);
-    characterSheetContent.appendChild(column);
+//     const form = document.createElement('form');
+//     form.classList.add('character-sheet-form');
+//     form.style.overflowY = 'auto';
 
-    characterSheet.appendChild(characterSheetContent);
-    parent.appendChild(characterSheet);
-}
+//     function createFormGroup(id, label, type = 'text', isReadOnly = false) {
 
+//         if(id == "spacer"){
+//             const spacer = document.createElement('div');
+//             spacer.className = 'spacer';
+//             return spacer;
+//         }
+//         const formGroup = document.createElement('div');
+//         formGroup.className = 'form-group';
+
+//         const labelElement = document.createElement('label');
+//         labelElement.setAttribute('for', id);
+//         labelElement.textContent = label;
+//         formGroup.appendChild(labelElement);
+
+//         const inputElement = document.createElement('input');
+//         inputElement.type = type;
+//         inputElement.id = id;
+//         inputElement.name = id;
+
+//         if (isReadOnly) {
+//             inputElement.readOnly = true;
+//         }
+//         formGroup.appendChild(inputElement);
+
+//         if (id.includes('stat') || id.includes('level')) {
+//             const controls = document.createElement('div');
+//             controls.className = 'number-controls';
+
+//             const max = id.includes('level') ? characterCreateSettings.MAX_CHARACTER_LVL  : characterCreateSettings.MAX_STAT_POINT ;
+//             const min = id.includes('level') ? characterCreateSettings.MIN_CHARACTER_LVL  : characterCreateSettings.MIN_STAT_POINT;
+
+//             inputElement.value = min;
+            
+//             const size = labelElement.getBoundingClientRect();
+//             const buttonUp = createImageButton(`${12}px`, '&#9650;');  
+//             buttonUp.onclick = function(event) {
+//                 event.preventDefault();
+//                 incrementWithId(id, 1);
+//                 keepNumberInLimits(id, max, min);
+//             };
+
+//             const buttonDown = createImageButton(`${12}px`, '&#9660;');  
+//             buttonDown.onclick = function(event) {
+//                 event.preventDefault();
+//                 incrementWithId(id, -1);
+//                 keepNumberInLimits(id, max, min);
+//             };
+
+//             controls.appendChild(buttonUp);
+//             controls.appendChild(buttonDown);
+//             formGroup.appendChild(controls);
+
+//             if (id.includes('level')) {
+//                 inputElement.oninput = function() {
+//                     keepNumberInLimits(id, max, min);
+//                 };
+//             } else {
+//                 inputElement.oninput = function() {
+//                     keepNumberInLimits(id, max, min);
+//                 };
+//             }
+//         }
+
+//         return formGroup;
+//     }
+
+//     const formGroups = [
+//         { id: `character-create-level`, label: 'Level:', type: 'number' },
+//         { id: `spacer`},
+//         { id: `character-create-stat-strength`, label: 'Strength:', type: 'number' },
+//         { id: `spacer`},
+//         { id: `character-create-stat-dexterity`, label: 'Dexterity:', type: 'number' },
+//         { id: `spacer`},
+//         { id: `character-create-stat-constitution`, label: 'Constitution:', type: 'number' },
+//         { id: `spacer`},
+//         { id: `character-create-stat-intelligence`, label: 'Intelligence:', type: 'number' },
+//         { id: `spacer`},
+//         { id: `character-create-stat-wisdom`, label: 'Wisdom:', type: 'number' },
+//         { id: `spacer`},
+//         { id: `character-create-stat-charisma`, label: 'Charisma:', type: 'number' }
+//     ];
+
+//     formGroups.forEach(group => {
+//         column.appendChild(createFormGroup(group.id, group.label, group.type, group.isReadOnly));
+//     });
+
+//     form.appendChild(column);
+//     parent.appendChild(form);
+// }
