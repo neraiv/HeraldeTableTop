@@ -71,36 +71,6 @@ class SettingsUI {
     }
 };
 
-class GameFlags {
-    constructor({
-        useEnvorinmentTimeBasedBackground = false,
-        }={}){
-            this.USE_ENVORINMENT_TIME_BASED_BACKGROUND = useEnvorinmentTimeBasedBackground;
-        }
-}
-
-class SettingsGame {
-    constructor({
-        maxStatPoint = 20,
-        minStatPoint = 0,
-        maxCharacterLevel = 15,
-        minCharacterLevel = 1,
-        maxSubClassCount = 2,
-        minSubClassCount = 0,
-        includedSpellLevels = ['1', '2', '3', '4', '5'],
-        flags, 
-    } = {}) {
-        this.maxStatPoint   = maxStatPoint;
-        this.minStatPoint   = minStatPoint;
-        this.maxCharacterLevel   = maxCharacterLevel;
-        this.minCharacterLevel   = minCharacterLevel;
-        this.maxSubClassCount   = maxSubClassCount;
-        this.minSubClassCount   = minSubClassCount;
-        this.includedSpellLevels   = includedSpellLevels;
-        this.flags   = flags;
-    }
-}
-
 class BackgroundFilesInfo {
     constructor(
         darkFiles = null,

@@ -1,13 +1,18 @@
-function getCharacterById(id) {
+function getInGameCharacterById(id) {
     return inGameCharacters.find(character => character.ID === id);
 }
 
-function getCharToken(char = null, id = null){
+function getInGameCharTokenByCharOrID(char = null, id = null){
     if (char) {
         id = char.ID;
     } 
     const token = document.getElementById(`token-character-${id}`);
     return token;
+}
+
+
+function getAdditionalEffects(targetEffect){
+    return effectsList.filter(effect => effect.effect === targetEffect);
 }
 
 function getScalingFactor(container, scale) {

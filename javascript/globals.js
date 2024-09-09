@@ -11,7 +11,6 @@ let tokenPaths = new TokenPaths();
 let environment = new Environment();
 
 let inGameCharacters = [];
-
 let gameFlags = new GameFlags();
 
 let gameSettings = new SettingsGame({

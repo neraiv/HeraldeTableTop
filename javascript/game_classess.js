@@ -15,7 +15,7 @@ const itemType = Object.freeze({
 });
 /* SPEELSS AND WEAPONS */
 const classType = Object.freeze({
-    ALL: 0,
+    ALL: null,
     WIZARD: 1,
     CLERIC: 2,
     ROGUE: 3,
@@ -48,6 +48,7 @@ const damageType = Object.freeze({
 
 // Enum for damage types
 const statType = Object.freeze({
+    NONE:null,
     STR: 1,
     DEX: 2,
     CON: 3,
@@ -56,6 +57,11 @@ const statType = Object.freeze({
     CHA: 6,
     // Add more damage types as needed
 });
+
+const encounterStatType = Object.freeze({
+    PERSPECTION: 1,
+    NATURE: 2,
+})
 
 const weaponType = Object.freeze({
     // Add more weapon types as needed
@@ -91,7 +97,7 @@ const weaponType = Object.freeze({
     HEAVYCROSSBOW  : 30,
     LONGBOW        : 31
 });
-  
+
 const weaponProperties = Object.freeze({
     // Add more weapon types as needed
     MAIN_HAND: 10,
@@ -105,12 +111,20 @@ const weaponProperties = Object.freeze({
     THROWN: 6
 });
 
+const consumableTypes = Object.freeze({
+    CASTED: 1,
+    USED: 2
+});
+
+const consumableProperties = Object.freeze({
+    CONSUMED: 1,
+    REFILLABLE: 2
+});
+
+
+
 const characterActions = Object.freeze({
-    IDLE : 25,
-    ALWAYS : 50,
-    PREPARE: 99,
-    USE : 100,
-    ATTACKING: 1,
+    IDLE: 1,
     MOVING: 2,
     BLOCKING: 3,
     BLOCKED: 4,
@@ -119,22 +133,28 @@ const characterActions = Object.freeze({
     HEALED: 7,
     CASTING: 8,
     CASTED: 9,
-    DYING: 13,
+    ATTACKING: 10,  // Assuming you want ATTACKING to come after CASTED
+    DYING: 11,      // Adjusting numbers for consistency
+    DIED: 12,
+    PREPARE: 13,    // If PREPARE should be at the end of the sequence
+    USE: 14,        // Assuming USE should be the last
+    ALWAYS: 15      // Adding ALWAYS at the end
 });
 
 const additionalEffects = Object.freeze({
-    DICE_CHANGE : 1,
-    BONUS : 2,
-    ATTACK_RADIUS_BONUS : 4,
-    PATTERN_CHANGE : 5,
-    HEAL: 6,
-    DEFENSE : 7,
-    VISION : 8,
-    ATTACK_RANGE : 9,
-    ATTACK_RANGE_BONUS: 10
+    DICE_CHANGE: 1,
+    ATTACK_DAMAGE_BONUS: 2,
+    ATTACK_RADIUS_BONUS: 3, // Adjusted for consistency
+    ATTACK_RANGE: 4,        // Moved ATTACK_RANGE to follow ATTACK_RADIUS_BONUS
+    ATTACK_RANGE_BONUS: 5,  // Adjusted to be sequential
+    PATTERN_CHANGE: 6,      // Adjusted to follow ATTACK_RANGE_BONUS
+    HEAL: 7,
+    DEFENSE: 8,
+    VISION_RANGE_BONUS: 9   // Adjusted to be in sequential order
 });
 
-const patterns = Object.freeze({
+
+const spellPatterns = Object.freeze({
     CIRCULAR: 1,
     BOX: 2,
     CONE_UPWARD: 3,
@@ -145,30 +165,25 @@ const patterns = Object.freeze({
 const actionType = Object.freeze({
     BONUS: 1,
     MAIN: 2,
+    DRUID_SOURCE: 3,
+    WARLOCK_SPELL_SLOT: 4
 });
 
 const castType = Object.freeze({
     ON_LOCATION:1,
     FROM_CASTER: 2,
-    AROUND_CASTER: 3,
+    AROUND_CASTER: 3
 });
-const notAvailable = "Not available";
+
 const defaultWeaponLore = 'Meh regular weapons, crafted by regular crafters :/ (Which Doesnt Require any skill!)';
 
 class Character {
     constructor(id ,{
-        maxStatPoint = gameSettings.MAX_STAT_POINT,
-        minStatPoint = gameSettings.MIN_STAT_POINT,
-        maxCharacterLevel = gameSettings.MAX_CHARACTER_LVL,
-        minCharacterLevel = gameSettings.MIN_CHARACTER_LVL,
-        maxSubClassCount = gameSettings.MAX_SUB_CLASS_COUNT,
-        minSubClassCount = gameSettings.MIN_SUB_CLASS_COUNT,
         level = gameSettings.MIN_CHARACTER_LVL,
         name = "",
-        class_ = "",
-        subclass = "",
+        classess = [],
         race = "",
-        feats = [],
+        subrace = "",
         dex = gameSettings.MIN_STAT_POINT,
         con = gameSettings.MIN_STAT_POINT,
         int = gameSettings.MIN_STAT_POINT,
@@ -176,60 +191,40 @@ class Character {
         cha = gameSettings.MIN_STAT_POINT,
         str = gameSettings.MIN_STAT_POINT,
         charCurrentAction = characterActions.IDLE,
+        additionalEffects_ = [],
         spellSlots = {
-            '1':5,
-            '2':4,
-            '3':2,
-            '4':2
-        },
-        remainingManaSlots = {
-            '1': 3,
-            '2': 3,
-            '3': 2,
-            '4': 2
+            '1':[5,3],
+            '2':[4,3],
+            '3':[2,2],
+            '4':[2,2]
         },
         availableSpells = {
             1: ['Fireball', 'Ice Cone'],
             2: ['Lightning Ray', 'Fire Hands']
         },
-        learnedSpells = ['Fireball', 'Lightning Ray', 'Fire Hands', 'Ice Cone'],
+        learnedSpells = {
+            1: ['Fireball', 'Lightning Ray'], 
+            2: ['Fire Hands', 'Ice Cone']
+        },
         inventory = new Inventory()
     } = {}) {
         this.ID = id;
-        this.maxStatPoint       = maxStatPoint          ;
-        this.minStatPoint       = minStatPoint          ;
-        this.maxCharacterLevel  = maxCharacterLevel     ;   
-        this.minCharacterLevel  = minCharacterLevel     ;   
-        this.maxSubClassCount   = maxSubClassCount      ;   
-        this.minSubClassCount   = minSubClassCount      ;   
-        this.level              = level                 ;
-        this.name               = name                  ;
-        this.class_             = class_                ;
-        this.subclass           = subclass              ;
-        this.race               = race                  ;
-        this.feats              = feats                 ;
-        this.dex                = dex                   ;
-        this.con                = con                   ;
-        this.int                = int                   ;
-        this.wis                = wis                   ;
-        this.cha                = cha                   ;
-        this.str                = str                   ;
-        this.charCurrentAction  = charCurrentAction     ;
-        this.spellSlots         = spellSlots            ;
-        this.remainingManaSlots = remainingManaSlots    ;
-        this.availableSpells    = availableSpells       ;
-        this.learnedSpells      = learnedSpells         ;
-        this.inventory          = inventory             ;
-    }
-
-    // Example method to check if a level is valid
-    isValidLevel(level) {
-        return level >= this.MIN_CHARACTER_LVL && level <= this.MAX_CHARACTER_LVL;
-    }
-
-    // Example method to validate stat points
-    isValidStatPoint(statPoint) {
-        return statPoint >= this.MIN_STAT_POINT && statPoint <= this.MAX_STAT_POINT;
+        this.level = level;
+        this.name = name;
+        this.classess = classess;
+        this.race = race;
+        this.dex = dex;
+        this.con = con;
+        this.int = int;
+        this.wis = wis;
+        this.cha = cha;
+        this.str = str;
+        this.charCurrentAction = charCurrentAction;
+        this.additionalEffects_ = additionalEffects_;
+        this.spellSlots = spellSlots;
+        this.availableSpells = availableSpells;
+        this.learnedSpells = learnedSpells;
+        this.inventory = inventory;
     }
 }
 
@@ -348,19 +343,41 @@ class Inventory {
     }
 }
 
+class EnvironmentEvent{
+    constructor({
+        triggerTime,
+        endTime,
+        message,
+        additionalEffects = []
+    } = {}) {
+        this.triggerTime = triggerTime,
+        this.endTime = endTime,
+        this.message = message,
+        this.additionalEffects = additionalEffects
+    }
+}
 
-class Environment{
+class Time{
     constructor({
         day = 0,
         time = 8.0,
     } = {}) {
-        this.DAY = day;
-        this.TIME = time;
+        this.day = day;
+        this.time = time;
+    }
+
+    addTime(){
+        this.time += 1.0;
+        if(this.time >= 24.0){
+            this.time = 0.0;
+            this.day++;
+        }
+        console.log(`Time: ${this.time.toFixed(1)} hours, Day: ${this.day}`);
     }
 }
 
 class SpellPattern  {
-    constructor(pattern, range, area, targetCount = 0, castType = false) {
+    constructor(pattern, range, area, castType = false) {
         this.pattern = pattern; // SpellPattern enum
         this.range = range;
         this.area = area;
@@ -377,6 +394,7 @@ class AdditionalEffect {
     }
 }
 
+
 class ManaEffect {
     constructor(mana, additionalEffect) {
         this.mana = mana;
@@ -385,23 +403,22 @@ class ManaEffect {
 }
 
 class Spell {
-    constructor(name, availableClasses, baseStatType, damageTypes, description, spendManaEffects, spellPattern, baseDamage, castTime=1, actionCost = actionType.MAIN) {
-        this.name               = name;
+    constructor(name, availableClasses, statType, damageTypes, description, spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN) {
+        this.name              = name; // String
         this.availableClasses   = availableClasses; // Array of ClassType enums
-        this.baseStatType       = baseStatType; // StatType enum (e.g., STR, DEX, CON, etc.)
+        this.statType       = statType; // StatType enum (e.g., STR, DEX, CON, etc.)
         this.damageTypes        = damageTypes; // DamageType enum
         this.description        = description; // Description object with required mana levels and descriptions
         this.spendManaEffects   = spendManaEffects;
         this.spellPattern       = spellPattern;
-        this.baseDamage         = baseDamage;
+        this.damage         = damage;
         this.castTime           = castTime;
         this.actionCost         = actionCost; // ActionType enum
     }
 }
-    
+
 class Item {
-    constructor(name, itemType, itemSubType, properties, additionalEffects, spells, lore) {
-        this.name = name,
+    constructor(itemType, itemSubType, properties, additionalEffects, spells, lore) {
         this.itemType = itemType,
         this.itemSubType = itemSubType;
         this.properties = properties; 
@@ -410,3 +427,9 @@ class Item {
         this.lore = lore;
     }
 }
+
+
+const listGeneralItems = Object.freeze({
+    'Healing Potion' : new Item(itemType.CONSUMABLE, consumableTypes.USED, consumableProperties.REFILLABLE 
+        [new Spell('Heal', classType.ALL, statType.NONE, [damageType.HEALING], "U feel refreshed", null, new SpellPattern(patterns.TARGET, 0,0),'3d6')], "Standard healing potion") 
+});

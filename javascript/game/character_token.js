@@ -10,7 +10,7 @@ function createCharacterToken(img_src_element, x, y) {
     token.className = 'character-token';
     token.id = `token-character-${img_src_element.id}`;
 
-    const char = getCharacterById(img_src_element.id);
+    const char = getInGameCharacterById(img_src_element.id);
 
     const img = document.createElement('img');
     img.position = 'absolute';
