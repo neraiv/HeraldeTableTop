@@ -113,7 +113,8 @@ const weaponProperties = Object.freeze({
 
 const consumableTypes = Object.freeze({
     CASTED: 1,
-    USED: 2
+    USED: 2,
+    REFILLABLE: 3
 });
 
 const consumableProperties = Object.freeze({
@@ -121,14 +122,11 @@ const consumableProperties = Object.freeze({
     REFILLABLE: 2
 });
 
-
-
 const characterActions = Object.freeze({
     IDLE: 1,
     MOVING: 2,
     BLOCKING: 3,
     BLOCKED: 4,
-    ATTACKED: 5,
     HEALING: 6,
     HEALED: 7,
     CASTING: 8,
@@ -138,7 +136,8 @@ const characterActions = Object.freeze({
     DIED: 12,
     PREPARE: 13,    // If PREPARE should be at the end of the sequence
     USE: 14,        // Assuming USE should be the last
-    ALWAYS: 15      // Adding ALWAYS at the end
+    ALWAYS: 15,      // Adding ALWAYS at the end
+    ATTACKED: 16
 });
 
 const additionalEffects = Object.freeze({
@@ -150,7 +149,8 @@ const additionalEffects = Object.freeze({
     PATTERN_CHANGE: 6,      // Adjusted to follow ATTACK_RANGE_BONUS
     HEAL: 7,
     DEFENSE: 8,
-    VISION_RANGE_BONUS: 9   // Adjusted to be in sequential order
+    VISION_RANGE_BONUS: 9,   // Adjusted to be in sequential order
+    CAST: 10
 });
 
 
@@ -159,7 +159,7 @@ const spellPatterns = Object.freeze({
     BOX: 2,
     CONE_UPWARD: 3,
     CONE_DOWNWARD: 4,
-    TARGET: 5,
+    TARGET: 5
 });
 
 const actionType = Object.freeze({
@@ -173,6 +173,13 @@ const castType = Object.freeze({
     ON_LOCATION:1,
     FROM_CASTER: 2,
     AROUND_CASTER: 3
+});
+
+const targetTypes = Object.freeze({
+    SELF: 1,
+    ALLY: 2,
+    ENEMY: 3,
+    ANY: 4
 });
 
 const defaultWeaponLore = 'Meh regular weapons, crafted by regular crafters :/ (Which Doesnt Require any skill!)';
@@ -203,8 +210,8 @@ class Character {
             2: ['Lightning Ray', 'Fire Hands']
         },
         learnedSpells = {
-            1: ['Fireball', 'Lightning Ray'], 
-            2: ['Fire Hands', 'Ice Cone']
+            1: ['Fireball', 'Ice Cone'], 
+            2: ['Lightning Ray', 'Fire Hands']
         },
         inventory = new Inventory()
     } = {}) {
@@ -225,6 +232,16 @@ class Character {
         this.availableSpells = availableSpells;
         this.learnedSpells = learnedSpells;
         this.inventory = inventory;
+    }
+    
+    getKnownSpells(spellLevel) {
+        const spellList = Object.values(listSpells[spellLevel]).map(spell => {
+            if (this.learnedSpells[spellLevel].includes(spell.name)) {
+                return spell.name + knownSpellString;
+            }
+            return spell.name;
+        });
+        return spellList;
     }
 }
 
@@ -343,10 +360,10 @@ class Inventory {
     }
 }
 
-class EnvironmentEvent{
+class Environment{
     constructor({
         triggerTime,
-        endTime,
+        endTime,    // Future: May add enivorenment patterns and spells
         message,
         additionalEffects = []
     } = {}) {
@@ -377,11 +394,12 @@ class Time{
 }
 
 class SpellPattern  {
-    constructor(pattern, range, area, castType = false) {
+    constructor(pattern, range, area, castType = false, targetList = []) {
         this.pattern = pattern; // SpellPattern enum
         this.range = range;
         this.area = area;
         this.castType = castType
+        this.targetList = targetList;
     }
 }
 
@@ -403,33 +421,34 @@ class ManaEffect {
 }
 
 class Spell {
-    constructor(name, availableClasses, statType, damageTypes, description, spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN) {
-        this.name              = name; // String
+    constructor(name, availableClasses = [], statType= [], damageTypes, description, targetEffects=[], triggerAction= characterActions.ATTCKED, spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN) {
+        this.name               = name; // String
         this.availableClasses   = availableClasses; // Array of ClassType enums
-        this.statType       = statType; // StatType enum (e.g., STR, DEX, CON, etc.)
+        this.statType           = statType; // StatType enum (e.g., STR, DEX, CON, etc.)
         this.damageTypes        = damageTypes; // DamageType enum
         this.description        = description; // Description object with required mana levels and descriptions
+        this.targetEffects      = targetEffects; //
+        this.triggerAction       = triggerAction; // Trigger
         this.spendManaEffects   = spendManaEffects;
         this.spellPattern       = spellPattern;
-        this.damage         = damage;
+        this.damage             = damage;
         this.castTime           = castTime;
         this.actionCost         = actionCost; // ActionType enum
+    }
+
+    returnSelf(){
+        return this;
     }
 }
 
 class Item {
-    constructor(itemType, itemSubType, properties, additionalEffects, spells, lore) {
+    constructor(name, itemType, itemSubType, itemTypeSpecificValue, additionalEffects, spells, lore) {
+        this.name = name,
         this.itemType = itemType,
         this.itemSubType = itemSubType;
-        this.properties = properties; 
+        this.itemTypeSpecificValue = itemTypeSpecificValue; 
         this.additionalEffects = additionalEffects;
         this.spells = spells;
         this.lore = lore;
     }
 }
-
-
-const listGeneralItems = Object.freeze({
-    'Healing Potion' : new Item(itemType.CONSUMABLE, consumableTypes.USED, consumableProperties.REFILLABLE 
-        [new Spell('Heal', classType.ALL, statType.NONE, [damageType.HEALING], "U feel refreshed", null, new SpellPattern(patterns.TARGET, 0,0),'3d6')], "Standard healing potion") 
-});

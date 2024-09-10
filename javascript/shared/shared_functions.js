@@ -1,15 +1,156 @@
-function getInGameCharacterById(id) {
-    return inGameCharacters.find(character => character.ID === id);
+// Function to parse and roll dice based on the roll list
+
+function createNumberInput(label, isReadOnly, returnElements = false){
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group');
+
+    const labelElement = document.createElement('label');
+    labelElement.setAttribute('for', label);
+    labelElement.textContent = label;
+
+    const inputElement = document.createElement('input');
+    inputElement.type = 'text';
+    inputElement.id = label;
+    inputElement.name = label;
+
+    if (isReadOnly) {
+        inputElement.readOnly = true;
+    }
+
+    formGroup.appendChild(labelElement);
+    addSpacer(formGroup);
+    formGroup.appendChild(inputElement);
+
+    const controls = document.createElement('div');
+    controls.className = 'number-controls';
+
+    const buttonUp = createImageButton(19, '&#9650;');  
+    const buttonDown = createImageButton(19, '&#9660;');  
+
+    controls.appendChild(buttonUp);
+    controls.appendChild(buttonDown);
+    formGroup.appendChild(controls);
+
+    let childs = null;
+
+    if(returnElements){
+        childs = [inputElement, buttonUp, buttonDown];
+    }
+
+    return [formGroup, childs]
 }
 
-function getInGameCharTokenByCharOrID(char = null, id = null){
-    if (char) {
-        id = char.ID;
-    } 
-    const token = document.getElementById(`token-character-${id}`);
-    return token;
+function createStringInput(label, id = '', isReadOnly, returnElements = false) {
+    const formGroup = document.createElement('div');
+    formGroup.className = 'form-group';
+
+    const labelElement = document.createElement('label');
+    labelElement.setAttribute('for', id); // Associate label with input via id
+    labelElement.textContent = label;
+    labelElement.style.alignContent = 'center';
+    labelElement.style.textAlign = 'center';
+
+
+    const inputElement = document.createElement('input');
+    inputElement.type = 'text';
+    inputElement.id = id; // Set the id for the input
+    inputElement.name = id; // Optionally set the name attribute as well
+    inputElement.style.display = 'flex'; //
+
+    if (isReadOnly) {
+        inputElement.readOnly = true;
+    }
+
+    formGroup.appendChild(labelElement);
+    addSpacer(formGroup);
+    formGroup.appendChild(inputElement);
+
+    let childs = null;
+    if (returnElements) {
+        childs = [inputElement];
+    }
+
+    return [formGroup, childs];
 }
 
+function createSelectorInput(valueList, textList, defaultValue ,label, id = '', multiple = true, isReadOnly, returnElements = false) {
+    const formGroup = document.createElement('div');
+    formGroup.className = 'form-group';
+
+    const labelElement = document.createElement('label');
+    labelElement.setAttribute('for', id); // Associate label with input via id
+    labelElement.textContent = label;
+    labelElement.style.alignContent = 'center';
+    labelElement.style.textAlign = 'center';
+
+    const inputElement = createSelector(valueList, textList, defaultValue);
+    inputElement.multiple = multiple;
+    inputElement.onchange = function(event) {  
+        const options = event.target.options;
+
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].selected) {
+                // Add tick emoji if selected
+                if (!options[i].textContent.includes('✓')) {
+                    options[i].textContent += ' ✓';
+                } else if(multiple) {
+                    // Remove tick emoji if deselected
+                    options[i].textContent = options[i].textContent.replace(' ✓', '');
+                }
+            }
+            else if(!multiple){
+                options[i].textContent = options[i].textContent.replace(' ✓', '');
+            }
+        }
+    }
+
+    if (isReadOnly) {
+        inputElement.readOnly = true;
+    }
+
+    formGroup.appendChild(labelElement);
+    addSpacer(formGroup);
+    formGroup.appendChild(inputElement);
+
+    let childs = null;
+    if (returnElements) {
+        childs = [inputElement];
+    }
+
+    return [formGroup, childs];
+}
+
+function roll(rollList, bonuses = 0, rollTime = 1) {
+
+    // Iterate through each roll in the rollList
+    let result = 0;
+    for (let i = 0; i < rollTime; i++) {
+        let total = 0;
+        for (let roll of rollList) {
+            // Parse the roll string (e.g., '3d6')
+            const [numDice, diceSides] = roll.split('d').map(Number);
+            
+            // Roll the dice and sum the results
+            let rollTotal = 0;
+            for (let i = 0; i < numDice; i++) {
+                rollTotal += Math.floor(Math.random() * diceSides) + 1;
+            }""
+
+            // Add bonuses if any
+            rollTotal += bonuses;
+
+            // Add to the total
+            total += rollTotal;
+
+            // Log each roll for reference (optional)
+            console.log(`Rolled ${numDice}d${diceSides}: ${rollTotal}`);
+        }
+        result = Math.max(result, total);
+    }
+
+    // Return the total roll result
+    return result;
+}
 
 function getAdditionalEffects(targetEffect){
     return effectsList.filter(effect => effect.effect === targetEffect);
@@ -66,6 +207,48 @@ function createImageButton(fontSize, icon=null, source=null) {
     return button;
 }
 
+function toggleSliding_SheetWithId(id, open= null, page= null) {
+    if(!page){
+        page = document.getElementById(id);
+    }
+    if(open == null){
+        if(page.classList.contains('active')){
+            page.classList.remove('active');
+            page.classList.add('closed');
+        }else{
+            page.classList.remove('closed');
+            page.classList.add('active');
+        }
+    }else{
+        if(open){
+            page.classList.remove('closed');
+            page.classList.add('active');
+        } else {
+            page.classList.remove('active');
+            page.classList.add('closed');
+        }
+    } 
+}
+
+function toggleDisplay_SheetWithId(id, open= null, page= null) {
+    if(!page){
+        page = document.getElementById(id);
+    }
+    if(open == null){
+        if(page.style.display == 'none'){
+            page.style.display = 'flex';
+        }else{
+            page.style.display = 'none';
+        }
+    }else{
+        if(open){
+            page.style.display = 'flex';
+        } else {
+            page.style.display = 'none';
+        }
+    } 
+}
+
 function getRandomColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -114,11 +297,11 @@ function addToogleHighlight(element, parentElement = null) {
     }
 }
 
-function createSelector(valueList, textList, defaultValue=null, id) {
+function createSelector(valueList, textList, defaultValue=null, id= null, disable_filter= null) {
     // Create the select element
     const selector = document.createElement('select');
-    selector.id = id;
-    selector.className = 'token-selector-combobox';
+    if (id) selector.id = id;
+    selector.className = 'token-selector-combobox'; // Future
 
 
     // Create and add the default option
@@ -136,11 +319,54 @@ function createSelector(valueList, textList, defaultValue=null, id) {
         const option = document.createElement('option');
         option.value = value;
         option.textContent = textList[index] || value; // Use value if textList is shorter
+
+        if(disable_filter && option.textContent.includes(disable_filter)){
+            option.disabled = true;
+        }
+
         selector.appendChild(option);
     });
 
     return selector;
 }
+function updateSelector(valueList, textList, selector = null, selectorId = null, defaultValue = 'select', disable_filter = null) {
+    // Fetch the selector by ID if it's not directly passed
+    if (selectorId) {
+        selector = document.getElementById(selectorId);
+    }
+
+    if (!selector) {
+        console.log('Selector not found');
+        return;
+    }
+
+    // Clear the options
+    selector.innerHTML = '';
+
+    // Create and add the default option
+    if (defaultValue != null) {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = ''; // Empty value for default
+        defaultOption.textContent = defaultValue;
+        defaultOption.disabled = true; // Make it non-selectable
+        defaultOption.selected = true; // Set as the default selected option
+        selector.appendChild(defaultOption);
+    }
+
+    // Add options based on the new valueList and textList
+    valueList.forEach((value, index) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = textList[index] || value; // Use value if textList is shorter
+
+        if (disable_filter && option.textContent.includes(disable_filter)) {
+            option.disabled = true;
+        }
+
+        selector.appendChild(option);
+    });
+}
+
 function convertToRoman(num) {
     if(num >= 40){
         console.log('cant convert to Roman');

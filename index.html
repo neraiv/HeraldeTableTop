@@ -7,10 +7,15 @@
     <link rel="stylesheet" href="styless/shared.css">
     <link rel="stylesheet" href="styless/sheets.css">
     <link rel="stylesheet" href="styless/tokens.css">
+    <link rel="stylesheet" href="styless/childcreator.css">
     <link rel="stylesheet" href="styless/board.css">
 </head>
 <body>
-    <div id="top-menu-bar"></div>  
+    <div id="user-interface" style="width: 100%; height: 100%; position: relative; top: 0px; left: 0px;">
+        <div id="top-menu-bar" class="column centered"></div>  
+        <div id="top-right-menu-bar" class="column centered"></div>
+        <div id="bottom-menu-bar" class = "row centered"></div>
+    </div>
     <div id="drive-images-bar">
         <div id="drive-images-bar-top-bar" class="row"></div>
         <div id="character-list-container" class="image-bank active">
@@ -38,22 +43,21 @@
             <div id="drag-overlay" class="drag-circle"></div>
         </div>
     </div>
-    <div id="bottom-menu-bar"></div>
 
     <script src="javascript/ui_classess.js"></script>
-    <script src="javascript/game_classes.js"></script>
+    <script src="javascript/game_classess.js"></script>
     <script src="javascript/globals.js"></script>  
-    <script src="javascript/shared/shared_functions.js"></script>
-    <script src="javascript/sheets/sheet__functions.js"></script>
-    <script src="javascript/sheets/sheet_character_page.js"></script>
-    <script src="javascript/sheets/sheet_drive_image_bar.js"></script>
-    <script src="javascript/sheets/sheet_create_character.js"></script>
-    <script src="javascript/game/_globals.js"></script>
     <script src="javascript/game/spells.js"></script>
     <script src="javascript/game/consumables.js"></script>
     <script src="javascript/game/weapons.js"></script>
+    <script src="javascript/shared/shared_functions.js"></script>
+    <script src="javascript/sheets/sheet_character_page.js"></script>
+    <script src="javascript/sheets/sheet_drive_image_bar.js"></script>
+    <script src="javascript/sheets/sheet_create_character.js"></script>
+    <script src="javascript/sheets/sheet_spell_creator.js"></script>
+    <script src="javascript/sheets/sheet_interface.js"></script>
+    <script src="javascript/game/gameboard.js"></script>
     <script src="javascript/game/character_token.js"></script>
     <script src="javascript/game/background_token.js"></script>
-    <script src="javascript/game/gameboard.js"></script>
 </body>
 </html>

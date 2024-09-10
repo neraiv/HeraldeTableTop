@@ -2,7 +2,7 @@ function addCharacterSheet(parent, id) {
     // Future
     const charId = id.replace('-character-sheet', '')
 
-    if(getCharacterById(charId)){
+    if(getInGameCharacterById(charId)){
         console.log('Character already exists!');
         return;
     }
@@ -505,7 +505,7 @@ function displayAvaliableSpells(char, x, y) {
 
     for (let index = 0; index < Object.keys(manaSelect).length; index++) {
         manaSelectMenuItems[1][index].onclick = () => { 
-            spellCast(getCharToken(char), selectedSpellLevelList[selectedSpell], index+1);
+            spellCast(getInGameCharTokenByCharOrID(char), selectedSpellLevelList[selectedSpell], index+1);
             spellsSheet.style.display = 'none';
         }        
     }

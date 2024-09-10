@@ -14,17 +14,34 @@ h2 {
     /* You can customize the padding and margin values as needed */
 }
 
+#user-interface {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden; /* Prevent scrolling of the body */
+}
+
 #top-menu-bar {
     position: absolute;
     top: 10px;
-    z-index: 50;
+    z-index: 51;
 }
+
+#top-right-menu-bar {
+    position: absolute;
+    right: 10px;
+    z-index: 51;
+}
+
 
 #bottom-menu-bar {
     position: absolute;
     height: 50px;
     bottom: 10px;
-    z-index: 50;
+    z-index: 51;
 }
 
 #drive-images-bar {
@@ -118,7 +135,7 @@ h2 {
 }
 
 .character-create-sheet {
-    display: block;
+    display: none;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -128,64 +145,21 @@ h2 {
     background: #fff;
     z-index: 100;
 }
-
-
-.form-group {
-    width: 98%;
-    display: flex; /* Ensure it's a flex container */
-    align-items: center; /* Center items along the cross axis (vertical if flex-direction is row) */
-    text-align: center; /* Center text content horizontally */
-    flex-direction: row; /* This is the default, so you can omit it */
-    overflow-y: hidden; /* Prevent vertical scrolling */
-    overflow-x: auto;
-}
-
-.form-group label {
-    display: block;
-    width: 100%;
-    margin-bottom: 5px;
-    text-align: center; /* Center the text horizontally */
-}
-
-.form-group input {
-    width: 40%;
-    height: 90%;
-    padding: 8px;
-    box-sizing: border-box;
-    text-align: center; /* Center the text horizontally */
-    margin-right: 10px;
-    -moz-appearance: textfield; /* Firefox */
-    appearance: textfield; /* Chrome, Safari, Edge */
-    font-weight: bold;
-    font-size: 16px; /* Optional: adjust font size to improve readability */
-}
-
-.form-group input::-webkit-inner-spin-button,
-.form-group input::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.number-controls {
-    display: flex;
-    flex-direction: column;
-}
-
-.number-controls button {
-    width: 30px;
-    height: 30px;
-    margin: 2px 0;
-    font-size: 18px;
-    background-color: #ddd;
-    border: 1px solid #ccc;
-    cursor: pointer;
-}
-
-.number-controls button:hover {
-    background-color: #bbb;
-}
-
 /* End Of Character Sheet */
+
+/* SPELL CREATE SHEET*/
+.spell-create-sheet {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 85%;
+    width: 85%;
+    background: #fff;
+    z-index: 52;
+}
+/* End Of Spell Create Sheet */
 
 /*SPELLLS */
 .spell {
@@ -311,21 +285,3 @@ h2 {
 }
 
 /* END OF AVALIABLE SPELLS SHEET */
-
-/* DESCRIPTION CONTAINER */
-.description-container {
-    position: absolute;
-    display: block;
-    padding: 15px;
-    border: 2px solid #603B1D; /* Dark brown border for D&D style */
-    background-color: #F5CBA7; /* Skin tone background color */
-    border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4); /* Subtle shadow for depth */
-    font-family: Georgia, serif; /* Fantasy-themed font */
-    color: #2C3E50; /* Dark text color for readability */
-    max-width: 250px; /* Limit width to fit typical D&D-style popup */
-    max-height: 80vh; /* Limit height to 80% of the viewport height */
-    overflow-y: auto; /* Makes content scrollable vertically if it's too tall */
-    z-index: 1000; /* Ensure it appears on top */
-}
-/* DESCRIPTION OF CONTAINER */

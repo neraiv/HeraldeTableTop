@@ -41,7 +41,6 @@ function addCharacterCreateSheet(parent) {
     formTableColumn.style.overflowY = 'auto';
     formTableColumn.style.overflowX = 'hidden';
 
-
     // Contents
     const formTableRow = document.createElement('div');
     formTableRow.classList.add('row');
@@ -53,8 +52,8 @@ function addCharacterCreateSheet(parent) {
     formTableRow.style.overflowY = 'auto';
 
     addSpacer(formTableRow);
-    createCharacterCreateSheet_FirstColumn(formTableRow, characterSheet, character, 400, '10px', '10px');
-    createCharacterCreateSheet_SecondColumn(formTableRow, characterSheet, character, '600px', '10px', '35%');
+    createCharacterCreateSheet_FirstColumn(formTableRow, characterSheet, character, 400);
+    createCharacterCreateSheet_SecondColumn(formTableRow, characterSheet, character, '600px');
     //createCharacterCreateSheet_SecondColumn(formTableRow, characterSheet, '70%');
     addSpacer(formTableRow);
 
@@ -70,7 +69,7 @@ function addCharacterCreateSheet(parent) {
     parent.appendChild(characterSheet);
 }
 
-function createCharacterCreateSheet_FirstColumn(parent, characterSheet, character, width, top, left) {
+function createCharacterCreateSheet_FirstColumn(parent, characterSheet, character, width) {
 
     const formElementsPadding = 5;
     const form = document.createElement('div');
@@ -103,7 +102,7 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet, characte
         labelElement.setAttribute('for', id);
         labelElement.textContent = label;
         formGroup.appendChild(labelElement);
-
+        addSpacer(formGroup);
         const inputElement = document.createElement('input');
         inputElement.type = type;
         inputElement.id = id;
@@ -114,15 +113,9 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet, characte
         }
         formGroup.appendChild(inputElement);
 
-        if(id.includes('name')){
-            inputElement.style.width = '150px';
-        }
-        else if (['class', 'race'].some(key => id.includes(key))) {
-            inputElement.style.width = '150px';
+        if (['class', 'race'].some(key => id.includes(key))) {
 
-            const selectButton = document.createElement('button');
-            selectButton.className = 'image-button';
-            selectButton.appendChild(document.createTextNode('\u25BC'));
+            const selectButton = createImageButton(19, '\u25BC');  
             selectButton.onclick = (event) => {
                 event.preventDefault();
                 id.includes('class') ? open_ClassSelectSheet(characterSheet.id) : open_RaceSelectSheet(characterSheet.id);
@@ -193,7 +186,7 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet, characte
     parent.appendChild(form);
 }
 
-function createCharacterCreateSheet_SecondColumn(parent, characterSheet, character, width, top, left){
+function createCharacterCreateSheet_SecondColumn(parent, characterSheet, character, width){
 
     const form = document.createElement('form');
     form.style.width  = width;
@@ -216,39 +209,17 @@ function createCharacterCreateSheet_SecondColumn(parent, characterSheet, charact
     row.style.minHeight = "20%"
     row.position = 'fixed';
 
-    let learnedSpells = character.learnedSpells;
-    let selectedSpellLevelList = level1_spell_list;
+    let selectedSpellLevel = 1;
+
+    spellList = character.getKnownSpells(selectedSpellLevel);
 
     // Iterate through AVAILABLE_SPELL_LEVELS and append "/ known" if it's in LEARNED_SPELLS
-    const spellList = Object.values(selectedSpellLevelList).map(spell => {
-        if (!learnedSpells.includes(spell.name)) {
-            return spell.name;
-        }
-    });
-
     const levelSelect = createSelector(gameSettings.includedSpellLevels, gameSettings.includedSpellLevels);
     levelSelect.style.width = '5%';
     levelSelect.style.minWidth = '50px'
     levelSelect.style.maxWidth = '90px'
-
-    levelSelect.addEventListener('change', function(event) {
-        event.preventDefault();
-        let valueList;
-        let textList;
-        if(event.target.value == '1'){
-            valueList = level1_spell_list.map(spell => spell.name);
-            textList = level1_spell_list.map(spell => spell.name);
-            selectedSpellLevelList = level1_spell_list;
-        }
-        else if(event.target.value == '2'){
-            valueList = level2_spell_list.map(spell => spell.name);
-            textList = level2_spell_list.map(spell => spell.name);
-            selectedSpellLevelList = level2_spell_list;
-        }
-        updateSelector(valueList, textList, 'select',characterSheet+'-spell-select');
-    });
-
-    const select = createSelector(Object.values(spellList).map(spell => spell.name), spellList, 'select', characterSheet+'-spell-select');
+ 
+    const select = createSelector(spellList, spellList, 'select', characterSheet+'-spell-select', knownSpellString);
     select.style.width = '50%';
     select.style.maxWidth = '320px'
     const imageButton = createImageButton(24,'➕');
@@ -258,6 +229,13 @@ function createCharacterCreateSheet_SecondColumn(parent, characterSheet, charact
         const currentSelectedSpell = select.value;
         createSpellContainer(spellColumn, selectedSpellLevelList, currentSelectedSpell, character);
     }
+
+    levelSelect.addEventListener('change', function(event) {
+        event.preventDefault();
+        selectedSpellLevel = event.target.value;
+        spellList = character.getKnownSpells(selectedSpellLevel);
+        updateSelector(spellList, spellList, select, null, 'select', knownSpellString);
+    });
 
     addSpacer(row);
     row.appendChild(levelSelect);

@@ -35,54 +35,6 @@
     border: 2px solid black;
 }
 
-.selection-bar{
-    width: 99%;
-    height: 50px;
-    display: flex; /* Use flexbox layout */
-    flex-direction: row; /* Arrange items in a row */
-    align-items: center;
-    text-align: center;
-    justify-content: center;
-    overflow-y: auto; /* Prevent vertical scrolling */
-    gap: 10px;
-}
-
-.image-button {
-    display: flex;
-    background: none;
-    border: none;
-    cursor: pointer;
-    align-items: center;
-    justify-content: center;
-}
-
-.dropdown-menu {
-    position: absolute;
-    background-color: #fff;
-    border: 2px solid #ada6a6;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    padding: 5px;
-    display: none; /* Initially hidden */
-    z-index: 1000;
-}
-
-.dropdown-menu-button{
-    display: block;
-    padding: 5px;
-    cursor: pointer;
-    border-bottom: 1px solid #000;
-    text-align: center;
-}
-
-.dropdown-menu-close-button {
-    display: block;
-    padding: 5px;
-    cursor: pointer;
-    text-align: center;
-    color: red; /* Text color red */
-    font-weight: bold; /* Makes the text bold */
-}
 
 .highlight {
     border-radius: 5px;
@@ -119,16 +71,6 @@
 
 .normal {
     font-weight: normal;
-}
-
-.draggable-row {
-    width: 100%;
-    height: 2px;
-    padding: 5px;
-    background-color: rgba(247, 215, 39, 0.993);
-    border: 2px solid rgba(207, 185, 61, 0.993);
-    border-radius: 10px;
-    cursor: move;
 }
 
 
@@ -179,3 +121,21 @@
 .slot-spend {
     background-color: rgb(90, 104, 109); /* Inner color */
 }
+
+/* DESCRIPTION CONTAINER */
+.description-container {
+    position: absolute;
+    display: block;
+    padding: 15px;
+    border: 2px solid #603B1D; /* Dark brown border for D&D style */
+    background-color: #F5CBA7; /* Skin tone background color */
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4); /* Subtle shadow for depth */
+    font-family: Georgia, serif; /* Fantasy-themed font */
+    color: #2C3E50; /* Dark text color for readability */
+    max-width: 250px; /* Limit width to fit typical D&D-style popup */
+    max-height: 80vh; /* Limit height to 80% of the viewport height */
+    overflow-y: auto; /* Makes content scrollable vertically if it's too tall */
+    z-index: 1000; /* Ensure it appears on top */
+}
+/* DESCRIPTION OF CONTAINER */
