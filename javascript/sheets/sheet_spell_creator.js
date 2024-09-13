@@ -17,7 +17,7 @@ function addSpellCreator(){
     const title = document.createElement('h3');
     title.textContent = 'Create a New';
 
-   // new Spell(,,,,)
+    //new Spell(,,,,)
     //Name
     const nameForm = createStringInput('Name: ', 'create-spell-name')[0];
     nameForm.classList.add('box-circular-border');
@@ -81,7 +81,7 @@ function createAdditonalEffectBuildContainer(id){
     column1.style.display = 'flex';
 
     column1.appendChild(createSelectorInput(Object.values(characterActions), Object.keys(characterActions), null, 'Action: ', 'create-spell-damage-types-'+id, false)[0])
-    column1.appendChild(createSelectorInput(Object.values(additionalEffects), Object.keys(additionalEffects), null, 'Action: ', 'create-spell-effect-'+id, false)[0])
+    column1.appendChild(createSelectorInput(Object.values(effectTypes), Object.keys(effectTypes), null, 'Action: ', 'create-spell-effect-'+id, false)[0])
 
     const column2 = document.createElement('div');
     column2.classList.add('column');

@@ -140,7 +140,7 @@ const characterActions = Object.freeze({
     ATTACKED: 16
 });
 
-const additionalEffects = Object.freeze({
+const effectTypes = Object.freeze({
     DICE_CHANGE: 1,
     ATTACK_DAMAGE_BONUS: 2,
     ATTACK_RADIUS_BONUS: 3, // Adjusted for consistency
@@ -150,7 +150,12 @@ const additionalEffects = Object.freeze({
     HEAL: 7,
     DEFENSE: 8,
     VISION_RANGE_BONUS: 9,   // Adjusted to be in sequential order
-    CAST: 10
+});
+
+const targetEffects = Object.freeze({
+    CAST: 1,
+    AURA: 2,
+    DEBUFF: 3  
 });
 
 
@@ -182,7 +187,26 @@ const targetTypes = Object.freeze({
     ANY: 4
 });
 
+const durationTypes = Object.freeze({
+    INSTANT: 1,
+    TURN_BASED: 2,
+    AFTER_SHORT_REST: 3,
+    AFTER_LONG_REST: 4
+});
+
+const targetEffectTypes = Object.freeze({
+    CAST: 0,
+    AURA: 1,
+    BUFF: 2
+});
 const defaultWeaponLore = 'Meh regular weapons, crafted by regular crafters :/ (Which Doesnt Require any skill!)';
+
+class Duration {
+    constructor(durationType = durationTypes.INSTANT, value= 1){
+        this.durationType = durationType;
+        this.value = value;
+    }
+}
 
 class Character {
     constructor(id ,{
@@ -198,7 +222,7 @@ class Character {
         cha = gameSettings.MIN_STAT_POINT,
         str = gameSettings.MIN_STAT_POINT,
         charCurrentAction = characterActions.IDLE,
-        additionalEffects_ = [],
+        additionalEffects = [],
         spellSlots = {
             '1':[5,3],
             '2':[4,3],
@@ -227,7 +251,7 @@ class Character {
         this.cha = cha;
         this.str = str;
         this.charCurrentAction = charCurrentAction;
-        this.additionalEffects_ = additionalEffects_;
+        this.additionalEffects = additionalEffects;
         this.spellSlots = spellSlots;
         this.availableSpells = availableSpells;
         this.learnedSpells = learnedSpells;
@@ -393,8 +417,9 @@ class Time{
     }
 }
 
+
 class SpellPattern  {
-    constructor(pattern, range, area, castType = false, targetList = []) {
+    constructor(pattern, range, area, castType = false, targetList = [targetTypes.ENEMY]) {
         this.pattern = pattern; // SpellPattern enum
         this.range = range;
         this.area = area;
@@ -403,32 +428,65 @@ class SpellPattern  {
     }
 }
 
-class AdditionalEffect {
-    constructor(characterAction, effect, value, description) {
-        this.characterAction = characterAction;
+class BuffDebuff {
+    constructor(duration, effect, value, resetAction, description = "Some Debuff", name = null) {
+        this.name = name;
+        this.duration = duration;
         this.effect = effect;
         this.value = value;
+        this.resetAction = resetAction;
+        this.description = description;
+    }
+
+    copy_with(name= null, duration= null, effect= null, value= null, resetAction= null, description= null){
+        if(!name) name = this.name;
+        if(!duration) duration = this.duration;
+        if(!effect) effect = this.effect;
+        if(!value) value = this.value;
+        if(!resetAction) resetAction = this.resetAction;
+        if(!description) description = this.description;
+        return new BuffDebuff(name, duration, effect, value, resetAction, description); 
+    }
+}
+
+class Aura {
+    constructor(name, duration, area, effect, value, resetAction, description= "Some Aura") {
+        this.name = name;
+        this.duration = duration;
+        this.area = area;
+        this.effect = effect;
+        this.value = value;
+        this.description = description;
+        this.resetAction = resetAction;
+    }
+}
+
+class Cast {
+    constructor(castOnAction, spell, targetListInOrder, description = "Something makes you cast") {
+        this.castOnAction = castOnAction;
+        this.spell = spell;  // Spell object
+        this.targetListInOrder = targetListInOrder;
         this.description = description;
     }
 }
 
-
-class ManaEffect {
-    constructor(mana, additionalEffect) {
-        this.mana = mana;
-        this.additionalEffect = additionalEffect;
+class AdditionalEffect {
+    constructor(characterAction, targetEffectTypes, targetEffect, description) {
+        this.characterAction = characterAction;
+        this.targetEffectTypes = targetEffectTypes;  // TargetEffectType enum 0: CAST, 1: AURA, 2: BUFF
+        this.targetEffect = targetEffect;  // TargetEffect enum
+        this.description = description;
     }
 }
 
 class Spell {
-    constructor(name, availableClasses = [], statType= [], damageTypes, description, targetEffects=[], triggerAction= characterActions.ATTCKED, spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN) {
+    constructor(name, availableClasses = [], statType= [], damageTypes, description, targetEffects=[], spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN) {
         this.name               = name; // String
         this.availableClasses   = availableClasses; // Array of ClassType enums
         this.statType           = statType; // StatType enum (e.g., STR, DEX, CON, etc.)
         this.damageTypes        = damageTypes; // DamageType enum
         this.description        = description; // Description object with required mana levels and descriptions
         this.targetEffects      = targetEffects; //
-        this.triggerAction       = triggerAction; // Trigger
         this.spendManaEffects   = spendManaEffects;
         this.spellPattern       = spellPattern;
         this.damage             = damage;

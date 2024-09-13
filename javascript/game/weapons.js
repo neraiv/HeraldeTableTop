@@ -7,7 +7,7 @@ const listBaseWeaponAttacks = Object.freeze({
 const listWeapons = Object.freeze({
     'Sword': new Item('Sword', itemType.WEAPON, weaponType.SWORD, [weaponProperties.TWO_HANDED, weaponProperties.FINESSE], [], [listBaseWeaponAttacks.SLASH], defaultWeaponLore),
     'Hammer Of Mouse': new Item('Hammer Of Mouse', itemType.WEAPON, weaponType.HAMMER, [weaponProperties.LIGHT, weaponProperties.TWO_HANDED], 
-        [new AdditionalEffect(characterActions.MOVING, additionalEffects.BONUS, 4, "U can move faster")], [listBaseWeaponAttacks.BONK], 
+        [new AdditionalEffect(characterActions.MOVING, effectTypes.BONUS, 4, "U can move faster")], [listBaseWeaponAttacks.BONK], 
         "Stories say this hammer made by a mouse. May be cousin of Famous Chef Ratatouille."),
 });
 

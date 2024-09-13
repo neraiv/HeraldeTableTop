@@ -129,21 +129,26 @@ function spellCast(token, spell, mana=null) {
     let spellArea = spell.spellPattern.area;
     let spellRange = spell.spellPattern.range;
 
-    if(spell.spendManaEffects[mana]?.effect == additionalEffects.PATTERN_CHANGE) {
-        spellPattern = spell.spendManaEffects[mana].value;
+    if(spell.spendManaEffects[mana]?.targetEffectTypes == targetEffectTypes.BUFF){
+        for (let spellEffect of spell.spendManaEffects[mana].targetEffect) {
+            if(spellEffect.effect == effectTypes.PATTERN_CHANGE){
+                spellPattern = spellEffect.value;               
+            }           
+            if(spellEffect.effect == effectTypes.ATTACK_RADIUS_BONUS) {
+                spellArea = parseInt(spellArea) + parseInt(spellEffect.value);
+            }
+            if(spellEffect.effect == effectTypes.ATTACK_RANGE_BONUS) {
+                spellRange = parseInt(spellRange) + parseInt(spellEffect.value);
+            }
+        }
     }
-    if(spell.spendManaEffects[mana]?.effect == additionalEffects.ATTACK_RADIUS_BONUS) {
-        spellArea = parseInt(spellArea) + parseInt(spell.spendManaEffects[mana].value);
-    }
-    if(spell.spendManaEffects[mana]?.effect == additionalEffects.ATTACK_RANGE_BONUS) {
-        spellRange = parseInt(spellRange) + parseInt(spell.spendManaEffects[mana].value);
-    }
+    
 
-    if(spellPattern === patterns.CIRCULAR) {
+    if(spellPattern === spellPatterns.CIRCULAR) {
         spellCastTarget.classList.add('spell-circular');
-    } else if(spellPattern === patterns.BOX) {
+    } else if(spellPattern === spellPatterns.BOX) {
         spellCastTarget.classList.add('spell-box');
-    } else if(spellPattern === patterns.CONE_UPWARD || spellPattern === patterns.CONE_DOWNWARD) {
+    } else if(spellPattern === spellPatterns.CONE_UPWARD || spellPattern === spellPatterns.CONE_DOWNWARD) {
         spellCastTarget.classList.add('spell-cone');
     }
 
@@ -156,11 +161,11 @@ function spellCast(token, spell, mana=null) {
         spellCastTarget.style.top = `${tokenRect.centerY - spellArea / 2}px`;
     }
 
-    if(spellPattern !== patterns.CONE_UPWARD && spellPattern !== patterns.CONE_DOWNWARD) {
+    if(spellPattern !== spellPatterns.CONE_UPWARD && spellPattern !== spellPatterns.CONE_DOWNWARD) {
         spellCastTarget.style.width = `${spellArea}px`;
         spellCastTarget.style.height = `${spellArea}px`;
     } else {
-        if(spellPattern === patterns.CONE_DOWNWARD) {
+        if(spellPattern === spellPatterns.CONE_DOWNWARD) {
             spellCastTarget.style.borderWidth = `0px ${spellArea / 2}px ${spellArea}px ${spellArea / 2}px`;
         } else {
             spellCastTarget.style.borderWidth = `${spellArea}px ${spellArea / 2}px 0px ${spellArea / 2}px`;
@@ -239,13 +244,13 @@ function spellCast(token, spell, mana=null) {
 
             spellAngle = (angle * 180 / Math.PI + 270) % 360;
 
-            if (spellPattern !== patterns.CONE_UPWARD && spellPattern !== patterns.CONE_DOWNWARD) {
+            if (spellPattern !== spellPatterns.CONE_UPWARD && spellPattern !== spellPatterns.CONE_DOWNWARD) {
                 spellCastTarget.style.height = `${distance}px`;
                 spellWidth = spellArea;
                 spellHeight = distance;
             } else {
-                // Handle cone patterns with borders
-                if (spellPattern === patterns.CONE_DOWNWARD) {
+                // Handle cone spellPatterns with borders
+                if (spellPattern === spellPatterns.CONE_DOWNWARD) {
                     spellCastTarget.style.borderBottomWidth = `${distance}px`;
                     spellCastTarget.style.borderTop = 'none';
                 } else {
@@ -329,6 +334,6 @@ function checkSpellUsable(char, spell) {
     // Check if the character has enough spell slots
     return Object.keys(spell.spendManaEffects).every((mana) => {
         const val = char.spellSlots[mana];
-        return val > 0;
+        return val[1] > 0;
     });
 }

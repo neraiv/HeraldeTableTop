@@ -88,6 +88,7 @@ function displayInventory(inventory, x, y) {
     inventorySheet.style.left = `${x}px`;
     inventorySheet.style.top = `${y}px`;
 
+    addDraggableRow(inventorySheet);
     // Create the top row with the title and close button
     const topRow = document.createElement('div');
     topRow.classList.add('row');
@@ -215,7 +216,6 @@ function displayItemDescription(inventroyItem, x, y) {
         return;
     }
 
-
     // Create a container for the item description
     const descriptionContainer = document.createElement("div");
     descriptionContainer.id = id;
@@ -261,7 +261,7 @@ function displayItemDescription(inventroyItem, x, y) {
         descriptionContainer.appendChild(propertiesList);
     }
 
-    if(item.additionalEffects && item.additionalEffects.length >0){
+    if(item.additionalEffects && item.additionalEffects.length > 0){
         const effectsList = document.createElement("ul");
         const title = document.createElement("h4");
         title.textContent = "Additonal Effect(s)";
@@ -270,13 +270,13 @@ function displayItemDescription(inventroyItem, x, y) {
         effectsList.appendChild(title);
         item.additionalEffects.forEach(property => {
             const listItem = document.createElement("li");
-            listItem.textContent = "When "+ Object.keys(characterActions).find(key => characterActions[key] === property.characterAction) +" -> "+property.description +" by " + property.value;
+            listItem.textContent = "When " + Object.keys(characterActions).find(key => characterActions[key] === property.characterAction) + " -> " + property.description + " by " + property.value;
             effectsList.appendChild(listItem);
         }); 
         descriptionContainer.appendChild(effectsList);
     }
 
-    if(item.spells && item.spells.length >0){  
+    if(item.spells && item.spells.length > 0){  
         const effectsList = document.createElement("ul");
         const title = document.createElement("h4");
         title.textContent = "Spell(s)";
@@ -294,11 +294,20 @@ function displayItemDescription(inventroyItem, x, y) {
     // Append the container to the body or game area
     document.body.appendChild(descriptionContainer);
 
+    // Adjust position if the container exceeds the available screen space
+    const containerHeight = descriptionContainer.offsetHeight;
+    const windowHeight = window.innerHeight;
+    if (y + containerHeight > windowHeight) {
+        // Adjust the container's position to stay within the screen
+        descriptionContainer.style.top = `${windowHeight - containerHeight - 10}px`; // 10px padding from the bottom
+    }
+
     // Optional: Remove the description when clicked
     descriptionContainer.addEventListener("click", () => {
         document.body.removeChild(descriptionContainer);
     });
 }
+
 
 function addSpellInfo(parent, spell, char = null) {
     const listItem = document.createElement("div");
@@ -400,7 +409,7 @@ function addSpellInfo(parent, spell, char = null) {
 
     // Spell Pattern
     if (spell.spellPattern) {
-        const patternText = Object.keys(patterns).find(key => patterns[key] === spell.spellPattern.pattern);
+        const patternText = Object.keys(spellPatterns).find(key => spellPatterns[key] === spell.spellPattern.pattern);
         const patternElement = createLabeledElement("Pattern", patternText);
         listItem.appendChild(patternElement);
     }
@@ -426,7 +435,6 @@ function displayAvaliableSpells(char, x, y) {
     let selectedSpellLevelList;
     let selectedSpell;
     
-    // Create the inventory sheet container
     const spellsSheet = document.createElement('div');
     spellsSheet.classList.add('avaliable-spells-sheet');
     spellsSheet.style.left = `${x}px`;
@@ -462,10 +470,10 @@ function displayAvaliableSpells(char, x, y) {
         const gridContainer = document.createElement('div');
         gridContainer.classList.add('slot-container');
 
-        for (let index = 0; index < value; index++) {
+        for (let index = 0; index < value[0]; index++) {
             const mana = document.createElement('div');
             mana.classList.add('slot-circle');
-            if(char.remainingManaSlots[key] < index+1){
+            if(value[1] < index+1){
                 mana.classList.add('slot-spend');
             }else{
                 mana.classList.add('slot-mana');
@@ -514,7 +522,7 @@ function displayAvaliableSpells(char, x, y) {
         let atLeastONE = false;
         gameSettings.includedSpellLevels.forEach((level) =>{
             if(spell.spendManaEffects[level] !== undefined){
-                if(char.remainingManaSlots[level] > 0){
+                if(char.spellSlots[level][1] > 0){
                     manaSelectMenuItems[1][parseInt(level)-1].style.display = 'block';
                     atLeastONE = true;
                 }
@@ -542,7 +550,7 @@ function displayAvaliableSpells(char, x, y) {
         if (spellLevel == 1){
             selectedSpellLevelList = level1_spell_list;
         }else if (spellLevel == 2){
-            selectedSpellLevelList = level1_spell_list;
+            selectedSpellLevelList = level1_spell_list; // Future
         }
         
         avaliable.forEach((spellName) => {
