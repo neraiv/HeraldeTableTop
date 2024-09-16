@@ -7,12 +7,12 @@ function setupUI(){
 }
 
 function getInGameCharacterById(id) {
-    return inGameCharacters.find(character => character.ID === id);
+    return inGameCharacters.find(character => character.id === id);
 }
 
 function getInGameCharTokenByCharOrID(char = null, id = null){
     if (char) {
-        id = char.ID;
+        id = char.id;
     } 
     const token = document.getElementById(`token-character-${id}`);
     return token;
@@ -27,12 +27,24 @@ function getObjectPositionInGameboard(element) {
     const left = (rect.left - gameboardRect.left) / scale;
     const top = (rect.top - gameboardRect.top) / scale;
 
+    const right = (rect.right - gameboardRect.right) / scale;
+    const bottom = (rect.bottom - gameboardRect.top) / scale;
+
     const width = rect.width / scale;
     const height = rect.height / scale;
     const centerX = left + width/2;
     const centerY = top + height/2;
 
-    return { left, top, width, height, centerX, centerY};
+    return { left, top, right, bottom, width, height, centerX, centerY};
+}
+
+function getObjectPositionInObjectPositions(id){
+    if (objectsPositions.get(id)) {
+        return objectsPositions.get(id);
+    } else {
+        console.error(`Object with id ${id} not found in objectsPositions.`);
+        return new DOMRect();
+    }
 }
 
 function getMousePositionOnGameboard(event) {
@@ -174,10 +186,10 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 if (token.className.includes('character-token')){
                     if(checkIfValidMove(token, x, y)){
-                        moveObjectInGameBoardToPosition(token, x, y);
+                        moveObject(token, x, y);
                     }
                 }else if (token.className.includes('background-token')){
-                    moveObjectInGameBoardToPosition(token, x, y);
+                    moveObject(token, x, y);
                 }
             }
         } else {

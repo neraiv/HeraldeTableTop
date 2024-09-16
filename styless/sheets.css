@@ -149,7 +149,7 @@ h2 {
 
 /* SPELL CREATE SHEET*/
 .spell-create-sheet {
-    display: flex;
+    display: none;
     position: absolute;
     top: 50%;
     left: 50%;

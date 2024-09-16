@@ -418,8 +418,13 @@ function addDraggableRow(parent){
     parent.appendChild(draggableRow);
 }
 
-function moveObjectInGameBoardToPosition(element, x, y){
-    element.style.left = `${x}px`;
-    element.style.top = `${y}px`;
-    objectsPositions.set(element.id, { x: x, y: y });
+function moveObject(element, newX, newY){
+    element.style.left = `${newX}px`;
+    element.style.top = `${newY}px`;
+
+    const elementRect = objectsPositions.get(element.id);
+    elementRect.x = newX;
+    elementRect.y = newY;
+
+    console.log("hello")
 }

@@ -230,16 +230,16 @@ class Character {
             '4':[2,2]
         },
         availableSpells = {
-            1: ['Fireball', 'Ice Cone'],
+            1: ['Fireball', 'Ice Cone', 'Heralde'],
             2: ['Lightning Ray', 'Fire Hands']
         },
         learnedSpells = {
-            1: ['Fireball', 'Ice Cone'], 
+            1: ['Fireball', 'Ice Cone', 'Heralde'], 
             2: ['Lightning Ray', 'Fire Hands']
         },
         inventory = new Inventory()
     } = {}) {
-        this.ID = id;
+        this.id = id;
         this.level = level;
         this.name = name;
         this.classess = classess;
