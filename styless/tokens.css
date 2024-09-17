@@ -72,14 +72,6 @@
     transform-origin: top center !important;
 }
 
-.spell-dot {
-    position: absolute;
-    width: 5px;
-    height: 5px;
-    background-color: red;
-    left: 100px;
-    z-index: 1500;
-  }
   
 .highlight-overlay {
     position: absolute;

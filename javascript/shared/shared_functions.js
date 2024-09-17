@@ -428,3 +428,18 @@ function moveObject(element, newX, newY){
 
     console.log("hello")
 }
+
+function createTestDots(parent, count){
+    let dotList = [];
+    for(let i = 0; i < count; i++){
+        const dot = document.createElement('div');
+        dot.classList.add('test-dot');
+        dotList.push(dot);
+        parent.appendChild(dot);
+    }
+    return dotList;
+}
+
+function removeDots(parent, dotlist){
+    dotlist.forEach(dot => parent.removeChild(dot));
+}

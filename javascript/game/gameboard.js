@@ -4,6 +4,10 @@ function setupUI(){
     addTopRightBar();
     addDriveImageBar();
     addCharacterCreateSheet(userInterface);
+
+    // Future
+    createDriveImageContainer('dedector', 'character', tokenPaths.FOLDER_CHARTOKEN, document.getElementById('character-list'))
+    createDriveImageContainer('coil', 'character', tokenPaths.FOLDER_CHARTOKEN, document.getElementById('character-list'))
 }
 
 function getInGameCharacterById(id) {

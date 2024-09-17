@@ -122,11 +122,18 @@ function spellCast(tokenID, spell, mana=null) {
 
     const tokenCenterX = tokenRect.x + tokenRect.width / 2
     const tokenCenterY = tokenRect.y + tokenRect.height / 2
-
+    
     const spellCastTarget = document.createElement('div');
     const spellRangeCircle = document.createElement('div');
-
     spellCastTarget.classList.add('spell-cast'); 
+
+    const spellBox = document.createElement('div');
+    spellBox.style.border = '1px solid black';
+    spellBox.style.borderLeftWidth = '3px';
+    spellBox.style.borderTopWidth = '3px';
+    spellBox.style.width = '100%';
+    spellBox.style.height = '100%';
+    spellCastTarget.appendChild(spellBox);
 
     let spellPattern = spell.spellPattern.pattern;
     let spellArea = spell.spellPattern.area;
@@ -145,8 +152,6 @@ function spellCast(tokenID, spell, mana=null) {
             }
         }
     }
-    
-
     if(spellPattern === spellPatterns.CIRCULAR) {
         spellCastTarget.classList.add('spell-circular');
     } else if(spellPattern === spellPatterns.BOX) {
@@ -171,6 +176,7 @@ function spellCast(tokenID, spell, mana=null) {
     if(spellPattern !== spellPatterns.CONE_UPWARD && spellPattern !== spellPatterns.CONE_DOWNWARD) {
         spellCastTarget.style.width = `${spellArea}px`;
         spellCastTarget.style.height = `${spellArea}px`;
+
     } else {
         if(spellPattern === spellPatterns.CONE_DOWNWARD) {
             spellCastTarget.style.borderWidth = `0px ${spellArea / 2}px ${spellArea}px ${spellArea / 2}px`;
@@ -189,51 +195,22 @@ function spellCast(tokenID, spell, mana=null) {
     bgLayer.appendChild(spellCastTarget);
     bgLayer.appendChild(spellRangeCircle);
 
+    const out = createTestDots(bgLayer, 4);
+    out[0].style.borderColor = 'black';
+
     let overlappedTokens = {};
-    function isOverlap(x, y, width, height, angle, target) {
-        // Calculate the four corners of the rotated rectangle
-        const rectCenterX = x + width / 2;
-        const rectCenterY = y + height / 2;
+    // out[3].style.left   = `${corners[2].x-3}px`; // Bottom-left
+    // out[3].style.top    = `${corners[2].y-3}px`;
 
-        const halfWidth = width / 2;
-        const halfHeight = height / 2;
+    // out[2].style.left   = `${corners[1].x-3}px`; // Top-right
+    // out[2].style.top    = `${corners[1].y-3}px`;
 
-        // Rotated corners of the rectangle (using rotation matrix)
-        const corners = [
-            rotatePoint(x, y, rectCenterX, rectCenterY, angle), // Top-left
-            rotatePoint(x + width, y, rectCenterX, rectCenterY, angle), // Top-right
-            rotatePoint(x, y + height, rectCenterX, rectCenterY, angle), // Bottom-left
-            rotatePoint(x + width, y + height, rectCenterX, rectCenterY, angle), // Bottom-right
-        ];
+    // out[1].style.left   = `${corners[3].x-3}px`;
+    // out[1].style.top    = `${corners[3].y-3}px`; // Bottom-right
 
-        // Check overlap by verifying if any corner of the rotated spell area overlaps with the target
-        return corners.some(corner => 
-            corner.x >= target.x &&
-            corner.x <= target.x + (target.width || 100) &&
-            corner.y >= target.y &&
-            corner.y <= target.y + (target.height || 100)
-        );
-    }
-
-    function rotatePoint(px, py, cx, cy, angle) {
-        const rad = angle * (Math.PI / 180); // Convert angle to radians
-        const cos = Math.cos(rad);
-        const sin = Math.sin(rad);
-
-        // Translate point to origin
-        const dx = px - cx;
-        const dy = py - cy;
-
-        // Rotate the point
-        const newX = dx * cos - dy * sin;
-        const newY = dx * sin + dy * cos;
-
-        // Translate point back
-        return {
-            x: newX + cx,
-            y: newY + cy
-        };
-    }
+    // out[0].style.left   = `${corners[0].x-3}px`; // Top-left
+    // out[0].style.top    = `${corners[0].y-3}px`;
+    
 
     function updatePosition(event) {
         const mouse = getMousePositionOnGameboard(event);
@@ -241,20 +218,18 @@ function spellCast(tokenID, spell, mana=null) {
             Math.pow(mouse.x - tokenCenterX, 2) + 
             Math.pow(mouse.y - tokenCenterY, 2)
         );
-        const angle = Math.atan2(mouse.y - tokenCenterY, mouse.x - tokenCenterX);
+        const mouseAngle = Math.atan2(mouse.y - tokenCenterY, mouse.x - tokenCenterX);
 
-        let newX, newY, spellWidth, spellHeight, spellAngle = 0;
+        const angle = mouseAngle + (1.5 * Math.PI)
 
+        let newX, newY, spellWidth, spellHeight = 0;
+        let corners = [];
         if (spell.spellPattern.castType === castType.FROM_CASTER) {
             distance = Math.min(distance, spellRange);
-            spellCastTarget.style.transform = `rotate(${(angle * 180 / Math.PI + 270) % 360}deg)`;
-
-            spellAngle = (angle * 180 / Math.PI + 270) % 360;
+            spellCastTarget.style.transform = `rotate(${(angle * 180 / Math.PI) % 360}deg)`;
 
             if (spell.spellPattern !== spellPatterns.CONE_UPWARD && spellPattern !== spellPatterns.CONE_DOWNWARD) {
                 spellCastTarget.style.height = `${distance}px`;
-                spellWidth = spellArea;
-                spellHeight = distance;
             } else {
                 // Handle cone spellPatterns with borders
                 if (spell.spellPattern.pattern === spellPatterns.CONE_DOWNWARD) {
@@ -264,9 +239,12 @@ function spellCast(tokenID, spell, mana=null) {
                     spellCastTarget.style.borderBottom = 'none';
                     spellCastTarget.style.borderTopWidth = `${distance}px`;
                 }
-                spellWidth = spellArea;
-                spellHeight = distance;
             }
+            spellWidth = spellArea;
+            spellHeight = distance;
+            newX = tokenCenterX - spellArea / 2;
+            newY = tokenCenterY;
+
         } else if(spell.spellPattern.castType == castType.ON_LOCATION) {
             // castType.ON_LOCATION
             newX = mouse.x - spellArea / 2;
@@ -282,24 +260,55 @@ function spellCast(tokenID, spell, mana=null) {
 
             spellCastTarget.style.left = `${newX}px`;
             spellCastTarget.style.top = `${newY}px`;
-            spellCastTarget.style.transform = `rotate(${(angle * 180 / Math.PI + 270) % 360}deg)`;
+            spellCastTarget.style.transform = `rotate(${(angle * 180 / Math.PI) % 360}deg)`;
         } else if (spell.spellPattern.castType == castType.AROUND_CASTER) {
-
-            spellHeight = distance;
-            spellWidth = distance;
 
             const newSpellAreaRadius = (distance <= spellRange) ? distance : spellRange;
             
             const newSpellArea =  (newSpellAreaRadius <= spellArea/2) ? spellArea : newSpellAreaRadius * 2;
+            newX = tokenCenterX - newSpellArea /2
+            newY = tokenCenterY - newSpellArea /2;
+            spellHeight = newSpellArea;
+            spellWidth = newSpellArea;
+
             spellCastTarget.style.height = `${newSpellArea}px`;
             spellCastTarget.style.width = `${newSpellArea}px`;
-            spellCastTarget.style.transform = `translate(-50%, -50%) rotate(${(angle * 180 / Math.PI + 270) % 360}deg)`;
+            spellCastTarget.style.transform = `translate(-50%, -50%) rotate(${(angle * 180 / Math.PI) % 360}deg)`;
+        }
+        
+        if (spell.spellPattern == spellPatterns.BOX) {
+            spellCastTarget.style.height = `${distance}px`;
+
+            corners.push(
+                {x: newX, y: newY},
+                {x: newX + spellWidth, y: newY},
+                {x: newX + spellWidth, y: newY + spellHeight},
+                {x: newX, y: newY + spellWidth}
+            )     
+        } else if (spell.spellPattern.pattern == spellPatterns.CIRCULAR){
+            corners.push(
+                {x: newX, y: newY},
+                {x: newX + spellWidth, y: newY},
+                {x: newX + spellWidth, y: newY + spellHeight},
+                {x: newX, y: newY + spellWidth}
+            )   
+        } 
+        else if (spell.spellPattern.pattern == spellPatterns.CONE_DOWNWARD) {
+            corners.push(
+                {x: newX + spellWidth/2 , y: newY},
+                {x: newX + spellWidth, y: newY + spellHeight},
+                {x: newX, y: newY + spellWidth}
+            )   
+        } else if (spell.spellPattern.pattern == spellPatterns.CONE_UPWARD) {
+            corners.push({
+        
+            })
         }
 
         // Now we need to check for overlap using the rotated bounds (for castType.FROM_CASTER)
-        objectsPositions.forEach((position, tokenKey) => {
+        objectsPositions.forEach((targetRect, tokenKey) => {
             if (tokenKey !== tokenID) { // Exclude the current casting token
-                if (isOverlap(newX, newY, spellWidth, spellHeight, spellAngle, position)) {
+                if (isOverlap(corners, angle, targetRect)) {
                     if (!overlappedTokens[tokenKey] && tokenKey.includes('character')) {
                         overlappedTokens[tokenKey] = true;
                         highlightToken(tokenKey);
@@ -318,6 +327,7 @@ function spellCast(tokenID, spell, mana=null) {
     function stopCasting() {
         bgLayer.removeChild(spellCastTarget);
         bgLayer.removeChild(spellRangeCircle);
+        removeDots(bgLayer, out);
         gameboard.removeEventListener('mousemove', updatePosition);
         gameboard.removeEventListener('click', stopCasting);
     }

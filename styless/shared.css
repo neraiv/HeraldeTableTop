@@ -139,3 +139,14 @@
     z-index: 1000; /* Ensure it appears on top */
 }
 /* DESCRIPTION OF CONTAINER */
+
+
+.test-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border: 3px solid red;
+    border-radius: 50%;
+    background-color: red;
+    z-index: 1500;
+}
