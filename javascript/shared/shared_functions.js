@@ -440,6 +440,58 @@ function createTestDots(parent, count){
     return dotList;
 }
 
-function removeDots(parent, dotlist){
+function removeTestDots(parent, dotlist){
     dotlist.forEach(dot => parent.removeChild(dot));
+}
+
+function getTokenShape(rect, tokenShapeType){
+    if(tokenShapeType == tokenShapeTypes.BOX){
+        return getBoxFromRect(rect);
+    } else if(tokenShapeType == tokenShapeTypes.HEXAGON){
+        return getHexagonFromRect(rect);
+    }
+}
+
+function getBoxFromRect(rect){
+    const shape = [
+        {x: rect.left, y: rect.top},
+        {x: rect.left + rect.width, y: rect.top},
+        {x: rect.left + rect.width, y: rect.top + rect.height},
+        {x: rect.left, y: rect.top + rect.height}
+    ]
+    return shape;
+}
+
+function getHexagonFromRect(rect){
+    const { x, y, width, height } = rect;
+
+    // Calculate the center of the DOMRect
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+
+    // Radius of the hexagon - we use half the smaller dimension for fitting
+    const radius = Math.min(width, height) / 2;
+
+    // Create an array to store the points of the hexagon
+    const hexagonPoints = [];
+
+    // Calculate the 6 corner points using trigonometry
+    for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i;  // 60 degrees in radians for each vertex
+        const pointX = centerX + radius * Math.cos(angle);
+        const pointY = centerY + radius * Math.sin(angle);
+        hexagonPoints.push({ x: pointX, y: pointY });
+    }
+
+    return hexagonPoints;  
+}
+
+function getKeyFromMapWithValue(map, searchValue){
+    const matchingEntry = Object.entries(map).find(([key, value]) => value === searchValue);
+    if(matchingEntry){
+        return [matchingEntry[0]];
+    }else{
+        return undefined;
+    }
+    
 }

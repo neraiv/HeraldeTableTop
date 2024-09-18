@@ -44,7 +44,7 @@ function getObjectPositionInGameboard(element) {
 
 function getObjectPositionInObjectPositions(id){
     if (objectsPositions.get(id)) {
-        return objectsPositions.get(id);
+        return objectsPositions.get(id)[1];
     } else {
         console.error(`Object with id ${id} not found in objectsPositions.`);
         return new DOMRect();
@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function checkIfValidMove(img, mouseX, mouseY) {
         //const overlayRect = dragOverlay.getBoundingClientRect();
-        const position = objectsPositions.get(img.id);
+        const position = objectsPositions.get(img.id)[1];
 
         const oldX = position.x;
         const oldY = position.y;

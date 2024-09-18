@@ -1,3 +1,12 @@
+const rollTypes = Object.freeze({
+    DEX_SAVING_THROW: 1,
+    CON_SAVING_THROW: 2,
+    INT_SAVING_THROW: 3,
+    WIS_SAVING_THROW: 4,
+    CHA_SAVING_THROW: 5,
+    PERCEPTION: 6,
+});
+
 const itemType = Object.freeze({ 
     WEAPON: 1,
     CONSUMABLE: 2,
@@ -33,7 +42,7 @@ const damageType = Object.freeze({
     HEALING: 99,
     PSYCHIC: 1,
     FIRE: 2,
-    COLD: 3,
+    FROST: 3,
     LIGHTNING: 4,
     NECROTIC: 5,
     FORCE: 6,
@@ -42,7 +51,9 @@ const damageType = Object.freeze({
     RADIANT: 9,
     SLASHING: 10,
     PIERCING: 11,
-    BLUDGEONING: 12
+    BLUDGEONING: 12,
+    CONJURE: 13,
+    PURE: 14
     // Add more damage types as needed
 });
 
@@ -215,12 +226,12 @@ class Character {
         classess = [],
         race = "",
         subrace = "",
-        dex = gameSettings.MIN_STAT_POINT,
-        con = gameSettings.MIN_STAT_POINT,
-        int = gameSettings.MIN_STAT_POINT,
-        wis = gameSettings.MIN_STAT_POINT,
-        cha = gameSettings.MIN_STAT_POINT,
-        str = gameSettings.MIN_STAT_POINT,
+        dex = 12,//gameSettings.MIN_STAT_POINT,
+        con = 12,//gameSettings.MIN_STAT_POINT,
+        int = 8,//gameSettings.MIN_STAT_POINT,
+        wis = 12,//gameSettings.MIN_STAT_POINT,
+        cha = 12,//gameSettings.MIN_STAT_POINT,
+        str = 12,//gameSettings.MIN_STAT_POINT,
         charCurrentAction = characterActions.IDLE,
         additionalEffects = [],
         spellSlots = {
@@ -230,12 +241,12 @@ class Character {
             '4':[2,2]
         },
         availableSpells = {
-            1: ['Fireball', 'Ice Cone', 'Heralde'],
-            2: ['Lightning Ray', 'Fire Hands']
+            1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'],
+            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountenles Dwarf']
         },
         learnedSpells = {
-            1: ['Fireball', 'Ice Cone', 'Heralde'], 
-            2: ['Lightning Ray', 'Fire Hands']
+            1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'], 
+            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountenles Dwarf']
         },
         inventory = new Inventory()
     } = {}) {
@@ -429,10 +440,10 @@ class SpellPattern  {
 }
 
 class BuffDebuff {
-    constructor(duration, effect, value, resetAction, description = "Some Debuff", name = null) {
+    constructor(duration, effectType, value, resetAction, description = "Some Debuff", name = null) {
         this.name = name;
         this.duration = duration;
-        this.effect = effect;
+        this.effectType = effectType;
         this.value = value;
         this.resetAction = resetAction;
         this.description = description;
@@ -471,20 +482,20 @@ class Cast {
 }
 
 class AdditionalEffect {
-    constructor(characterAction, targetEffectTypes, targetEffect, description) {
+    constructor(characterAction, targetEffectType, targetEffect, description) {
         this.characterAction = characterAction;
-        this.targetEffectTypes = targetEffectTypes;  // TargetEffectType enum 0: CAST, 1: AURA, 2: BUFF
+        this.targetEffectType = targetEffectType;  // TargetEffectType enum 0: CAST, 1: AURA, 2: BUFF
         this.targetEffect = targetEffect;  // TargetEffect enum
         this.description = description;
     }
 }
 
 class Spell {
-    constructor(name, availableClasses = [], statType= [], damageTypes, description, targetEffects=[], spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN) {
+    constructor(name, availableClasses = [], statType= [], damageType, description, targetEffects=[], spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN, casterRolls, targetRolls) {
         this.name               = name; // String
         this.availableClasses   = availableClasses; // Array of ClassType enums
         this.statType           = statType; // StatType enum (e.g., STR, DEX, CON, etc.)
-        this.damageTypes        = damageTypes; // DamageType enum
+        this.damageType        = damageType; // DamageType enum
         this.description        = description; // Description object with required mana levels and descriptions
         this.targetEffects      = targetEffects; //
         this.spendManaEffects   = spendManaEffects;
@@ -492,6 +503,8 @@ class Spell {
         this.damage             = damage;
         this.castTime           = castTime;
         this.actionCost         = actionCost; // ActionType enum
+        this.casterRolls        = casterRolls;
+        this.targetRolls        = targetRolls;
     }
 
     returnSelf(){

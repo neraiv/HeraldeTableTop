@@ -10,6 +10,18 @@ const inputTypes = Object.keys({
     NUMBER: 'number',
 });
 
+const tokenShapeTypes = Object.freeze({
+    BOX: 1,
+    CIRCLE: 2,
+    TRIANGLE: 3,
+    HEXAGON: 4,
+});
+
+const tokenTypes = Object.freeze({
+    CHARACTER: 1,
+    BACKGROUND: 2,
+});
+
 class TokenPaths {
     constructor({
         folderClassIcons = 'tokens/class-icons',
@@ -17,6 +29,7 @@ class TokenPaths {
         folderBackgroundToken = 'tokens/background',
         folderGeneralSounds = 'tokens/general-sounds',
         imageList_Character =  ['coil', 'dedector', 'druid-woman', 'elf-warrior-woman'],
+        imageList_Conjurable = ['mountenless-dwarf'],
         imageList_Background = ['detector-green-1', 'alchemy-shop-1', 'fighting-pit-muddy-1', 'living-depths-1', 'living-depths-2','metalsmith-workshop-1','ossuary-of-xilbalba-1',
                                 'palatial-portal-1','royal-bank-1'],
         imageList_ClassIcons = ['barbarian.png', 'archer.png', 'bard.png', 'brawler.png', 'cleric.png', 'druid.png', 'fighter.png', 'mage.png', 'ranger.png', 'thief.png', 'warlock.png'],
@@ -27,6 +40,7 @@ class TokenPaths {
         this.FOLDER_CLASSICONS       = folderClassIcons;
         this.FOLDER_GENERALSOUNDS    = folderGeneralSounds;
         this.IMAGELIST_CHARACTER    = imageList_Character;
+        this.IMAGELIST_CONJURABLE   = imageList_Conjurable;  // Add conjurable to imageList_CHARACTER
         this.IMAGELIST_BACKGROUND   = imageList_Background;
         this.IMAGELIST_CLASSICONS   = imageList_ClassIcons;
         this.DEFAULT_CHAR_PROFILE   = default_char_profile;
