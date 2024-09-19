@@ -514,7 +514,7 @@ function displayAvaliableSpells(char, x, y) {
     for (let index = 0; index < Object.keys(manaSelect).length; index++) {
         manaSelectMenuItems[1][index].onclick = () => { 
             spellCast(`token-character-${char.id}`, selectedSpellLevelList[selectedSpell], index+1);
-            spellsSheet.style.display = 'none';
+            spellsSheet.remove();
         }        
     }
     dropdownMenuItems[1][0].onclick = function(event){

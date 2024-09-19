@@ -23,11 +23,13 @@ function createCharacterToken(img_src_element, x, y) {
     setImageSize(img, userIntarfaceSettings.GRID_SIZE, userIntarfaceSettings.GRID_SIZE);
     
     token.addEventListener('dragstart', function (event) {
+        toggleButtonsDisplay(false);
         event.dataTransfer.setData("text/plain", event.target.id);
         event.dataTransfer.effectAllowed = "move";
     });
 
     token.addEventListener('dragend', function (event) {
+        toggleButtonsDisplay(true);
         event.dataTransfer.setData("text/plain", event.target.id);
     });
 
@@ -83,7 +85,7 @@ function createCharacterToken(img_src_element, x, y) {
     // Append buttons to token
     token.appendChild(characterInventoryButton);
     token.appendChild(characterSpellbookButton);
-    token.appendChild(characterSheetButton);
+    token.appendChild(characterSheetButton      );
 
     // Append img to token
     token.appendChild(img);
@@ -112,4 +114,16 @@ function createCharacterToken(img_src_element, x, y) {
             button.style.top = `${radius - buttonSize / 2}px`;
         });
     });
+
+    function toggleButtonsDisplay(state) {
+        if(state){
+            characterInventoryButton.style.display = 'flex';
+            characterSpellbookButton.style.display = 'flex';
+            characterSheetButton    .style.display = 'flex';
+        }else{
+            characterInventoryButton.style.display = 'none';
+            characterSpellbookButton.style.display = 'none';
+            characterSheetButton    .style.display = 'none';
+        }
+    }
 }

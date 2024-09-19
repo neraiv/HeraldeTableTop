@@ -73,51 +73,37 @@ function createStringInput(label, id = '', isReadOnly, returnElements = false) {
     return [formGroup, childs];
 }
 
-function createSelectorInput(valueList, textList, defaultValue ,label, id = '', multiple = true, isReadOnly, returnElements = false) {
-    const formGroup = document.createElement('div');
-    formGroup.className = 'form-group';
+function createAdditionalEffectCreateContainer(){
+    new AdditionalEffect()
 
-    const labelElement = document.createElement('label');
-    labelElement.setAttribute('for', id); // Associate label with input via id
-    labelElement.textContent = label;
-    labelElement.style.alignContent = 'center';
-    labelElement.style.textAlign = 'center';
+    
+}
 
-    const inputElement = createSelector(valueList, textList, defaultValue);
-    inputElement.multiple = multiple;
-    inputElement.onchange = function(event) {  
-        const options = event.target.options;
+function createSelectorInput(valueList, textList, defaultValue, id = null, disable_filter = null,multiple = true, isReadOnly= false) {
 
-        for (let i = 0; i < options.length; i++) {
-            if (options[i].selected) {
-                // Add tick emoji if selected
-                if (!options[i].textContent.includes('✓')) {
-                    options[i].textContent += ' ✓';
-                } else if(multiple) {
-                    // Remove tick emoji if deselected
-                    options[i].textContent = options[i].textContent.replace(' ✓', '');
-                }
-            }
-            else if(!multiple){
-                options[i].textContent = options[i].textContent.replace(' ✓', '');
-            }
+    function optionOnclickFunc(event) {  
+        const option = event.target;
+
+        // Add tick emoji if selected
+        if (!option.textContent.includes('✓')) {
+            option.textContent += ' ✓';
+        } else {
+            // Remove tick emoji if deselected
+            option.textContent = option.textContent.replace(' ✓', '');
         }
+            
     }
+
+    const inputElement = createSelector(valueList, textList, defaultValue, id, disable_filter, optionOnclickFunc);
+    inputElement.style.height = '98%';
+    inputElement.multiple = multiple;
+
 
     if (isReadOnly) {
         inputElement.readOnly = true;
     }
 
-    formGroup.appendChild(labelElement);
-    addSpacer(formGroup);
-    formGroup.appendChild(inputElement);
-
-    let childs = null;
-    if (returnElements) {
-        childs = [inputElement];
-    }
-
-    return [formGroup, childs];
+    return inputElement;
 }
 
 function roll(rollList, bonuses = 0, rollTime = 1) {
@@ -297,7 +283,7 @@ function addToogleHighlight(element, parentElement = null) {
     }
 }
 
-function createSelector(valueList, textList, defaultValue=null, id= null, disable_filter= null) {
+function createSelector(valueList, textList, defaultValue=null, id= null, disable_filter= null, onclick_func=null) {
     // Create the select element
     const selector = document.createElement('select');
     if (id) selector.id = id;
@@ -319,6 +305,10 @@ function createSelector(valueList, textList, defaultValue=null, id= null, disabl
         const option = document.createElement('option');
         option.value = value;
         option.textContent = textList[index] || value; // Use value if textList is shorter
+
+        if(onclick_func){
+            option.addEventListener('click', onclick_func);
+        }
 
         if(disable_filter && option.textContent.includes(disable_filter)){
             option.disabled = true;
