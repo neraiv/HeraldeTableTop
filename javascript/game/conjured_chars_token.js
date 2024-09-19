@@ -1,4 +1,25 @@
-function createCharacterToken(img_src_element, x, y) {
+
+let listConjurableChars = {
+    'mountainless_dwarf'  : { 
+        char: new Character('mountainless_dwarf', '',{name: 'Mountenless Dwarf Uluğ Bey',str: 20, dex: 20, con: 20, int: 20, wis: 20, cha: 100, availableSpells: {1 :  ['Heralde']}}),
+        max_conjurable : 1,
+        duration : [durationTypes.AFTER_LONG_REST]
+        },
+    'Sir Gawain'        : new Character('Sir Gawain'),
+    'Gildor'            : new Character('Gildor'),
+    'Gimli'             : new Character('Gimli'),
+    'Thorin'            : new Character('Thorin'),
+    'Faramir'           : new Character('Faramir'),
+}
+
+function createConjuredCharacterToken(conjurableCharId, x, y) {
+    const conjurableData = listConjurableChars[conjurableCharId];
+    const character = conjurableData.char.clone();
+    let currentInGameConjured  = 0;
+    inGameCharacters.find(char => {if(char.id.includes(conjurableCharId)) currentInGameConjured++;})
+    if(conjurableData.max_conjurable <= currentInGameConjured) return;
+    else character.id += `_${currentInGameConjured + 1}`;
+
     const token = document.createElement('div');
     token.style.position = 'absolute';
     token.style.width = `${userIntarfaceSettings.GRID_SIZE}px`;
@@ -7,21 +28,21 @@ function createCharacterToken(img_src_element, x, y) {
     token.style.top = `${y}px`; 
     token.draggable = true;
     token.className = 'character-token';
-    token.id = `token-character-${img_src_element.id}`;
+    token.id = `token-character-${character.id}`;
 
-    const char = getInGameCharacterById(img_src_element.id);
-    listAllies.push(char.id);
-    const img = document.createElement('img');
-    img.position = 'absolute';
-    img.style.zIndex = 1;
-    img.src = img_src_element.src;  
-    img.id = `token-character-${img_src_element.id}-image`;
+    const img  =  document.createElement('img');
+    const imgPrefix = 'char.png'; // Future database
+
+    img.src = `${tokenPaths.FOLDER_CHARTOKEN}/${conjurableCharId}/${imgPrefix}`;
+    img.id = character.id;
     img.draggable = false;
+    inGameCharacters.push(character);
+
+    const arr = listDestructinator[durationTypes.AFTER_LONG_REST];
+    arr.push({type: objectTypes.CONJURED, id: character.id})
 
     const layer = document.getElementById('character-layer');
 
-    setImageSize(img, userIntarfaceSettings.GRID_SIZE, userIntarfaceSettings.GRID_SIZE);
-    
     token.addEventListener('dragstart', function (event) {
         event.dataTransfer.setData("text/plain", event.target.id);
         event.dataTransfer.effectAllowed = "move";
@@ -63,16 +84,16 @@ function createCharacterToken(img_src_element, x, y) {
         
 
         // Future
-        char.inventory.addItem(listWeapons["Hammer Of Mouse"], 1);
-        char.inventory.addItem(listWeapons.Sword, 1);
-        char.inventory.addItem(listConsumables["Healing Potion"], 4);
+        character.inventory.addItem(listWeapons["Hammer Of Mouse"], 1);
+        character.inventory.addItem(listWeapons.Sword, 1);
+        character.inventory.addItem(listConsumables["Healing Potion"], 4);
 
-        displayInventory(char.inventory, event.clientX, event.clientY);
+        displayInventory(character.inventory, event.clientX, event.clientY);
     }
 
     const characterSpellbookButton = createButton(userIntarfaceSettings.FOLDER_MENUICONS + "/" + userIntarfaceSettings.ICON_SPELLBOOK, 90);
     characterSpellbookButton.onclick = function(event) {
-        displayAvaliableSpells(char, event.clientX, event.clientY);
+        displayAvaliableSpells(character, event.clientX, event.clientY);
     }
 
     const characterSheetButton = createButton(userIntarfaceSettings.FOLDER_MENUICONS + "/" + userIntarfaceSettings.ICON_SWORD, 135);
@@ -91,8 +112,10 @@ function createCharacterToken(img_src_element, x, y) {
     // Append token to layer
     layer.appendChild(token);
 
+    setTimeout(() => {
+        setImageSize(img, userIntarfaceSettings.GRID_SIZE, userIntarfaceSettings.GRID_SIZE);
+    }, 50);
 
-    const rect = token.getBoundingClientRect();
     // Store original positions
     objectsPositions.set(token.id, [tokenTypes.CHARACTER, new DOMRect(x, y, userIntarfaceSettings.GRID_SIZE, userIntarfaceSettings.GRID_SIZE)]);
 
@@ -112,4 +135,6 @@ function createCharacterToken(img_src_element, x, y) {
             button.style.top = `${radius - buttonSize / 2}px`;
         });
     });
+
+
 }

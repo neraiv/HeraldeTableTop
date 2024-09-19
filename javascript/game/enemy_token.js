@@ -1,4 +1,4 @@
-function createCharacterToken(img_src_element, x, y) {
+function createEnemyCharacterToken(img_src_element, x, y) {
     const token = document.createElement('div');
     token.style.position = 'absolute';
     token.style.width = `${userIntarfaceSettings.GRID_SIZE}px`;
@@ -10,7 +10,7 @@ function createCharacterToken(img_src_element, x, y) {
     token.id = `token-character-${img_src_element.id}`;
 
     const char = getInGameCharacterById(img_src_element.id);
-    listAllies.push(char.id);
+    listEnemies.push(char.id);
     const img = document.createElement('img');
     img.position = 'absolute';
     img.style.zIndex = 1;

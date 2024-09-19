@@ -1,3 +1,15 @@
+const objectTypes = Object.freeze({
+    CHARACTER: 1,
+    ITEM: 2,
+    SPELL: 3,
+    WEAPON: 4,
+    ARMOR: 5,
+    CONSUMABLE: 6,
+    EFFECT: 7,
+    CONJURED: 8
+    // Add more object types as needed
+});
+
 const rollTypes = Object.freeze({
     DEX_SAVING_THROW: 1,
     CON_SAVING_THROW: 2,
@@ -220,7 +232,7 @@ class Duration {
 }
 
 class Character {
-    constructor(id ,{
+    constructor(id, controlledBy = '',{
         level = gameSettings.MIN_CHARACTER_LVL,
         name = "",
         classess = [],
@@ -242,15 +254,17 @@ class Character {
         },
         availableSpells = {
             1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'],
-            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountenles Dwarf']
+            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountainless Dwarf']
         },
         learnedSpells = {
             1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'], 
-            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountenles Dwarf']
+            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountainless Dwarf']
         },
-        inventory = new Inventory()
+        inventory = new Inventory(),
+        controlling = []
     } = {}) {
         this.id = id;
+        this.controlledBy = controlledBy;
         this.level = level;
         this.name = name;
         this.classess = classess;
@@ -267,6 +281,7 @@ class Character {
         this.availableSpells = availableSpells;
         this.learnedSpells = learnedSpells;
         this.inventory = inventory;
+        this.controlling = controlling;
     }
     
     getKnownSpells(spellLevel) {
@@ -277,6 +292,29 @@ class Character {
             return spell.name;
         });
         return spellList;
+    }
+
+    clone() {
+        return new Character(this.id, this.controlledBy, {
+            level: this.level,
+            name: this.name,
+            classess: [...this.classess],
+            race: this.race,
+            subrace: this.subrace,
+            dex: this.dex,
+            con: this.con,
+            int: this.int,
+            wis: this.wis,
+            cha: this.cha,
+            str: this.str,
+            charCurrentAction: this.charCurrentAction,
+            additionalEffects: [...this.additionalEffects],
+            spellSlots: {...this.spellSlots},
+            availableSpells: {...this.availableSpells},
+            learnedSpells: {...this.learnedSpells},
+            inventory: new Inventory(),
+            controlling: [...this.controlling]
+        });
     }
 }
 
@@ -491,7 +529,7 @@ class AdditionalEffect {
 }
 
 class Spell {
-    constructor(name, availableClasses = [], statType= [], damageType, description, targetEffects=[], spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN, casterRolls, targetRolls) {
+    constructor(name, availableClasses = [], statType= [], damageType, description, targetEffects=[], spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN, casterRolls, targetRolls, targetList= [targetTypes.ALLY, targetTypes.ENEMY]) {
         this.name               = name; // String
         this.availableClasses   = availableClasses; // Array of ClassType enums
         this.statType           = statType; // StatType enum (e.g., STR, DEX, CON, etc.)
@@ -505,6 +543,7 @@ class Spell {
         this.actionCost         = actionCost; // ActionType enum
         this.casterRolls        = casterRolls;
         this.targetRolls        = targetRolls;
+        this.targetList         = targetList; // TargetType enum
     }
 
     returnSelf(){

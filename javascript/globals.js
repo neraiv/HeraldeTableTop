@@ -21,12 +21,21 @@ const layers = Object.freeze({
 let dragStartX, dragStartY; // Variables to store the drag start position
 let currentLayer = 'character-layer'; // Default to character layer
 let objectsPositions = new Map(); // Store original positions for each image
+let inGameCharacters = [];
 
 let userIntarfaceSettings = new SettingsUI();
 let tokenPaths = new TokenPaths();
 let environment = new Environment();
 
-let inGameCharacters = [];
+let listDestructinator = {
+    2: [],  // durationTypes.TURN_BASED
+    3: [],  // durationTypes.AFTER_SHORT_REST
+    4: []   // durationTypes.AFTER_LONG_REST
+};
+
+let listEnemies = [];
+let listAllies = [];
+
 let gameFlags = new GameFlags();
 
 let gameSettings = new SettingsGame({

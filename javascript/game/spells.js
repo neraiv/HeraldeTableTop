@@ -27,7 +27,8 @@ const level1_spell_list = {
                     new AdditionalEffect(characterActions.CASTING,  targetEffectTypes.BUFF, [new BuffDebuff(durationTypes.INSTANT, effectTypes.DICE_CHANGE, '4d8'),], 'Increase Attack Radius')]
         },
         new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castType.ON_LOCATION),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]),
+        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+    ),
     'Ice Cone' : new Spell('Ice Cone', 
         [classType.WIZARD], 
         statType.INT, 
@@ -37,7 +38,8 @@ const level1_spell_list = {
         {'1' : spellNormalCast,
             '2' : [new AdditionalEffect(characterActions.CASTING,  targetEffectTypes.BUFF, [new BuffDebuff(durationTypes.INSTANT, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
         new SpellPattern(spellPatterns.CONE_UPWARD, 800, 100, castType.ON_LOCATION),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]),
+        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+    ),
     'Pillar of Light' : new Spell('Pillar of Light', 
         [classType.WIZARD], 
         statType.INT, 
@@ -47,7 +49,8 @@ const level1_spell_list = {
         {'1' : spellNormalCast,
             '2' : [new AdditionalEffect(characterActions.CASTING,  targetEffectTypes.BUFF, [new BuffDebuff(durationTypes.INSTANT, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
         new SpellPattern(spellPatterns.CONE_DOWNWARD, 800, 100, castType.ON_LOCATION),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]),   
+        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW], [targetTypes.ENEMY]
+    ),   
     'Fire Hands' : new Spell('Fire Hands', 
         [classType.WIZARD], 
         statType.INT, 
@@ -57,7 +60,8 @@ const level1_spell_list = {
         {'1' : spellNormalCast,
             '2' : [new AdditionalEffect(characterActions.CASTING,  targetEffectTypes.BUFF, [new BuffDebuff(durationTypes.INSTANT, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
         new SpellPattern(spellPatterns.CONE_DOWNWARD, 800, 100, castType.FROM_CASTER),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]),
+        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+    ),
     'Lightning Ray' : new Spell('Lightning Ray', 
         [classType.WIZARD], 
         statType.INT, 
@@ -67,7 +71,8 @@ const level1_spell_list = {
         {'1' : spellNormalCast,
             '2' : [new AdditionalEffect(characterActions.CASTING,  targetEffectTypes.BUFF, [new BuffDebuff(durationTypes.INSTANT, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
         new SpellPattern(spellPatterns.BOX, 800, 100, castType.FROM_CASTER),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]),
+        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+    ),
     'Heralde' : new Spell('Heralde', 
         [classType.WIZARD], 
         statType.INT, 
@@ -84,17 +89,17 @@ const level1_spell_list = {
                     new AdditionalEffect(characterActions.CASTING,  targetEffectTypes.BUFF, [new BuffDebuff(durationTypes.INSTANT, effectTypes.ATTACK_DAMAGE_BONUS, [damageType.FORCE, 20]),], 'Increase Attack Radius')]
         },
         new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castType.AROUND_CASTER),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW], [targetTypes.ALLY, targetTypes.SELF]
     ),
-    'Conjure Mountenles Dwarf': new Spell('Conjure Mountenles Dwarf',
+    'Conjure Mountainless Dwarf': new Spell('Conjure Mountainless Dwarf',
         [classType.WIZARD], 
         statType.INT, 
         damageType.CONJURE, 
-        'Conjure a mountenles dwarf',
+        'Conjure a Mountainless dwarf',
         null,
         {'1' : spellNormalCast},
         new SpellPattern(spellPatterns.CIRCULAR, 500, 100, castType.ON_LOCATION),
-        listConjurableChars["Mountenles Dwarf"], durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+        'mountainless_dwarf', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW], [targetTypes.ANY]
     ),
 };
 

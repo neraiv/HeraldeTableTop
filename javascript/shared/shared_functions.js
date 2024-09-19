@@ -495,3 +495,31 @@ function getKeyFromMapWithValue(map, searchValue){
     }
     
 }
+
+function moveToEnemyAlly(id, to_enemy) {
+    let allyIndex = listAllies.findIndex(ally => ally.id === id);
+    let enemyIndex = listEnemies.findIndex(enemy => enemy.id === id);
+
+    if(to_enemy && allyIndex !== -1) { // Moving from allies to enemies
+        let ally = listAllies.splice(allyIndex, 1)[0]; // Remove from allies
+        listEnemies.push(ally); // Add to enemies
+    } else if (!to_enemy && enemyIndex !== -1) { // Moving from enemies to allies
+        let enemy = listEnemies.splice(enemyIndex, 1)[0]; // Remove from enemies
+        listAllies.push(enemy); // Add to allies
+    }
+}
+
+function getMissingTargetTypes(selectedTypes) {
+    // Get all the possible target type values
+    const allTypes = Object.values(targetTypes);
+
+    // Filter out the missing types
+    const missingTypes = allTypes.filter(type => !selectedTypes.includes(type));
+
+    return missingTypes;
+}
+
+function getIdFromTokenId(tokenId){
+    const _ = tokenId.split('-');
+    return _[_.length - 1]; 
+}

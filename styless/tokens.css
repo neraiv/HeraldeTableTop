@@ -31,6 +31,18 @@
 /* End Drive Token */
 
 /* Char Token */
+.character-token{
+    position: absolute;
+    object-fit: contain;
+}
+
+.character-token img {
+    position: absolute;
+    width: 99%;
+    height: 99%;
+    z-index: 1;
+}
+
 .circular-image {
     max-width: 100%;
     max-height: 100%;

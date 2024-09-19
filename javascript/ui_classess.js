@@ -28,12 +28,12 @@ class TokenPaths {
         folderCharToken =  'tokens/character',
         folderBackgroundToken = 'tokens/background',
         folderGeneralSounds = 'tokens/general-sounds',
-        imageList_Character =  ['coil', 'dedector', 'druid-woman', 'elf-warrior-woman'],
-        imageList_Conjurable = ['mountenless-dwarf'],
+        imageList_Character =  ['coil', 'dedector', 'druid_woman', 'elf_warrior_woman'],
+        imageList_Conjurable = ['mountenless_dwarf'],
         imageList_Background = ['detector-green-1', 'alchemy-shop-1', 'fighting-pit-muddy-1', 'living-depths-1', 'living-depths-2','metalsmith-workshop-1','ossuary-of-xilbalba-1',
                                 'palatial-portal-1','royal-bank-1'],
         imageList_ClassIcons = ['barbarian.png', 'archer.png', 'bard.png', 'brawler.png', 'cleric.png', 'druid.png', 'fighter.png', 'mage.png', 'ranger.png', 'thief.png', 'warlock.png'],
-        default_char_profile = "tokens/character/default-profile/char.png"
+        default_char_profile = "tokens/character/default_profile/char.png"
     } = {}) {
         this.FOLDER_CHARTOKEN        = folderCharToken;
         this.FOLDER_BACKGROUNDTOKEN  = folderBackgroundToken;
@@ -64,7 +64,7 @@ class SettingsUI {
         icon_gold           = "gold.png",
         icon_silver         = "silver.png",
         icon_bronze         = "bronze.png",
-        board_size          = 3000,    
+        board_size          = 4000,    
         grid_size           = 100,
         max_zoom_in         = 6,
         max_zoom_out        = 0.6,
