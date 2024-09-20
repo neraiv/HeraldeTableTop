@@ -3,6 +3,8 @@
 function createNumberInput(label, isReadOnly, returnElements = false){
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
+    formGroup.classList.add('row');
+    formGroup.classList.add('vertical');
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', label);
@@ -25,7 +27,9 @@ function createNumberInput(label, isReadOnly, returnElements = false){
     controls.className = 'number-controls';
 
     const buttonUp = createImageButton(19, '&#9650;');  
+    buttonUp.onclick = function(event){event.preventDefault();}
     const buttonDown = createImageButton(19, '&#9660;');  
+    buttonDown.onclick = function(event){event.preventDefault();}
 
     controls.appendChild(buttonUp);
     controls.appendChild(buttonDown);
@@ -42,7 +46,9 @@ function createNumberInput(label, isReadOnly, returnElements = false){
 
 function createStringInput(label, id = '', isReadOnly, returnElements = false) {
     const formGroup = document.createElement('div');
-    formGroup.className = 'form-group';
+    formGroup.classList.add('form-group')
+    formGroup.classList.add('row')
+    formGroup.classList.add('centered');
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', id); // Associate label with input via id
@@ -79,7 +85,18 @@ function createAdditionalEffectCreateContainer(){
     
 }
 
-function createSelectorInput(valueList, textList, defaultValue, id = null, disable_filter = null,multiple = true, isReadOnly= false) {
+function createSelectorInput(label, valueList, textList, defaultValue, id = null, disable_filter = null,multiple = true, isReadOnly= false, custom_func= null) {
+
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group')
+    formGroup.classList.add('row')
+    formGroup.classList.add('centered');
+
+    const labelElement = document.createElement('label');
+    labelElement.setAttribute('for', id); // Associate label with input via id
+    labelElement.textContent = label;
+    labelElement.style.alignContent = 'center';
+    labelElement.style.textAlign = 'center';
 
     function optionOnclickFunc(event) {  
         const option = event.target;
@@ -94,7 +111,7 @@ function createSelectorInput(valueList, textList, defaultValue, id = null, disab
             
     }
 
-    const inputElement = createSelector(valueList, textList, defaultValue, id, disable_filter, optionOnclickFunc);
+    const inputElement = createSelector(valueList, textList, defaultValue, id, disable_filter,custom_func? custom_func: optionOnclickFunc);
     inputElement.style.height = '98%';
     inputElement.multiple = multiple;
 
@@ -103,7 +120,11 @@ function createSelectorInput(valueList, textList, defaultValue, id = null, disab
         inputElement.readOnly = true;
     }
 
-    return inputElement;
+    formGroup.appendChild(labelElement);
+    addSpacer(formGroup);
+    formGroup.appendChild(inputElement);
+
+    return [formGroup, inputElement, labelElement];
 }
 
 function roll(rollList, bonuses = 0, rollTime = 1) {
@@ -171,12 +192,12 @@ function setImageSize(img, maxWidth, maxHeight, extra_ratio = NaN) {
     img.style.height = `${newHeight}px`;
 }
 
-function createImageButton(fontSize, icon=null, source=null) {
+function createImageButton(fontSize, icon=null, source=null, custom_padding = 8) {
     const button = document.createElement('button');
     button.className = 'image-button';
 
     // Apply font size to the button
-    button.style.fontSize = `${fontSize-8}px`;
+    button.style.fontSize = `${fontSize-custom_padding}px`;
 
     // Set button size
     button.style.width = `${fontSize}px`; // Width of the button
@@ -184,7 +205,7 @@ function createImageButton(fontSize, icon=null, source=null) {
     
     if (source) {
         // Use an image source; set width and height to 100% to fill the button
-         button.innerHTML = `<img src="${source}" width="${fontSize-8}px" height="${fontSize-8}px" draggable = "false"/>`;
+         button.innerHTML = `<img src="${source}" width="${fontSize-custom_padding}px" height="${fontSize-custom_padding}px" draggable = "false"/>`;
     } else if (icon) {
         // Use emoji or text icon; the font size controls the size
         button.innerHTML = icon;

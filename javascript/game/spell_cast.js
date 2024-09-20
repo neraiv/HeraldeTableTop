@@ -22,7 +22,7 @@ function spellCast(tokenID, spell, mana=null) {
     let spellArea = spell.spellPattern.area;
     let spellRange = spell.spellPattern.range;
 
-    const allBuffs = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, targetEffectTypes.BUFF, [effectTypes.ATTACK_RADIUS_BONUS, effectTypes.ATTACK_RANGE_BONUS, effectTypes.PATTERN_CHANGE]);
+    const allBuffs = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_RADIUS_BONUS, effectTypes.ATTACK_RANGE_BONUS, effectTypes.PATTERN_CHANGE]);
     const radiusBonusesSum = allBuffs.get(effectTypes.ATTACK_RADIUS_BONUS).reduce((sum, bonus) => sum + parseInt(bonus), 0);
     const rangeBonusesSum = allBuffs.get(effectTypes.ATTACK_RANGE_BONUS).reduce((sum, bonus) => sum + parseInt(bonus), 0);
     const patternChange = allBuffs.get(effectTypes.PATTERN_CHANGE);
@@ -395,7 +395,7 @@ function spellCast(tokenID, spell, mana=null) {
     }
 }
 
-function getAdditionalEffectBonuses(additionalEffectList, onAction = characterActions.CASTING, targetEffectType = targetEffectTypes.BUFF, effecTypesList = null){
+function getAdditionalEffectBonuses(additionalEffectList, onAction = characterActions.CASTING, targetEffectType = additionalEffectTypes.BUFF, effecTypesList = null){
     let valueDict = new Map();
 
     if(effecTypesList){ // BUFF SEARCH
@@ -413,14 +413,14 @@ function getAdditionalEffectBonuses(additionalEffectList, onAction = characterAc
     for (const additionalEffect of additionalEffectList){
         if (additionalEffect.characterAction == onAction){
             if (additionalEffect.targetEffectType == targetEffectType){
-                if(targetEffectType == targetEffectTypes.BUFF){
+                if(targetEffectType == additionalEffectTypes.BUFF){
                     for(const buffOrDebuff of additionalEffect.targetEffect){
                         if(effecTypesList.includes(buffOrDebuff.effectType)){
                             let arr = valueDict.get(buffOrDebuff.effectType); 
                             arr.push(buffOrDebuff.value);
                         }
                     }
-                } else if (targetEffectType == targetEffectTypes.AURA || targetEffectType ==targetEffectTypes.CAST){
+                } else if (targetEffectType == additionalEffectTypes.AURA || targetEffectType ==additionalEffectTypes.CAST){
                     let arr = valueDict.get(1); 
                     arr.push(additionalEffect.targetEffect);
                 }
@@ -437,18 +437,18 @@ function calculateAttackerRolls(spell, characterId, mana, distance) {
 
     const char = getInGameCharacterById(characterId);
 
-    const allBuffsFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, targetEffectTypes.BUFF, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
-    const allBuffsFromChar = getAdditionalEffectBonuses(char.additionalEffects, characterActions.CASTING, targetEffectTypes.BUFF, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
+    const allBuffsFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
+    const allBuffsFromChar = getAdditionalEffectBonuses(char.additionalEffects, characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
 
     const allAttackBuffs = [...allBuffsFromSpell.get(effectTypes.ATTACK_DAMAGE_BONUS),...(allBuffsFromChar.get(effectTypes.ATTACK_DAMAGE_BONUS))]
     
-    const allAurasFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, targetEffectTypes.AURA, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
-    const allAurasFromChar = getAdditionalEffectBonuses(char.additionalEffects, characterActions.CASTING, targetEffectTypes.AURA, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
+    const allAurasFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, additionalEffectTypes.AURA, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
+    const allAurasFromChar = getAdditionalEffectBonuses(char.additionalEffects, characterActions.CASTING, additionalEffectTypes.AURA, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
 
     const allAuras = [...allAurasFromSpell.get(effectTypes.ATTACK_DAMAGE_BONUS),...(allAurasFromChar.get(effectTypes.ATTACK_DAMAGE_BONUS))]
 
-    const allCastsFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, targetEffectTypes.CAST, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
-    const allCastsFromChar = getAdditionalEffectBonuses(char.additionalEffects, characterActions.CASTING, targetEffectTypes.CAST, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
+    const allCastsFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, additionalEffectTypes.CAST, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
+    const allCastsFromChar = getAdditionalEffectBonuses(char.additionalEffects, characterActions.CASTING, additionalEffectTypes.CAST, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
 
     const allCasts = [...allCastsFromSpell.get(effectTypes.ATTACK_DAMAGE_BONUS),...(allCastsFromChar.get(effectTypes.ATTACK_DAMAGE_BONUS))]
 

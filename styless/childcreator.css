@@ -17,6 +17,7 @@
     cursor: pointer;
     align-items: center;
     justify-content: center;
+    padding-inline: 0px;
 }
 
 .dropdown-menu {
@@ -58,14 +59,11 @@
 }
 
 .form-group {
-    width: 98%;
-    padding: 3px;
+    width: 95%;
+    padding: 5px;
     display: flex; /* Ensure it's a flex container */
-    align-items: center; /* Center items along the cross axis (vertical if flex-direction is row) */
-    text-align: center; /* Center text content horizontally */
-    flex-direction: row; /* This is the default, so you can omit it */
     overflow-y: hidden; /* Prevent vertical scrolling */
-    overflow-x: auto;
+    overflow-x: hidden;
 }
 
 .form-group label {
@@ -102,6 +100,20 @@
 .form-group input::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
+}
+
+.list-element {
+    display: flex;
+    min-width: 98%;
+    min-height: 30px;
+    gap: 2px;
+    background-color: antiquewhite;
+}
+
+.list-element label {
+    display: block;
+    margin-bottom: 5px;
+    text-align: center; /* Center the text horizontally */
 }
 
 .number-controls {

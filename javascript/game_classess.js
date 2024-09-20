@@ -160,7 +160,9 @@ const characterActions = Object.freeze({
     PREPARE: 13,    // If PREPARE should be at the end of the sequence
     USE: 14,        // Assuming USE should be the last
     ALWAYS: 15,      // Adding ALWAYS at the end
-    ATTACKED: 16
+    ATTACKED: 16,
+    TURN_END: 17,
+    TURN_START: 18
 });
 
 const effectTypes = Object.freeze({
@@ -173,14 +175,20 @@ const effectTypes = Object.freeze({
     HEAL: 7,
     DEFENSE: 8,
     VISION_RANGE_BONUS: 9,   // Adjusted to be in sequential order
+    TAKE_DAMAGE: 10
 });
 
-const targetEffects = Object.freeze({
-    CAST: 1,
+const effectSourceTypes = Object.freeze({
+    SELF: 1,
     AURA: 2,
-    DEBUFF: 3  
+    ITEM: 3
 });
 
+const additionalEffectTypes = Object.freeze({
+    CAST: 0,
+    AURA: 1,
+    BUFF: 2
+});
 
 const spellPatterns = Object.freeze({
     CIRCULAR: 1,
@@ -207,21 +215,23 @@ const targetTypes = Object.freeze({
     SELF: 1,
     ALLY: 2,
     ENEMY: 3,
-    ANY: 4
+    ANY: 4,
+    CLOSEST_ENEMY: 5,
+    CLOSEST_ANY: 6,
+    ATTACKER: 7,
+    GROUND_NO_OVERLAP: 8,
+    GROUND: 9
 });
 
 const durationTypes = Object.freeze({
-    INSTANT: 1,
+    ALWAYS: 1,
     TURN_BASED: 2,
     AFTER_SHORT_REST: 3,
-    AFTER_LONG_REST: 4
+    AFTER_LONG_REST: 4, 
+    INSTANT: 5,
+    UNTIL_USE: 6
 });
 
-const targetEffectTypes = Object.freeze({
-    CAST: 0,
-    AURA: 1,
-    BUFF: 2
-});
 const defaultWeaponLore = 'Meh regular weapons, crafted by regular crafters :/ (Which Doesnt Require any skill!)';
 
 class Duration {
@@ -478,53 +488,43 @@ class SpellPattern  {
 }
 
 class BuffDebuff {
-    constructor(duration, effectType, value, resetAction, description = "Some Debuff", name = null) {
-        this.name = name;
-        this.duration = duration;
+    constructor(effectType, value) {
         this.effectType = effectType;
         this.value = value;
-        this.resetAction = resetAction;
-        this.description = description;
-    }
-
-    copy_with(name= null, duration= null, effect= null, value= null, resetAction= null, description= null){
-        if(!name) name = this.name;
-        if(!duration) duration = this.duration;
-        if(!effect) effect = this.effect;
-        if(!value) value = this.value;
-        if(!resetAction) resetAction = this.resetAction;
-        if(!description) description = this.description;
-        return new BuffDebuff(name, duration, effect, value, resetAction, description); 
     }
 }
 
 class Aura {
-    constructor(name, duration, area, effect, value, resetAction, description= "Some Aura") {
-        this.name = name;
-        this.duration = duration;
+    constructor(area, value, targetList = [targetTypes.ALLY], canSpread = false) {
         this.area = area;
-        this.effect = effect;
-        this.value = value;
-        this.description = description;
-        this.resetAction = resetAction;
+        this.value = value
+        this.targetList = targetList;  // Array of TargetType enum 0: ALLY, 1: ENEMY
+        this.canSpread = canSpread
     }
 }
 
 class Cast {
-    constructor(castOnAction, spell, targetListInOrder, description = "Something makes you cast") {
-        this.castOnAction = castOnAction;
+    constructor(spell, spellLevel, mana, targetListInOrder) {
         this.spell = spell;  // Spell object
+        this.spellLevel = spellLevel;
+        this.mana = mana;
         this.targetListInOrder = targetListInOrder;
-        this.description = description;
     }
 }
 
 class AdditionalEffect {
-    constructor(characterAction, targetEffectType, targetEffect, description) {
+    constructor(name, characterAction, additionalEffectType, value ,description, duration= [durationTypes.TURN_BASED, 1], source = effectSourceTypes.SPELL) {
+        this.name = name;  // String
         this.characterAction = characterAction;
-        this.targetEffectType = targetEffectType;  // TargetEffectType enum 0: CAST, 1: AURA, 2: BUFF
-        this.targetEffect = targetEffect;  // TargetEffect enum
+        this.additionalEffectType = additionalEffectType;  // TargetEffectType enum 0: CAST, 1: AURA, 2: BUFF
+        this.value = value; // BuffDebuff, Aura or Cast
         this.description = description;
+        this.duration = duration;
+        this.source = source;
+    }
+
+    copy(){
+        return new AdditionalEffect(this.characterAction, this.targetEffectType, this.targetEffect, this.description, this.duration);
     }
 }
 
