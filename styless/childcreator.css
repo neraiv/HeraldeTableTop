@@ -59,6 +59,7 @@
 }
 
 .form-group {
+    background-color: rgb(240, 222, 118);
     width: 95%;
     padding: 5px;
     display: flex; /* Ensure it's a flex container */
@@ -133,4 +134,42 @@
 
 .number-controls button:hover {
     background-color: #bbb;
+}
+
+/* Style for tab navigation */
+.tab {
+    overflow: hidden;
+    background-color: #f1f1f1;
+}
+
+/* Style for tab links */
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+/* Change color of tab links on hover */
+.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Style for the active tab */
+.tab button.active {
+    background-color: #ccc;
+}
+
+/* Tab content */
+.tab-content {
+    display: none;
+    border-top: none;
+}
+
+/* Show active tab content */
+.tab-content.active {
+    display: block;
 }

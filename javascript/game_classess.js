@@ -71,7 +71,7 @@ const damageType = Object.freeze({
 
 // Enum for damage types
 const statType = Object.freeze({
-    NONE:null,
+    NONE:0,
     STR: 1,
     DEX: 2,
     CON: 3,

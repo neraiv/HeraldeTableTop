@@ -1,6 +1,6 @@
 // Function to parse and roll dice based on the roll list
 
-function createNumberInput(label, isReadOnly, returnElements = false){
+function createNumberInput(label, isReadOnly){
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
@@ -35,13 +35,11 @@ function createNumberInput(label, isReadOnly, returnElements = false){
     controls.appendChild(buttonDown);
     formGroup.appendChild(controls);
 
-    let childs = null;
+    formGroup.inputElement = inputElement;
+    formGroup.buttonUp = buttonUp;
+    formGroup.buttonDown = buttonDown;
 
-    if(returnElements){
-        childs = [inputElement, buttonUp, buttonDown];
-    }
-
-    return [formGroup, childs]
+    return formGroup
 }
 
 function createStringInput(label, id = '', isReadOnly, returnElements = false) {
@@ -76,7 +74,9 @@ function createStringInput(label, id = '', isReadOnly, returnElements = false) {
         childs = [inputElement];
     }
 
-    return [formGroup, childs];
+    formGroup.inputElement = inputElement;
+
+    return formGroup;
 }
 
 function createAdditionalEffectCreateContainer(){
@@ -115,7 +115,6 @@ function createSelectorInput(label, valueList, textList, defaultValue, id = null
     inputElement.style.height = '98%';
     inputElement.multiple = multiple;
 
-
     if (isReadOnly) {
         inputElement.readOnly = true;
     }
@@ -124,7 +123,11 @@ function createSelectorInput(label, valueList, textList, defaultValue, id = null
     addSpacer(formGroup);
     formGroup.appendChild(inputElement);
 
-    return [formGroup, inputElement, labelElement];
+    // Attach the inputElement to the formGroup for external access
+    formGroup.inputElement = inputElement;
+    formGroup.labelElement = labelElement;
+
+    return formGroup;
 }
 
 function roll(rollList, bonuses = 0, rollTime = 1) {
@@ -533,4 +536,121 @@ function getMissingTargetTypes(selectedTypes) {
 function getIdFromTokenId(tokenId){
     const _ = tokenId.split('-');
     return _[_.length - 1]; 
+}
+
+function createTabbedContainer(tabCount, tabNames = null, id = null) {
+    // Create a parent container for both tab and content containers
+    const tabbedWindowContainer = document.createElement('div');
+    tabbedWindowContainer.className = id ? `${id}-tabbed-window` : 'default-tabbed-window'; // Optional class for styling
+
+    const tabContainer = document.createElement('div');
+    tabContainer.id = id ? `${id}-tab-container` : 'default-tab-container'; // Fallback ID if none is provided
+    const contentContainer = document.createElement('div');
+    contentContainer.className = id ? `${id}-tab-content-container` : 'default-tab-content-container';
+
+    tabContainer.classList.add('tab');
+    contentContainer.classList.add('tab-content-container'); // Added a class for the content container
+
+    // Append the tab and content containers to the tabbed window container
+    tabbedWindowContainer.appendChild(tabContainer);
+    tabbedWindowContainer.appendChild(contentContainer);
+
+    // Create tabs
+    createTabs(tabContainer, contentContainer, tabCount, tabNames, id);
+
+    tabbedWindowContainer.tabContainer = tabContainer;
+    tabbedWindowContainer.contentContainer = contentContainer;
+    // Return the tabbed window container
+    return tabbedWindowContainer
+}
+
+function createTabs(tabContainer, contentContainer, tabCount, tabNames = null, id = null) {
+    // Clear any existing tabs
+    tabContainer.innerHTML = '';
+    contentContainer.innerHTML = '';
+
+    for (let i = 1; i <= tabCount; i++) {
+        // Create tab button
+        const tabName = tabNames ? tabNames[i - 1] : `Tab ${i}`;
+        const tabButton = document.createElement('button');
+        tabButton.innerText = tabName;
+        tabButton.className = 'tablinks';
+        tabButton.setAttribute('data-index', i);
+        tabButton.setAttribute('data-name', tabName);
+        tabButton.onclick = function(event) { openTab(event, `tab${i}`, contentContainer); };
+        tabContainer.appendChild(tabButton);
+
+        // Create tab content
+        const tabContent = document.createElement('div');
+        tabContent.id = `tab${i}`;  // Use dynamic IDs for the tab content
+        tabContent.className = 'tab-content';
+        tabContent.innerHTML = `<h3>${tabName}</h3><p>Content for Tab ${i}</p>`;
+        contentContainer.appendChild(tabContent);
+    }
+
+    // Activate first tab by default
+    if (tabContainer.children.length > 0) {
+        tabContainer.children[0].classList.add('active');
+    }
+    if (contentContainer.children.length > 0) {
+        contentContainer.children[0].classList.add('active');
+    }
+}
+
+function openTab(evt, tabName, contentContainer) {
+    // Hide all tab content within this specific container
+    const tabContentElements = contentContainer.getElementsByClassName('tab-content');
+    for (let i = 0; i < tabContentElements.length; i++) {
+        tabContentElements[i].classList.remove('active');
+    }
+
+    // Remove active class from all buttons in the parent tab container
+    const tabLinks = evt.currentTarget.parentElement.getElementsByClassName('tablinks');
+    for (let i = 0; i < tabLinks.length; i++) {
+        tabLinks[i].classList.remove('active');
+    }
+
+    // Show the current tab and mark the clicked button as active
+    const tabToShow = contentContainer.querySelector(`#${tabName}`);
+    if (tabToShow) {
+        tabToShow.classList.add('active');
+    }
+    evt.currentTarget.classList.add('active');
+}
+
+// Function to get contentContainer by tab index or name (scoped to parent container)
+function getContentContainer(tabContainer, identifier) {
+    let tabButton;
+
+    // If the identifier is a number, treat it as an index
+    if (typeof identifier === 'number') {
+        tabButton = tabContainer.querySelector(`[data-index="${identifier}"]`);
+    }
+    // If the identifier is a string, treat it as a tab name
+    else if (typeof identifier === 'string') {
+        tabButton = tabContainer.querySelector(`[data-name="${identifier}"]`);
+    }
+
+    if (tabButton) {
+        const tabIndex = tabButton.getAttribute('data-index');
+        const contentContainer = tabContainer.nextElementSibling; // Get the content container within the same parent
+        return contentContainer.querySelector(`#tab${tabIndex}`); // Search only within the content container
+    } else {
+        console.error("Tab not found with the given identifier:", identifier);
+        return null;
+    }
+}
+
+function getSelectedOptionsWithCheckmark(selectElement) {
+    const selectedValues = [];
+    
+    // Loop through the options of the select element
+    for (let option of selectElement.options) {
+        // Check if the option text contains the checkmark '✓'
+        if (option.text.includes('✓')) {
+            selectedValues.push(option.value);
+        }
+    }
+
+    return selectedValues;
 }

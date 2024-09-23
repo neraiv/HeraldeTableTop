@@ -120,7 +120,7 @@ function addLayerSelecetor() {
     const parent = document.getElementById("top-menu-bar");
 
     const layerSelect = document.createElement("div");
-    layerSelect.id = "layer-select";
+    layerSelect.id = "layer-select-container";
     layerSelect.style.padding = "5px"
     layerSelect.style.backgroundColor = "#ddd";
     layerSelect.classList.add('box-circular-border');
@@ -129,6 +129,7 @@ function addLayerSelecetor() {
     row.style.gap = "5px";
 
     const label =  document.createElement("label");
+    label.setAttribute('for', "layer-select");
     label.textContent = "Layer: ";
 
     const select = document.createElement("select");
@@ -156,8 +157,6 @@ function addLayerSelecetor() {
 
     row.appendChild(label);
     row.appendChild(select);
-
-    label.setAttribute('for', layerSelect.id);
 
     layerSelect.appendChild(row);
     parent.appendChild(layerSelect);
