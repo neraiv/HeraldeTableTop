@@ -529,11 +529,13 @@ class AdditionalEffect {
 }
 
 class Spell {
-    constructor(name, availableClasses = [], statType= [], damageType, description, targetEffects=[], spendManaEffects, spellPattern, damage, castTime=1, actionCost = actionType.MAIN, casterRolls, targetRolls, targetList= [targetTypes.ALLY, targetTypes.ENEMY]) {
+    constructor(name= "", availableClasses = [], statType= [], damageType_ = damageType.NONE, description = "", targetEffects=[], 
+        spendManaEffects= {}, spellPattern = new SpellPattern, damage = "1d1", castTime=1, actionCost = actionType.MAIN, 
+        casterRolls = [], targetRolls = [], targetList= [targetTypes.ALLY, targetTypes.ENEMY]) {
         this.name               = name; // String
         this.availableClasses   = availableClasses; // Array of ClassType enums
         this.statType           = statType; // StatType enum (e.g., STR, DEX, CON, etc.)
-        this.damageType        = damageType; // DamageType enum
+        this.damageType_        = damageType_; // DamageType enum
         this.description        = description; // Description object with required mana levels and descriptions
         this.targetEffects      = targetEffects; //
         this.spendManaEffects   = spendManaEffects;

@@ -5,6 +5,8 @@ function createNumberInput(label, isReadOnly){
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
     formGroup.classList.add('vertical');
+    formGroup.style.minHeight = '30px';
+    formGroup.style.height = '30px';
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', label);
@@ -47,6 +49,8 @@ function createStringInput(label, id = '', isReadOnly, returnElements = false) {
     formGroup.classList.add('form-group')
     formGroup.classList.add('row')
     formGroup.classList.add('centered');
+    formGroup.style.minHeight = '30px';
+    formGroup.style.height = '30px';
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', id); // Associate label with input via id
@@ -538,8 +542,9 @@ function getIdFromTokenId(tokenId){
     return _[_.length - 1]; 
 }
 
-function createTabbedContainer(tabCount, tabNames = null, id = null) {
+function createTabbedContainer(tabCount, tabNames = null, id = null, isGrowable = false, tabMainName = null) {
     // Create a parent container for both tab and content containers
+    tabMainName = tabMainName ? tabMainName : 'Tab';
     const tabbedWindowContainer = document.createElement('div');
     tabbedWindowContainer.className = id ? `${id}-tabbed-window` : 'default-tabbed-window'; // Optional class for styling
 
@@ -556,22 +561,36 @@ function createTabbedContainer(tabCount, tabNames = null, id = null) {
     tabbedWindowContainer.appendChild(contentContainer);
 
     // Create tabs
-    createTabs(tabContainer, contentContainer, tabCount, tabNames, id);
+    createTabs(tabContainer, contentContainer, tabCount, tabNames, id, tabMainName);
+
+    // If growable, add an "Add Tab" button/icon at the end
+    if (isGrowable) {
+        const addTabButton = document.createElement('button');
+        addTabButton.className = 'add-tab-button';
+        addTabButton.innerText = '+';  // Or set as an icon
+        addTabButton.onclick = () => addNewTab(tabContainer, contentContainer, null, tabMainName);
+        tabContainer.appendChild(addTabButton);  // Add the button to the tab container
+        tabbedWindowContainer.addTabButton = addTabButton; // Add a method to open tabs
+    }
 
     tabbedWindowContainer.tabContainer = tabContainer;
     tabbedWindowContainer.contentContainer = contentContainer;
+
     // Return the tabbed window container
-    return tabbedWindowContainer
+    return tabbedWindowContainer;
 }
 
-function createTabs(tabContainer, contentContainer, tabCount, tabNames = null, id = null) {
+
+function createTabs(tabContainer, contentContainer, tabCount, tabNames = null, id = null, tabMainName) {
     // Clear any existing tabs
     tabContainer.innerHTML = '';
     contentContainer.innerHTML = '';
 
+    tabMainName = tabMainName ? tabMainName : 'Tab';
+
     for (let i = 1; i <= tabCount; i++) {
         // Create tab button
-        const tabName = tabNames ? tabNames[i - 1] : `Tab ${i}`;
+        const tabName = tabNames ? tabNames[i - 1] : `${tabMainName} ${i}`;
         const tabButton = document.createElement('button');
         tabButton.innerText = tabName;
         tabButton.className = 'tablinks';
@@ -622,10 +641,15 @@ function openTab(evt, tabName, contentContainer) {
 function getContentContainer(tabContainer, identifier) {
     let tabButton;
 
+    // If no identifier is provided, get the last tab button
+    if (identifier === undefined) {
+        const tabButtons = tabContainer.getElementsByClassName('tablinks');
+        tabButton = tabButtons[tabButtons.length - 1]; // Get the last tab button
+    } 
     // If the identifier is a number, treat it as an index
-    if (typeof identifier === 'number') {
+    else if (typeof identifier === 'number') {
         tabButton = tabContainer.querySelector(`[data-index="${identifier}"]`);
-    }
+    } 
     // If the identifier is a string, treat it as a tab name
     else if (typeof identifier === 'string') {
         tabButton = tabContainer.querySelector(`[data-name="${identifier}"]`);
@@ -640,6 +664,38 @@ function getContentContainer(tabContainer, identifier) {
         return null;
     }
 }
+
+
+function addNewTab(tabContainer, contentContainer, name, tabMainName= 'Tab') {
+    const tabCount = tabContainer.getElementsByClassName('tablinks').length; // Get current number of tabs
+    const newTabIndex = tabCount + 1;
+    const newTabName = name ? name : `${tabMainName} ${newTabIndex}`; // Default name for the new tab
+
+    // Create new tab button
+    const newTabButton = document.createElement('button');
+    newTabButton.innerText = newTabName;
+    newTabButton.className = 'tablinks';
+    newTabButton.setAttribute('data-index', newTabIndex);
+    newTabButton.setAttribute('data-name', newTabName);
+    newTabButton.onclick = function(event) { openTab(event, `tab${newTabIndex}`, contentContainer); };
+
+    // Insert before the "Add Tab" button if it exists
+    const addButton = tabContainer.querySelector('.add-tab-button');
+    tabContainer.insertBefore(newTabButton, addButton || null);
+
+    // Create new tab content
+    const newTabContent = document.createElement('div');
+    newTabContent.id = `tab${newTabIndex}`;  // Use dynamic IDs for the tab content
+    newTabContent.className = 'tab-content';
+    newTabContent.innerHTML = `<h3>${newTabName}</h3><p>Content for ${newTabName}</p>`;
+
+    // Append new content to content container
+    contentContainer.appendChild(newTabContent);
+
+    // Optionally, activate the new tab after creation
+    openTab({ currentTarget: newTabButton }, `tab${newTabIndex}`, contentContainer);
+}
+
 
 function getSelectedOptionsWithCheckmark(selectElement) {
     const selectedValues = [];

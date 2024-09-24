@@ -66,6 +66,8 @@ class SettingsUI {
         icon_bronze         = "bronze.png",
         icon_edit           = "edit.png",
         icon_buffDebuff     = "buff_debuff.png",
+        icon_aura   = "aura.png",  
+        icon_cast = "cast.png",
         board_size          = 4000,    
         grid_size           = 100,
         max_zoom_in         = 6,
@@ -87,6 +89,8 @@ class SettingsUI {
         this.ICON_BRONZE           = icon_bronze           ;
         this.icon_edit           = icon_edit           ;
         this.icon_buffDebuff     = icon_buffDebuff     ;
+        this.icon_aura   = icon_aura   ;
+        this.icon_cast = icon_cast;
         this.FOLDER_MENUICONS        = folderMenuIcons;
         this.BOARD_SIZE          = board_size;
         this.GRID_SIZE           = grid_size;
