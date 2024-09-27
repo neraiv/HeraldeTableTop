@@ -10,6 +10,12 @@ const objectTypes = Object.freeze({
     // Add more object types as needed
 });
 
+const spellTypes = Object.freeze({
+    WEAPON: 1,
+    CANTRIP: 2,
+    SPELL: 3,
+});
+
 const rollTypes = Object.freeze({
     DEX_SAVING_THROW: 1,
     CON_SAVING_THROW: 2,
@@ -489,6 +495,7 @@ class SpellPattern  {
 
 class BuffDebuff {
     constructor(effectType, value) {
+        this.type = additionalEffectTypes.BUFF;
         this.effectType = effectType;
         this.value = value;
     }
@@ -496,6 +503,7 @@ class BuffDebuff {
 
 class Aura {
     constructor(area, value, targetList = [targetTypes.ALLY], canSpread = false) {
+        this.type = additionalEffectTypes.AURA;
         this.area = area;
         this.value = value
         this.targetList = targetList;  // Array of TargetType enum 0: ALLY, 1: ENEMY
@@ -504,8 +512,9 @@ class Aura {
 }
 
 class Cast {
-    constructor(spell, spellLevel, mana, targetListInOrder) {
-        this.spell = spell;  // Spell object
+    constructor(spellName, spellLevel, mana, targetListInOrder) {
+        this.type = additionalEffectTypes.CAST;
+        this.spellName = spellName;  // Spell object
         this.spellLevel = spellLevel;
         this.mana = mana;
         this.targetListInOrder = targetListInOrder;
@@ -513,11 +522,10 @@ class Cast {
 }
 
 class AdditionalEffect {
-    constructor(name, characterAction, additionalEffectType, value ,description, duration= [durationTypes.TURN_BASED, 1], source = effectSourceTypes.SPELL) {
+    constructor(name, characterAction, effects=[], description, duration= [durationTypes.TURN_BASED, 1], source = objectTypes.SPELL) {
         this.name = name;  // String
         this.characterAction = characterAction;
-        this.additionalEffectType = additionalEffectType;  // TargetEffectType enum 0: CAST, 1: AURA, 2: BUFF
-        this.value = value; // BuffDebuff, Aura or Cast
+        this.effects = effects; // BuffDebuff, Aura or Cast
         this.description = description;
         this.duration = duration;
         this.source = source;
@@ -531,7 +539,7 @@ class AdditionalEffect {
 class Spell {
     constructor(name= "", availableClasses = [], statType= [], damageType_ = damageType.NONE, description = "", targetEffects=[], 
         spendManaEffects= {}, spellPattern = new SpellPattern, damage = "1d1", castTime=1, actionCost = actionType.MAIN, 
-        casterRolls = [], targetRolls = [], targetList= [targetTypes.ALLY, targetTypes.ENEMY]) {
+        casterRolls = [], targetRolls = [], targetList= [targetTypes.ALLY, targetTypes.ENEMY], spellType = spellTypes.SPELL, spellLvl = 1) {
         this.name               = name; // String
         this.availableClasses   = availableClasses; // Array of ClassType enums
         this.statType           = statType; // StatType enum (e.g., STR, DEX, CON, etc.)
@@ -546,6 +554,8 @@ class Spell {
         this.casterRolls        = casterRolls;
         this.targetRolls        = targetRolls;
         this.targetList         = targetList; // TargetType enum
+        this.spellType          = spellType;
+        this.spellLvl           = spellLvl;
     }
 
     returnSelf(){

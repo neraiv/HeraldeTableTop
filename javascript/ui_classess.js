@@ -129,7 +129,7 @@ class SettingsGame {
         minCharacterLevel = 1,
         maxSubClassCount = 2,
         minSubClassCount = 0,
-        includedSpellLevels = ['1', '2', '3', '4', '5'],
+        includedSpellLevels = ['0','1', '2', '3', '4', '5'],
         flags, 
     } = {}) {
         this.maxStatPoint   = maxStatPoint;

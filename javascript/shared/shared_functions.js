@@ -1,6 +1,6 @@
 // Function to parse and roll dice based on the roll list
 
-function createNumberInput(label, isReadOnly){
+function createNumberInput(label, id, defaultValue = null, isReadOnly, addIncrementButtons = true) {
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
@@ -10,12 +10,15 @@ function createNumberInput(label, isReadOnly){
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', label);
+    labelElement.classList.add('label-element');
     labelElement.textContent = label;
 
     const inputElement = document.createElement('input');
     inputElement.type = 'text';
-    inputElement.id = label;
+    inputElement.classList.add('input-element');
+    inputElement.id = id;
     inputElement.name = label;
+    inputElement.value = defaultValue ? defaultValue : null;
 
     if (isReadOnly) {
         inputElement.readOnly = true;
@@ -25,26 +28,31 @@ function createNumberInput(label, isReadOnly){
     addSpacer(formGroup);
     formGroup.appendChild(inputElement);
 
-    const controls = document.createElement('div');
-    controls.className = 'number-controls';
-
-    const buttonUp = createImageButton(19, '&#9650;');  
-    buttonUp.onclick = function(event){event.preventDefault();}
-    const buttonDown = createImageButton(19, '&#9660;');  
-    buttonDown.onclick = function(event){event.preventDefault();}
-
-    controls.appendChild(buttonUp);
-    controls.appendChild(buttonDown);
-    formGroup.appendChild(controls);
-
-    formGroup.inputElement = inputElement;
-    formGroup.buttonUp = buttonUp;
-    formGroup.buttonDown = buttonDown;
-
+    if(addIncrementButtons){
+        const controls = document.createElement('div');
+        controls.className = 'number-controls';
+    
+        const buttonUp = createImageButton(19, '&#9650;');  
+        buttonUp.classList.add('button-up')
+        buttonUp.onclick = function(event){
+            event.preventDefault();
+    
+        }
+        const buttonDown = createImageButton(19, '&#9660;');  
+        buttonDown.classList.add('button-down')
+        buttonDown.onclick = function(event){
+            event.preventDefault();
+        }
+    
+        controls.appendChild(buttonUp);
+        controls.appendChild(buttonDown);
+        formGroup.appendChild(controls);
+    }
+   
     return formGroup
 }
 
-function createStringInput(label, id = '', isReadOnly, returnElements = false) {
+function createStringInput(label, id = '', defaultValue = null, isReadOnly) {
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group')
     formGroup.classList.add('row')
@@ -54,16 +62,19 @@ function createStringInput(label, id = '', isReadOnly, returnElements = false) {
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', id); // Associate label with input via id
+    labelElement.classList.add('label-element');
     labelElement.textContent = label;
     labelElement.style.alignContent = 'center';
     labelElement.style.textAlign = 'center';
 
 
     const inputElement = document.createElement('input');
+    inputElement.classList.add('input-element');
     inputElement.type = 'text';
     inputElement.id = id; // Set the id for the input
     inputElement.name = id; // Optionally set the name attribute as well
     inputElement.style.display = 'flex'; //
+    inputElement.value = defaultValue ? defaultValue: "";
 
     if (isReadOnly) {
         inputElement.readOnly = true;
@@ -73,23 +84,10 @@ function createStringInput(label, id = '', isReadOnly, returnElements = false) {
     addSpacer(formGroup);
     formGroup.appendChild(inputElement);
 
-    let childs = null;
-    if (returnElements) {
-        childs = [inputElement];
-    }
-
-    formGroup.inputElement = inputElement;
-
     return formGroup;
 }
 
-function createAdditionalEffectCreateContainer(){
-    new AdditionalEffect()
-
-    
-}
-
-function createSelectorInput(label, valueList, textList, defaultValue, id = null, disable_filter = null,multiple = true, isReadOnly= false, custom_func= null) {
+function createSelectorInput(label, valueList, textList, nonSelectableDefault, id = null, disable_filter = null,multiple = true, isReadOnly= false, custom_func= null, defaultValue = null) {
 
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group')
@@ -98,6 +96,7 @@ function createSelectorInput(label, valueList, textList, defaultValue, id = null
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', id); // Associate label with input via id
+    labelElement.classList.add('label-element');
     labelElement.textContent = label;
     labelElement.style.alignContent = 'center';
     labelElement.style.textAlign = 'center';
@@ -115,8 +114,9 @@ function createSelectorInput(label, valueList, textList, defaultValue, id = null
             
     }
 
-    const inputElement = createSelector(valueList, textList, defaultValue, id, disable_filter,custom_func? custom_func: optionOnclickFunc);
+    const inputElement = createSelector(valueList, textList, nonSelectableDefault, id, disable_filter, custom_func? custom_func: optionOnclickFunc);
     inputElement.style.height = '98%';
+    inputElement.classList.add('input-element');
     inputElement.multiple = multiple;
 
     if (isReadOnly) {
@@ -127,9 +127,21 @@ function createSelectorInput(label, valueList, textList, defaultValue, id = null
     addSpacer(formGroup);
     formGroup.appendChild(inputElement);
 
-    // Attach the inputElement to the formGroup for external access
-    formGroup.inputElement = inputElement;
-    formGroup.labelElement = labelElement;
+    for(let option of inputElement.options){
+        if(defaultValue && defaultValue.includes(option.index)){
+            option.selected = true;
+            if(multiple){
+                event_ = {
+                    target: option
+                }
+                if(custom_func){
+                    custom_func(event_)
+                }else{
+                    optionOnclickFunc(event_)
+                }
+            }
+        }
+    }
 
     return formGroup;
 }
@@ -546,6 +558,7 @@ function createTabbedContainer(tabCount, tabNames = null, id = null, isGrowable 
     // Create a parent container for both tab and content containers
     tabMainName = tabMainName ? tabMainName : 'Tab';
     const tabbedWindowContainer = document.createElement('div');
+    tabbedWindowContainer.length = tabCount;
     tabbedWindowContainer.className = id ? `${id}-tabbed-window` : 'default-tabbed-window'; // Optional class for styling
 
     const tabContainer = document.createElement('div');
@@ -691,7 +704,7 @@ function addNewTab(tabContainer, contentContainer, name, tabMainName= 'Tab') {
 
     // Append new content to content container
     contentContainer.appendChild(newTabContent);
-
+    tabContainer.parentElement.length = newTabIndex;
     // Optionally, activate the new tab after creation
     openTab({ currentTarget: newTabButton }, `tab${newTabIndex}`, contentContainer);
 }
@@ -709,4 +722,29 @@ function getSelectedOptionsWithCheckmark(selectElement) {
     }
 
     return selectedValues;
+}
+
+function getOrderedSelectedOptions(selectElement) {
+    // Create an array to store the options with their index and value
+    const optionsWithIndex = [];
+    
+    // Loop through the options of the select element
+    for (let option of selectElement.options) {
+        // Check if the option text contains a dash (indicating an index is present)
+        const parts = option.text.split('-');
+        if (parts.length === 2) {
+            const index = parseInt(parts[1], 10); // Extract the index
+            if (!isNaN(index)) { // Ensure it's a valid number
+                optionsWithIndex.push({ index: index, value: option.value });
+            }
+        }
+    }
+
+    // Sort the array based on the index (ascending)
+    optionsWithIndex.sort((a, b) => a.index - b.index);
+
+    // Extract the values in the correct order
+    const orderedValues = optionsWithIndex.map(option => option.value);
+
+    return orderedValues;
 }

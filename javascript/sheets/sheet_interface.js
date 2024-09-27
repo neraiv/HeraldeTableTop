@@ -39,12 +39,10 @@ function addTopRightBar(){
     openDriveImageBar.addEventListener('click', () => {
     });
 
-    const spellCreator = addSpellCreator();
-    
     const openSpellCreate = createImageButton(32, '✨');
     addClickHighlightListener(openSpellCreate);
     openSpellCreate.addEventListener('click', () => {
-        toggleDisplay_SheetWithId(null, null, spellCreator);
+        addSpellCreator();
     });      
 
     column.appendChild(openDriveImageBar);

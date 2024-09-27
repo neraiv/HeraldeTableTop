@@ -71,7 +71,6 @@ h2 {
     left: -330px; /* Show the bar when it's open */
 }
 
-
 #character-list{
     display: flex; /* Ensure it's a flex container */
     width: 95%;
@@ -119,6 +118,36 @@ h2 {
     display: flex; /* Show the active one */
 }
 
+/* Drive Token */
+.drive-image-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 95%;
+    height: 120px;
+    border: 2px solid black;
+    border-radius: 5px;
+    box-sizing: border-box; /* Ensures padding is included in the container's width */
+    margin-bottom: 10px;
+}
+
+.image-container {
+    object-fit: contain; /* Ensures image scales within its container */
+    width: 80%; /* Adjust as needed */
+    height: 80%;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-container img {
+    background-color: aliceblue;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Ensures image scales within its container */
+}
+/* End Drive Token */
 
 /* Character Sheet */
 .character-sheet {
@@ -156,6 +185,7 @@ h2 {
     transform: translate(-50%, -50%);
     height: 85%;
     width: 85%;
+    max-width: 600px;
     background: #fff;
     z-index: 52;
 }
@@ -283,5 +313,23 @@ h2 {
     pointer-events: none; /* Disables any interaction with the item */
     color: gray; /* Optional: changes text color to gray */
 }
-
 /* END OF AVALIABLE SPELLS SHEET */
+
+
+/* DESCRIPTION CONTAINER */
+.description-container {
+    position: absolute;
+    display: block;
+    padding: 15px;
+    border: 2px solid #603B1D; /* Dark brown border for D&D style */
+    background-color: #F5CBA7; /* Skin tone background color */
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4); /* Subtle shadow for depth */
+    font-family: Georgia, serif; /* Fantasy-themed font */
+    color: #2C3E50; /* Dark text color for readability */
+    max-width: 250px; /* Limit width to fit typical D&D-style popup */
+    max-height: 80vh; /* Limit height to 80% of the viewport height */
+    overflow-y: auto; /* Makes content scrollable vertically if it's too tall */
+    z-index: 1000; /* Ensure it appears on top */
+}
+/* DESCRIPTION OF CONTAINER */

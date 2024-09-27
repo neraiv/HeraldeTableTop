@@ -1,7 +1,9 @@
 const knownSpellString = " / Known";
 const spellNormalCast = "Normal Cast";
 const noEffect = "No Effect";
-const attackerSpell = "Attacker-Spell";
+const attackerSpellMana     = "Attacker-Spell-Mana";
+const attackerSpellLevel    = "Attacker-Spell-Level";
+const attackerSpellName     = "Attacker-Spell-Name";
 const noDescription = null;
 
 let userSpells = {};
@@ -15,65 +17,36 @@ function checkSpellUsable(char, spell) {
 }
 
 let listCreatedAdditionalEffects = Object.freeze({
-    'burningEffect' : new AdditionalEffect("Holy Burn", characterActions.TURN_END, additionalEffectTypes.AURA, 
+    'burningEffect' : new AdditionalEffect("Holy Burn", [characterActions.TURN_END], 
                             [new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageType.FIRE,'1d8']), [targetTypes.SELF], true)], 
                             noDescription, [durationTypes.TURN_BASED, 10], effectSourceTypes.SELF),
-    'attackRadiusBonus_50' : new AdditionalEffect("Spell Shoot", characterActions.ATTACKING, additionalEffectTypes.BUFF,
+    'attackRadiusBonus_50' : new AdditionalEffect("Spell Shoot", [characterActions.ATTACKING],
                           [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 50)], noDescription, [durationTypes.UNTIL_USE]),
                           
-    'attackRadiusBonus_100' : new AdditionalEffect("Spell Shoot", characterActions.ATTACKING, additionalEffectTypes.BUFF,
+    'attackRadiusBonus_100' : new AdditionalEffect("Spell Shoot", [characterActions.ATTACKING],
                               [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], noDescription, [durationTypes.UNTIL_USE]),
 
-    'attackRangeBonus_100' : new AdditionalEffect("Eagle Spell Shoot", characterActions.ATTACKING, additionalEffectTypes.BUFF,
+    'attackRangeBonus_100' : new AdditionalEffect("Eagle Spell Shoot", [characterActions.ATTACKING],
                                   [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 100)], noDescription, [durationTypes.UNTIL_USE]),
 
-    'attackRangeBonus_200' : new AdditionalEffect("Eagle Spell Shoot", characterActions.ATTACKING, additionalEffectTypes.BUFF,
+    'attackRangeBonus_200' : new AdditionalEffect("Eagle Spell Shoot", [characterActions.ATTACKING],
                                       [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 200)], noDescription, [durationTypes.UNTIL_USE]),
                                         
-    'counterSpellEffect' : new AdditionalEffect('Anti-Mage Shield', characterActions.ATTACKED, additionalEffectTypes.CAST, 
+    'counterSpellEffect' : new AdditionalEffect('Anti-Mage Shield', [characterActions.ATTACKED], 
                                       [new Cast('Fireball', 1, 2[targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.UNTIL_USE]),
 
-    'counterMirrorSpell' : new AdditionalEffect('Dont Attack Ur Self', characterActions.ATTACKED, additionalEffectTypes.CAST, 
-                          [new Cast(attackerSpell, [targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.UNTIL_USE]),
+    'counterMirrorSpell' : new AdditionalEffect('Dont Attack Ur Self', [characterActions.ATTACKED], 
+                          [new Cast(attackerSpellMana, attackerSpellLevel, attackerSpellName , [targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.UNTIL_USE]),
 
-    'holyAura' :    new AdditionalEffect("Holy Aura", characterActions.TURN_END, additionalEffectTypes.AURA, 
+    'holyAura' :    new AdditionalEffect("Holy Aura", [characterActions.TURN_END], 
                       [new Aura(100, new BuffDebuff(effectTypes.DEFENSE, '4'), [targetTypes.ALLY], true),
                       new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageType.RADIANT,'1d8']), [targetTypes.ENEMY], true)], 
                       noDescription, [durationTypes.TURN_BASED, 10], effectSourceTypes.SELF),
 
-    'startFireBallParty' : new AdditionalEffect("Fireball For Everyone", characterActions.TURN_START, additionalEffectTypes.AURA, 
+    'startFireBallParty' : new AdditionalEffect("Fireball For Everyone", [characterActions.TURN_START], 
                                     [new Aura(100, new Cast('Fireball', 1, 2[targetTypes.CLOSEST_ANY]), [targetTypes.ANY], true)], noDescription, [durationTypes.ALWAYS]),
                             
 });
-const burningEffect = new AdditionalEffect("Holy Burn", characterActions.TURN_END, additionalEffectTypes.AURA, 
-                            [new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageType.FIRE,'1d8']), [targetTypes.SELF], true)], 
-                            noDescription, [durationTypes.TURN_BASED, 10], effectSourceTypes.SELF)
-
-const attackRadiusBonus_50 = new AdditionalEffect("Spell Shoot", characterActions.ATTACKING, additionalEffectTypes.BUFF,
-                            [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 50)], noDescription, [durationTypes.UNTIL_USE])
-                            
-const attackRadiusBonus_100 = new AdditionalEffect("Spell Shoot", characterActions.ATTACKING, additionalEffectTypes.BUFF,
-                                [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], noDescription, [durationTypes.UNTIL_USE])
-
-const attackRangeBonus_100 = new AdditionalEffect("Eagle Spell Shoot", characterActions.ATTACKING, additionalEffectTypes.BUFF,
-                                    [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 100)], noDescription, [durationTypes.UNTIL_USE])
-
-const attackRangeBonus_200 = new AdditionalEffect("Eagle Spell Shoot", characterActions.ATTACKING, additionalEffectTypes.BUFF,
-                                        [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 200)], noDescription, [durationTypes.UNTIL_USE])
-                                          
-const counterSpellEffect = new AdditionalEffect('Anti-Mage Shield', characterActions.ATTACKED, additionalEffectTypes.CAST, 
-                                        [new Cast('Fireball', 1, 2[targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.UNTIL_USE])
-
-const counterMirrorSpell = new AdditionalEffect('Dont Attack Ur Self', characterActions.ATTACKED, additionalEffectTypes.CAST, 
-                            [new Cast(attackerSpell, [targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.UNTIL_USE])
-
-const holyAura =    new AdditionalEffect("Holy Aura", characterActions.TURN_END, additionalEffectTypes.AURA, 
-                        [new Aura(100, new BuffDebuff(effectTypes.DEFENSE, '4'), [targetTypes.ALLY], true),
-                        new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageType.RADIANT,'1d8']), [targetTypes.ENEMY], true)], 
-                        noDescription, [durationTypes.TURN_BASED, 10], effectSourceTypes.SELF)
-
-const startFireBallParty = new AdditionalEffect("Fireball For Everyone", characterActions.TURN_START, additionalEffectTypes.AURA, 
-                                [new Aura(100, new Cast('Fireball', 1, 2[targetTypes.CLOSEST_ANY]), [targetTypes.ANY], true)], noDescription, [durationTypes.ALWAYS]);
 
 const level1_spell_list = {
     // Add more spells as needed
@@ -83,9 +56,9 @@ const level1_spell_list = {
         damageType.FIRE, 
         'Conjure a glowing ball of fire.',
         null,
-        {   '1' : spellNormalCast,
+        {   '1' : [spellNormalCast],
             '2' : [listCreatedAdditionalEffects.attackRadiusBonus_100, listCreatedAdditionalEffects.attackRangeBonus_200],
-            '3' : ['2', new AdditionalEffect("Spell Shoot", characterActions.ATTACKING, additionalEffectTypes.BUFF, [new BuffDebuff(effectTypes.DICE_CHANGE, '4d8')], noDescription, [durationTypes.UNTIL_USE])]
+            '3' : ['2', new AdditionalEffect("Spell Shoot", [characterActions.ATTACKING], [new BuffDebuff(effectTypes.DICE_CHANGE, '4d8')], noDescription, [durationTypes.UNTIL_USE])]
         },
         new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castType.ON_LOCATION),
         '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
@@ -96,7 +69,7 @@ const level1_spell_list = {
         damageType.FROST, 
         'Conjure a glowing ball of fire.',
         null,
-        {'1' : spellNormalCast,
+        {'1' : [spellNormalCast],
             '2' : [listCreatedAdditionalEffects.attackRadiusBonus_100]},
         new SpellPattern(spellPatterns.CONE_UPWARD, 800, 100, castType.ON_LOCATION),
         '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
@@ -107,8 +80,8 @@ const level1_spell_list = {
         damageType.RADIANT, 
         'Conjure a glowing piller of light.',
         null,
-        {'1' : spellNormalCast,
-            '2' : [new AdditionalEffect(characterActions.CASTING,  additionalEffectTypes.BUFF, [new BuffDebuff(durationTypes.UNTIL_USE, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
+        {'1' : [spellNormalCast],
+            '2' : [new AdditionalEffect([characterActions.CASTING],  [new BuffDebuff(durationTypes.UNTIL_USE, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
         new SpellPattern(spellPatterns.CONE_DOWNWARD, 800, 100, castType.ON_LOCATION),
         '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW], [targetTypes.ENEMY]
     ),   
@@ -118,8 +91,8 @@ const level1_spell_list = {
         damageType.FIRE, 
         'Conjure a glowing ball of fire.',
         null,
-        {'1' : spellNormalCast,
-            '2' : [new AdditionalEffect(characterActions.CASTING,  additionalEffectTypes.BUFF, [new BuffDebuff(durationTypes.UNTIL_USE, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
+        {'1' : [spellNormalCast],
+            '2' : [new AdditionalEffect([characterActions.CASTING],  [new BuffDebuff(durationTypes.UNTIL_USE, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
         new SpellPattern(spellPatterns.CONE_DOWNWARD, 800, 100, castType.FROM_CASTER),
         '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
     ),
@@ -129,8 +102,8 @@ const level1_spell_list = {
         damageType.LIGHTNING, 
         'Conjure a glowing ball of fire.',
         null,
-        {'1' : spellNormalCast,
-            '2' : [new AdditionalEffect(characterActions.CASTING,  additionalEffectTypes.BUFF, [new BuffDebuff(durationTypes.UNTIL_USE, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
+        {'1' : [spellNormalCast],
+            '2' : [new AdditionalEffect([characterActions.CASTING],  [new BuffDebuff(durationTypes.UNTIL_USE, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
         new SpellPattern(spellPatterns.BOX, 800, 100, castType.FROM_CASTER),
         '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
     ),
@@ -142,7 +115,7 @@ const level1_spell_list = {
         {
             '2': [listCreatedAdditionalEffects.counterMirrorSpell],
         },
-        {'1' : spellNormalCast,
+        {   '1' : [spellNormalCast],
             '2' : [listCreatedAdditionalEffects.holyAura],
             '3' : [listCreatedAdditionalEffects.attackRadiusBonus_100, listCreatedAdditionalEffects.attackRangeBonus_200],
             '4' : [listCreatedAdditionalEffects.startFireBallParty, listCreatedAdditionalEffects.attackRadiusBonus_100]
@@ -156,7 +129,7 @@ const level1_spell_list = {
         damageType.CONJURE, 
         'Conjure a Mountainless dwarf',
         null,
-        {'1' : spellNormalCast},
+        {'1' : [spellNormalCast]},
         new SpellPattern(spellPatterns.CIRCULAR, 500, 100, castType.ON_LOCATION),
         'mountainless_dwarf', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW], [targetTypes.ANY]
     ),
@@ -164,6 +137,14 @@ const level1_spell_list = {
 
 
 let listSpells = {
+    0: level1_spell_list,
     1: level1_spell_list,
-    2: level1_spell_list    //Future
+    2: level1_spell_list,    //Future
+    3: level1_spell_list,
+    4: level1_spell_list,    //Future
+    5: level1_spell_list,    //Future
+    6: level1_spell_list,    //Future
+    7: level1_spell_list,    //Future
+    8: level1_spell_list,    //Future
+    9: level1_spell_list,    //Future
 };
