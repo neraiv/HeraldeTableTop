@@ -23,7 +23,7 @@ function addCharacterCreateSheet(parent) {
         save_CharacterSheet(characterSheet.id);
     });
 
-    const closeButton = createImageButton(50, null, `${userIntarfaceSettings.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}`);  
+    const closeButton = createImageButton(50, {source: `${uiSettings.folderMenuIcons +'/'+uiSettings.icon_closeBar}`});  
     closeButton.style.paddingRight = '10px';
     closeButton.onclick = () => toggleDisplay_SheetWithId(id, false);
 
@@ -85,12 +85,12 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet, characte
 
     const imageContainer = document.createElement('div');
     imageContainer.className = 'image-container';
-    imageContainer.style.backgroundColor = getRandomColor();
+    imageContainer.style.backgroundColor = genareteRandomColor();
     imageContainer.style.width = '200px';
     imageContainer.style.height = '200px';
     
     const image = document.createElement('img')
-    image.src = `${tokenPaths.DEFAULT_CHAR_PROFILE}`
+    image.src = `${allFilePaths.default_char_profile}`
 
     imageContainer.appendChild(image);
 
@@ -188,6 +188,7 @@ function createCharacterCreateSheet_FirstColumn(parent, characterSheet, characte
 
 function createCharacterCreateSheet_SecondColumn(parent, characterSheet, character, width){
 
+    const id = characterSheet.id + '-spell-select'
     const form = document.createElement('form');
     form.style.width  = width;
     form.classList.add('column');
@@ -209,38 +210,23 @@ function createCharacterCreateSheet_SecondColumn(parent, characterSheet, charact
     row.style.minHeight = "20%"
     row.position = 'fixed';
 
-    let selectedSpellLevel = 1;
+    function update(selector) {
+        spellList = character.getKnownSpells(selectedSpellLevel);
+        updateSelector(spellList, spellList, select, null, 'select', knownSpellString);
+    }
 
-    spellList = character.getKnownSpells(selectedSpellLevel);
+    const spellSelectContainer = createSpellSelectContainer(characterSheet.id, 1, null);
+    const spellSelect = spellSelectContainer.querySelector('spell-name-selector')
 
-    // Iterate through AVAILABLE_SPELL_LEVELS and append "/ known" if it's in LEARNED_SPELLS
-    const levelSelect = createSelector(gameSettings.includedSpellLevels, gameSettings.includedSpellLevels);
-    levelSelect.style.width = '5%';
-    levelSelect.style.minWidth = '50px'
-    levelSelect.style.maxWidth = '90px'
- 
-    const select = createSelector(spellList, spellList, 'select', characterSheet+'-spell-select', knownSpellString);
-    select.style.width = '50%';
-    select.style.maxWidth = '320px'
-    const imageButton = createImageButton(24,'➕');
-
+    const imageButton = createImageButton(24, {icon: '➕'});
     imageButton.onclick = function(event){
         event.preventDefault();
-        const currentSelectedSpell = select.value;
+        const currentSelectedSpell = spellSelect.value;
         createSpellContainer(spellColumn, selectedSpellLevelList, currentSelectedSpell, character);
     }
 
-    levelSelect.addEventListener('change', function(event) {
-        event.preventDefault();
-        selectedSpellLevel = event.target.value;
-        spellList = character.getKnownSpells(selectedSpellLevel);
-        updateSelector(spellList, spellList, select, null, 'select', knownSpellString);
-    });
-
     addSpacer(row);
-    row.appendChild(levelSelect);
-    addSpacer(row);
-    row.appendChild(select);
+    row.appendChild(spellSelectContainer);
     addSpacer(row);
     row.appendChild(imageButton);
     addSpacer(row);

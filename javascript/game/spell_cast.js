@@ -1,7 +1,10 @@
-function spellCast(tokenID, spell, mana=null) {
+function spellCast(tokenID, spell, mana=0) {
     if (!tokenID || !spell) return;
 
-    const tokenRect = getObjectPositionInObjectPositions(tokenID);
+    const tokenRect = objectsPositions.get(tokenID)[1];
+    const char = inGameChars.get(tokenID);
+
+    char.action = characterActions.CASTING;
 
     const tokenCenterX = tokenRect.x + tokenRect.width / 2
     const tokenCenterY = tokenRect.y + tokenRect.height / 2
@@ -17,20 +20,21 @@ function spellCast(tokenID, spell, mana=null) {
     // spellBox.style.width = '100%';
     // spellBox.style.height = '100%';
 
-
     let spellPattern = spell.spellPattern.pattern;
     let spellArea = spell.spellPattern.area;
     let spellRange = spell.spellPattern.range;
 
-    const allBuffs = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_RADIUS_BONUS, effectTypes.ATTACK_RANGE_BONUS, effectTypes.PATTERN_CHANGE]);
-    const radiusBonusesSum = allBuffs.get(effectTypes.ATTACK_RADIUS_BONUS).reduce((sum, bonus) => sum + parseInt(bonus), 0);
-    const rangeBonusesSum = allBuffs.get(effectTypes.ATTACK_RANGE_BONUS).reduce((sum, bonus) => sum + parseInt(bonus), 0);
-    const patternChange = allBuffs.get(effectTypes.PATTERN_CHANGE);
-
-    spellArea += radiusBonusesSum;
-    spellRange += rangeBonusesSum;
-    if(patternChange.length == 1){
-        spellPattern = patternChange[0];
+    if(spell.spendManaEffects[mana]){
+        const allBuffs = getAdditionalEffectBonuses(spell.spendManaEffects[mana].caster, characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_RADIUS_BONUS, effectTypes.ATTACK_RANGE_BONUS, effectTypes.PATTERN_CHANGE]);
+        const radiusBonusesSum = allBuffs.get(effectTypes.ATTACK_RADIUS_BONUS).reduce((sum, bonus) => sum + parseInt(bonus), 0);
+        const rangeBonusesSum = allBuffs.get(effectTypes.ATTACK_RANGE_BONUS).reduce((sum, bonus) => sum + parseInt(bonus), 0);
+        const patternChange = allBuffs.get(effectTypes.PATTERN_CHANGE);
+    
+        spellArea += radiusBonusesSum;
+        spellRange += rangeBonusesSum;
+        if(patternChange.length == 1){
+            spellPattern = patternChange[0];
+        }
     }
 
     if(spellPattern === spellPatterns.CIRCULAR) {
@@ -45,10 +49,10 @@ function spellCast(tokenID, spell, mana=null) {
 
     spellCastTarget.style.left = `${tokenCenterX - spellArea / 2}px`;
 
-    if(spell.spellPattern.castType == castType.FROM_CASTER) {
+    if(spell.spellPattern.castType == castTypes.FROM_CASTER) {
         spellCastTarget.classList.add('spell-from-caster');
         spellCastTarget.style.top = `${tokenCenterY}px`;
-    }else if(spell.spellPattern.castType == castType.AROUND_CASTER){
+    }else if(spell.spellPattern.castType == castTypes.AROUND_CASTER){
         spellCastTarget.style.top = `${tokenCenterY}px`;
         spellCastTarget.style.left = `${tokenCenterX}px`;
         spellCastTarget.style.transform = 'translate(-50%, -50%)';
@@ -206,7 +210,7 @@ function spellCast(tokenID, spell, mana=null) {
     let distance = 0;
     let mouse;
 
-    const dontAttackTargetTpyes = getMissingTargetTypes(spell.targetList);
+    const dontAttackTargetTpyes = getMissingArrayValues(spell.spellPattern.canTarget, Object.values(targetTypes));
 
     function updatePosition(event) {
         mouse = getMousePositionOnGameboard(event);
@@ -218,15 +222,15 @@ function spellCast(tokenID, spell, mana=null) {
 
         let newX, newY, spellWidth, spellHeight, rotationCenterX, rotationCenterY = 0;
         let corners = [];
-        if (spell.spellPattern.castType === castType.FROM_CASTER) {
+        if (spell.spellPattern.castType === castTypes.FROM_CASTER) {
             distance = Math.min(distance, spellRange);
             spellCastTarget.style.transform = `rotate(${(angle * 180 / Math.PI) % 360}deg)`;
 
-            if (spell.spellPattern !== spellPatterns.CONE_UPWARD && spellPattern !== spellPatterns.CONE_DOWNWARD) {
+            if (spell.spellPattern.pattern !== spellPatterns.CONE_UPWARD && spellPattern.pattern !== spellPatterns.CONE_DOWNWARD) {
                 spellCastTarget.style.height = `${distance}px`;
             } else {
                 // Handle cone spellPatterns with borders
-                if (spell.spellPattern.pattern === spellPatterns.CONE_DOWNWARD) {
+                if (spell.spellPattern.pattern == spellPatterns.CONE_DOWNWARD) {
                     spellCastTarget.style.borderBottomWidth = `${distance}px`;
                     spellCastTarget.style.borderTop = 'none';
                 } else {
@@ -240,7 +244,7 @@ function spellCast(tokenID, spell, mana=null) {
             newY = tokenCenterY;
             rotationCenterX = tokenCenterX
             rotationCenterY = tokenCenterY
-        } else if(spell.spellPattern.castType == castType.ON_LOCATION) {
+        } else if(spell.spellPattern.castType == castTypes.ON_LOCATION) {
             // castType.ON_LOCATION
             newX = mouse.x - spellArea / 2;
             newY = mouse.y - spellArea / 2;
@@ -259,7 +263,7 @@ function spellCast(tokenID, spell, mana=null) {
             spellCastTarget.style.left = `${newX}px`;
             spellCastTarget.style.top = `${newY}px`;
             spellCastTarget.style.transform = `rotate(${(angle * 180 / Math.PI) % 360}deg)`;
-        } else if (spell.spellPattern.castType == castType.AROUND_CASTER) {
+        } else if (spell.spellPattern.castType == castTypes.AROUND_CASTER) {
 
             const newSpellAreaRadius = (distance <= spellRange) ? distance : spellRange;
             
@@ -304,14 +308,13 @@ function spellCast(tokenID, spell, mana=null) {
             )   
         }
 
-        // Now we need to check for overlap using the rotated bounds (for castType.FROM_CASTER)
+        // Now we need to check for overlap using the rotated bounds (for castTypes.FROM_CASTER)
         objectsPositions.forEach((target, tokenKey) => {
-            const targetId   = getIdFromTokenId(tokenKey);
-            if(!spell.targetList.includes(targetTypes.ANY)){
-                if(dontAttackTargetTpyes.includes(targetTypes.ALLY) && listAllies.includes(targetId)){
+            if(!spell.spellPattern.canTarget.includes(targetTypes.ANY)){
+                if(dontAttackTargetTpyes.includes(targetTypes.ALLY) && listAllies.includes(tokenKey)){
                     return;
                 } 
-                if (dontAttackTargetTpyes.includes(targetTypes.ENEMY) && listEnemies.includes(targetId)){
+                if (dontAttackTargetTpyes.includes(targetTypes.ENEMY) && listEnemies.includes(tokenKey)){
                     return
                 } 
                 if(dontAttackTargetTpyes.includes(targetTypes.SELF) && tokenKey == tokenID){
@@ -344,9 +347,12 @@ function spellCast(tokenID, spell, mana=null) {
     gameboard.addEventListener('mousemove', updatePosition);
 
     function stopCasting() {
-        if(spell.damageType == damageType.CONJURE){
+        if(spell.type == spellTypes.CONJURE){
             if(overlappedTokens.size == 0) {
-                createConjuredCharacterToken(spell.damage, mouse.x, mouse.y);        
+                const img = document.createElement('img');
+                img.src = allFilePaths.folderCharToken + '/' + spell.damage + '/' + 'char.png';
+                img.id = spell.damage;
+                createCharacterToken(img, mouse.x, mouse.y, characterTypes.CONJURED, "token-character-"+char.id);        
             }else{
                 return;
                 // overlappedTokens.forEach((_, tokenKey) => {
@@ -356,13 +362,14 @@ function spellCast(tokenID, spell, mana=null) {
         }else{
             console.log(overlappedTokens);
             if(overlappedTokens.size > 0) {
-                calculateAttackerRolls(spell, tokenID.replace('token-character-', ''), mana, distance);
+                calculateAttackerRolls(spell, tokenID, mana, distance);
                 overlappedTokens.forEach((_, tokenKey) => {
                     removeHighlight(tokenKey);
                 });         
             }
         }
         
+        char.action = characterActions.CASTED;
         bgLayer.removeChild(spellCastTarget);
         bgLayer.removeChild(spellRangeCircle);
         // removeTestDots(bgLayer, out);
@@ -395,7 +402,7 @@ function spellCast(tokenID, spell, mana=null) {
     }
 }
 
-function getAdditionalEffectBonuses(additionalEffectList, onAction = characterActions.CASTING, targetEffectType = additionalEffectTypes.BUFF, effecTypesList = null){
+function getAdditionalEffectBonuses(additionalEffectList, onAction = characterActions.CASTING, targetEffectType = additionalEffectTypes.BUFF, effecTypesList){
     let valueDict = new Map();
 
     if(effecTypesList){ // BUFF SEARCH
@@ -406,25 +413,20 @@ function getAdditionalEffectBonuses(additionalEffectList, onAction = characterAc
         valueDict.set(1, []);
     }
 
-    if(additionalEffectList == spellNormalCast){
-        return valueDict;
-    }
-
     for (const additionalEffect of additionalEffectList){
-        if (additionalEffect.characterAction == onAction){
-            if (additionalEffect.targetEffectType == targetEffectType){
-                if(targetEffectType == additionalEffectTypes.BUFF){
-                    for(const buffOrDebuff of additionalEffect.targetEffect){
-                        if(effecTypesList.includes(buffOrDebuff.effectType)){
-                            let arr = valueDict.get(buffOrDebuff.effectType); 
-                            arr.push(buffOrDebuff.value);
+        if (additionalEffect.characterAction.includes(onAction)){
+            additionalEffect.effects.forEach((effect) =>{
+                if(effect.type == targetEffectType){
+                    if(effect.type == additionalEffectTypes.BUFF){
+                        if(effecTypesList.includes(effect.effectType)){
+                            let arr = valueDict.get(effect.effectType); 
+                            arr.push(effect.value);
                         }
                     }
-                } else if (targetEffectType == additionalEffectTypes.AURA || targetEffectType ==additionalEffectTypes.CAST){
-                    let arr = valueDict.get(1); 
-                    arr.push(additionalEffect.targetEffect);
+                }else{
+                    return;
                 }
-            }
+            })
         }
     }
 
@@ -435,19 +437,23 @@ function calculateAttackerRolls(spell, characterId, mana, distance) {
     // FUTURE distance ı nasıl eklicem? Heelp
     let dice = spell.damage;
 
-    const char = getInGameCharacterById(characterId);
+    const char = inGameChars.get(characterId);
 
-    const allBuffsFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
+    if(mana == spell.spellLevel){
+        console.log(`Spell Base Damage: ${spell.damage}`);
+        return;
+    }
+    const allBuffsFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana].caster, characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
     const allBuffsFromChar = getAdditionalEffectBonuses(char.additionalEffects, characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
 
     const allAttackBuffs = [...allBuffsFromSpell.get(effectTypes.ATTACK_DAMAGE_BONUS),...(allBuffsFromChar.get(effectTypes.ATTACK_DAMAGE_BONUS))]
     
-    const allAurasFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, additionalEffectTypes.AURA, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
+    const allAurasFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana].caster, characterActions.CASTING, additionalEffectTypes.AURA, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
     const allAurasFromChar = getAdditionalEffectBonuses(char.additionalEffects, characterActions.CASTING, additionalEffectTypes.AURA, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
 
     const allAuras = [...allAurasFromSpell.get(effectTypes.ATTACK_DAMAGE_BONUS),...(allAurasFromChar.get(effectTypes.ATTACK_DAMAGE_BONUS))]
 
-    const allCastsFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana], characterActions.CASTING, additionalEffectTypes.CAST, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
+    const allCastsFromSpell = getAdditionalEffectBonuses(spell.spendManaEffects[mana].caster, characterActions.CASTING, additionalEffectTypes.CAST, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
     const allCastsFromChar = getAdditionalEffectBonuses(char.additionalEffects, characterActions.CASTING, additionalEffectTypes.CAST, [effectTypes.ATTACK_DAMAGE_BONUS, effectTypes.DICE_CHANGE]);
 
     const allCasts = [...allCastsFromSpell.get(effectTypes.ATTACK_DAMAGE_BONUS),...(allCastsFromChar.get(effectTypes.ATTACK_DAMAGE_BONUS))]
@@ -480,7 +486,7 @@ function calculateAttackerRolls(spell, characterId, mana, distance) {
         // Remove trailing comma and space from logPrint
         logPrint = logPrint.slice(0, -2);
 
-        console.log(`Spell Base Damage: ${spell.damage}, Bonus: ${attackBonus}, Dice: ${getKeyFromMapWithValue(damageType, spell.damageType)} ${dice}, Caster Rolls: ${logPrint} with bonus ${charBonus}`);
+        console.log(`Spell Base Damage: ${spell.damage}, Bonus: ${attackBonus}, Dice: ${getKeyFromMapWithValue(damageTypes, spell.damageType)} ${dice}, Caster Rolls: ${logPrint} with bonus ${charBonus}`);
     }
     
     return [allCasts, allAuras, allAttackBuffs, spell.targetRolls];

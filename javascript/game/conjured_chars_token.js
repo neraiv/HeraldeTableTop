@@ -3,7 +3,7 @@ let listConjurableChars = {
     'mountainless_dwarf'  : { 
         char: new Character('mountainless_dwarf', '',{name: 'Mountenless Dwarf Uluğ Bey',str: 20, dex: 20, con: 20, int: 20, wis: 20, cha: 100, availableSpells: {1 :  ['Heralde']}}),
         max_conjurable : 1,
-        duration : [durationTypes.AFTER_LONG_REST]
+        duration : new Duration(durationTypes.AFTER_LONG_REST)
         },
     'Sir Gawain'        : new Character('Sir Gawain'),
     'Gildor'            : new Character('Gildor'),

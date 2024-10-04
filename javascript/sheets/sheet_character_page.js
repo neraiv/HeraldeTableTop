@@ -2,13 +2,13 @@ function addCharacterSheet(parent, id) {
     // Future
     const charId = id.replace('-character-sheet', '')
 
-    if(getInGameCharacterById(charId)){
+    if(inGameChars.get(charId)){
         console.log('Character already exists!');
         return;
     }
 
     const char = new Character(charId);
-    inGameCharacters.push(char);
+    inGameChars.set('token-character-'+char.id, char);
 
     const characterSheet = document.createElement('div');
     characterSheet.id = id;
@@ -47,36 +47,6 @@ function addCharacterSheet(parent, id) {
     parent.appendChild(characterSheet);
 }
 
-function createDropdownMenu(parent, buttonsDict) {
-    // Create dropdown menu container
-    const dropdownMenu = document.createElement('div');
-    dropdownMenu.classList.add('dropdown-menu');
-
-    let returnButtons = [];
-    Object.entries(buttonsDict).forEach(([key, value]) => {
-        const button = document.createElement('div');
-        button.textContent = key;
-        button.classList.add('dropdown-menu-button');
-        if (value === false) {
-            button.style.display = 'none'; // Hide if value is false
-        }
-        dropdownMenu.appendChild(button);
-        returnButtons.push(button);
-    });
-
-    const closeButton = document.createElement('div');
-    closeButton.textContent = 'close';
-    closeButton.classList.add('dropdown-menu-close-button');
-    closeButton.onclick = () => {
-        dropdownMenu.style.display = 'none';
-    };
-    dropdownMenu.appendChild(closeButton);
-
-    parent.appendChild(dropdownMenu);
-
-    return [dropdownMenu, returnButtons, closeButton];
-}
-
 
 function displayInventory(inventory, x, y) {
     let selectedItem;
@@ -101,7 +71,7 @@ function displayInventory(inventory, x, y) {
     title.style.fontSize = '1.5em';
     title.style.color = '#333';
 
-    const closeButton = createImageButton('26', null, userIntarfaceSettings.FOLDER_MENUICONS + '/' + userIntarfaceSettings.ICON_CLOSEBAR);
+    const closeButton = createImageButton('26', {source: uiSettings.folderMenuIcons + '/' + uiSettings.icon_closeBar});
     closeButton.style.cursor = 'pointer';
     closeButton.onclick = () => {
         inventorySheet.remove();
@@ -123,14 +93,14 @@ function displayInventory(inventory, x, y) {
 
     const dropdownMenuItems = createDropdownMenu(inventorySheet, buttonDict);
 
-    dropdownMenuItems[1][0].onclick = function(){
+    dropdownMenuItems.querySelector(0).onclick = function(){
         console.log('Use action clicked');
         dropdownMenuItems[0].style.display = 'none';
     }
-    dropdownMenuItems[1][1].onclick = function(){
+    dropdownMenuItems.querySelector(1).onclick = function(){
         console.log('Move To action clicked');
     }
-    dropdownMenuItems[1][2].onclick = function(event){
+    dropdownMenuItems.querySelector(2).onclick = function(event){
         displayItemDescription(selectedItem, event.clientX, event.clientY);
     }
 
@@ -143,7 +113,7 @@ function displayInventory(inventory, x, y) {
         itemButton.onclick = function (event) {
             selectedItem = item;
             dropdownMenuItems[0].style.display = 'block';
-            if(item.itemType === itemType.CONSUMABLE){
+            if(item.itemType === itemTypes.CONSUMABLE){
                 dropdownMenuItems[1][0].style.display = 'block';
             }else{
                 dropdownMenuItems[1][0].style.display = 'none';
@@ -182,9 +152,9 @@ function displayInventory(inventory, x, y) {
     }
     
     // Append all currency elements to the currency tab
-    currencyTab.appendChild(createCurrency(userIntarfaceSettings.FOLDER_MENUICONS + '/' + userIntarfaceSettings.ICON_GOLD, inventory.currency.gold));
-    currencyTab.appendChild(createCurrency(userIntarfaceSettings.FOLDER_MENUICONS + '/' + userIntarfaceSettings.ICON_SILVER, inventory.currency.silver));
-    currencyTab.appendChild(createCurrency(userIntarfaceSettings.FOLDER_MENUICONS + '/' + userIntarfaceSettings.ICON_BRONZE, inventory.currency.bronze));
+    currencyTab.appendChild(createCurrency(uiSettings.folderMenuIcons + '/' + uiSettings.icon_gold, inventory.currency.gold));
+    currencyTab.appendChild(createCurrency(uiSettings.folderMenuIcons + '/' + uiSettings.icon_silver, inventory.currency.silver));
+    currencyTab.appendChild(createCurrency(uiSettings.folderMenuIcons + '/' + uiSettings.icon_bronze, inventory.currency.bronze));
 
     // Assemble the components
     topRow.appendChild(title);
@@ -199,9 +169,9 @@ function displayInventory(inventory, x, y) {
 function displayItemDescription(inventroyItem, x, y) {
     // Find the item in the list of weapons
     let item;
-    if(inventroyItem.itemType === itemType.WEAPON){
+    if(inventroyItem.itemType === itemTypes.WEAPON){
         item = listWeapons[inventroyItem.name];
-    }else if(inventroyItem.itemType === itemType.CONSUMABLE){
+    }else if(inventroyItem.itemType === itemTypes.CONSUMABLE){
         item = listConsumables[inventroyItem.name];
     }
 
@@ -430,29 +400,28 @@ function addSpellInfo(parent, spell, char = null) {
     parent.appendChild(listItem);
 }
 
-function displayAvaliableSpells(char, x, y) {
-
-    let selectedSpellLevelList;
-    let selectedSpell;
-    
+function displayAvaliableSpells(char, x, y) {  
     const spellsSheet = document.createElement('div');
     spellsSheet.classList.add('avaliable-spells-sheet');
     spellsSheet.style.left = `${x}px`;
     spellsSheet.style.top = `${y}px`;
 
-    // Create the inventory table container
-    const spellTable = document.createElement('div');
-    spellTable.classList.add('column');
-    spellTable.classList.add('horizontal');
-    spellTable.style.height = '90%';
-    spellTable.style.width = '95%';
-    spellTable.style.gap = '10px';
-    spellTable.style.marginTop = '10px';
-
     const topRow = document.createElement('div');
     topRow.classList.add('row');
     topRow.classList.add('centered');
     topRow.style.width = '95%';
+
+    const title = document.createElement('h2');
+    title.textContent = 'Usable Spells';
+    title.style.margin = '0';
+    title.style.fontSize = '1.5em';
+    title.style.color = 'white';
+
+    const closeButton = createImageButton('26', {source: uiSettings.folderMenuIcons + '/' + uiSettings.icon_closeBar} );
+    closeButton.style.cursor = 'pointer';
+    closeButton.onclick = () => {
+        spellsSheet.remove();
+    };
 
     const spellSlotsRow = document.createElement('div');
     spellSlotsRow.classList.add('row');
@@ -485,96 +454,103 @@ function displayAvaliableSpells(char, x, y) {
         spellSlotsRow.appendChild(manaDisplay);
     });
     
-    const title = document.createElement('h2');
-    title.textContent = 'Baudrates';
-    title.style.margin = '0';
-    title.style.fontSize = '1.5em';
-    title.style.color = '#333';
 
-    const closeButton = createImageButton('26', null, userIntarfaceSettings.FOLDER_MENUICONS + '/' + userIntarfaceSettings.ICON_CLOSEBAR);
-    closeButton.style.cursor = 'pointer';
-    closeButton.onclick = () => {
-        spellsSheet.remove();
-    };
- 
-    const buttonDict = {
+    const tabbedWindowContainer = createTabbedContainer(Object.keys(char.spellSlots).length, null, char.id + '-usable-spells', false, "")
+    tabbedWindowContainer.style.width = '95%';
+    tabbedWindowContainer.style.height = '95%';
+
+    const tabsContainer = tabbedWindowContainer.querySelector('.tab-container');
+
+    let clickedSpell;
+    
+    function displayDropDownMenu(menu, x, y){
+        menu.style.display = 'block'
+        menu.style.left = `${x}px`;
+        menu.style.top = `${y}px`;
+    }
+    
+    
+    const spellClickOptionsButtonDict = {
         'Cast Spell': true,
         'Description': true,
     };
 
-    const dropdownMenuItems = createDropdownMenu(spellsSheet, buttonDict);
+    const spellClickOptions = createDropdownMenu(spellsSheet, spellClickOptionsButtonDict); // I defined first cuz i want it to be dsiplayed on bottom of mana options
+    spellClickOptions.style.display = 'none';
     
-    let manaSelect = {};
-    gameSettings.includedSpellLevels.forEach((level) =>{
-        manaSelect[`Spend Mana ${level}`] = false;
-    });
-    
-    const manaSelectMenuItems = createDropdownMenu(spellsSheet, manaSelect);
+    let manaOptionsButtonDict = {}
+    gameSettings.includedSpellLevels.forEach(spellLevel => {
+        manaOptionsButtonDict[`Mana ${spellLevel}`] = false
+    })
 
-    for (let index = 0; index < Object.keys(manaSelect).length; index++) {
-        manaSelectMenuItems[1][index].onclick = () => { 
-            spellCast(`token-character-${char.id}`, selectedSpellLevelList[selectedSpell], index+1);
-            spellsSheet.remove();
-        }        
-    }
-    dropdownMenuItems[1][0].onclick = function(event){
-        const spell = selectedSpellLevelList[selectedSpell];
-        let atLeastONE = false;
-        gameSettings.includedSpellLevels.forEach((level) =>{
-            if(spell.spendManaEffects[level] !== undefined){
-                if(char.spellSlots[level][1] > 0){
-                    manaSelectMenuItems[1][parseInt(level)-1].style.display = 'block';
-                    atLeastONE = true;
-                }
-                else{
-                    manaSelectMenuItems[1][parseInt(level)-1].style.display = 'none';
-                }
+    const manaOptions = createDropdownMenu(spellsSheet, manaOptionsButtonDict);
+    manaOptions.style.display = 'none';
+
+    const castButton = spellClickOptions.querySelector('.index-0')
+    castButton.onclick = (event) => {
+        const rectSpellClickOptions = spellClickOptions.getBoundingClientRect();
+
+        const rectspellsSheet = spellsSheet.getBoundingClientRect();
+        // Loop through each key in dict2 and check if it matches any key in dict1
+        const charMana = Object.keys(manaOptionsButtonDict)
+        const spellManaLevels = clickedSpell.spendManaEffects ? Object.keys(clickedSpell.spendManaEffects): []
+
+        let displayedManaLevelIndexes = [clickedSpell.spellLevel]
+        spellManaLevels.forEach((level) =>{
+            if(isSpellUsable(char, clickedSpell, level)){
+                displayedManaLevelIndexes.push(level)
             }
-        });
-        if(atLeastONE){
-            manaSelectMenuItems[0].style.display = 'block';
-            const rect = spellsSheet.getBoundingClientRect();
-            manaSelectMenuItems[0].style.left = `${event.clientX - rect.left}px`;
-            manaSelectMenuItems[0].style.top = `${event.clientY - rect.top}px`;
-        }
-    }
-
-    dropdownMenuItems[1][1].onclick = function(event){
-        displaySpellDescription(char, selectedSpellLevelList[selectedSpell], event.clientX, event.clientY);
-        manaSelectMenuItems[0].style.display = 'none';
-        dropdownMenuItems[0].style.display = 'none';
-    }
-
-    Object.entries(char.availableSpells).forEach(([spellLevel, avaliable]) => {
+        })
         
-        if (spellLevel == 1){
-            selectedSpellLevelList = level1_spell_list;
-        }else if (spellLevel == 2){
-            selectedSpellLevelList = level1_spell_list; // Future
-        }
-        
-        avaliable.forEach((spellName) => {
-            const itemButton = document.createElement('button');
-            itemButton.textContent = `${spellName}`;
-            itemButton.classList.add('avaliable-spells-button');
-            
-            const val = checkSpellUsable(char, selectedSpellLevelList[spellName]);
-            if(!val){
-                    itemButton.classList.add('unusable');
+        displayedManaLevelIndexes.forEach((index) => {
+            const option = manaOptions.querySelector(`.index-${index}`)
+            option.style.display = 'block';
+            option.onclick = () =>{
+                spellCast('token-character-'+char.id, clickedSpell, index)
+                spellsSheet.remove();
             }
+        })
+        displayDropDownMenu(manaOptions, parseFloat(spellClickOptions.style.left) + parseFloat(rectSpellClickOptions.width), event.clientY- rectspellsSheet.y);
+    }
 
-            itemButton.onclick = function (event) {
-                selectedSpell = spellName;
-                dropdownMenuItems[0].style.display = 'block';
+    const descriptionButton = spellClickOptions.querySelector('.index-1')
+    descriptionButton.onclick = (event) => {
+        displaySpellDescription(char, clickedSpell, event.clientX, event.clientY);
+    }
 
-                const rect = spellsSheet.getBoundingClientRect();
-                dropdownMenuItems[0].style.left = `${event.clientX - rect.left}px`;
-                dropdownMenuItems[0].style.top = `${event.clientY - rect.top}px`;
-            };
-            
-            spellTable.appendChild(itemButton); 
-        });
-    });
+
+
+    for(let index of Object.keys(char.spellSlots)){
+        const tabContentContainer = getContentContainer(tabsContainer, parseInt(index))
+        tabContentContainer.innerHTML = ''
+        const spellList = document.createElement('div');
+        spellList.classList.add('column');
+        spellList.classList.add('vertical')
+        spellList.style.width = '98%'
+        spellList.style.height = '98%'
+        spellList.style.gap = '5px'
+        spellList.style.marginTop = '10px';
+
+        if(char.availableSpells[index]){
+            for(let i = 0; i < char.availableSpells[index].length; i++){
+                const spellButton = document.createElement('button');
+                spellButton.classList.add('avaliable-spells-button')
+                spellButton.textContent = char.availableSpells[index][i];
+                spellButton.style.fontWeight = '15px';
+                spellButton.onclick = (event) => {
+                    manaOptions.style.display = 'none';
+                    clickedSpell = listSpells[getActiveTabIndex(tabsContainer)][spellButton.textContent];
+                    if(!isSpellUsable(char, clickedSpell)) castButton.style.display = 'none';
+                    const rect = spellsSheet.getBoundingClientRect();
+                    displayDropDownMenu(spellClickOptions, event.clientX - rect.x, event.clientY- rect.y);
+                    
+                }
+                spellList.appendChild(spellButton);
+            }
+        }   
+        
+        tabContentContainer.appendChild(spellList)
+    }
 
     // Assemble the components
     topRow.appendChild(title);
@@ -584,8 +560,8 @@ function displayAvaliableSpells(char, x, y) {
     addDraggableRow(spellsSheet);
     spellsSheet.appendChild(topRow);
     spellsSheet.appendChild(spellSlotsRow); // Add the spell slots row at the bottom
-    spellsSheet.appendChild(spellTable);
-    document.body.appendChild(spellsSheet);
+    spellsSheet.appendChild(tabbedWindowContainer);
+    userInterface.appendChild(spellsSheet);
     
 }
 

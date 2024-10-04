@@ -1,31 +1,26 @@
-const objectTypes = Object.freeze({
-    CHARACTER: 1,
-    ITEM: 2,
-    SPELL: 3,
-    WEAPON: 4,
-    ARMOR: 5,
-    CONSUMABLE: 6,
-    EFFECT: 7,
-    CONJURED: 8
-    // Add more object types as needed
+
+const classTypes = Object.freeze({
+    ALL: null,
+    WIZARD: 1,
+    CLERIC: 2,
+    ROGUE: 3,
+    DRUID: 4,
+    PALADIN: 5,
+    RANGER: 6,
+    WARLOCK: 7,
+    SORCERER: 8,
+    BARBARIAN: 9,
+    // Add more classes as needed
 });
 
-const spellTypes = Object.freeze({
-    WEAPON: 1,
-    CANTRIP: 2,
-    SPELL: 3,
+const characterTypes = Object.freeze({
+    ALLY: 1,
+    ENEMY: 2,
+    NPC: 3,
+    CONJURED: 4
 });
 
-const rollTypes = Object.freeze({
-    DEX_SAVING_THROW: 1,
-    CON_SAVING_THROW: 2,
-    INT_SAVING_THROW: 3,
-    WIS_SAVING_THROW: 4,
-    CHA_SAVING_THROW: 5,
-    PERCEPTION: 6,
-});
-
-const itemType = Object.freeze({ 
+const itemTypes = Object.freeze({ 
     WEAPON: 1,
     CONSUMABLE: 2,
     NECKLACE: 3,
@@ -40,59 +35,119 @@ const itemType = Object.freeze({
     HELM: 13 
     // Add more item types as needed
 });
-/* SPEELSS AND WEAPONS */
-const classType = Object.freeze({
-    ALL: null,
-    WIZARD: 1,
-    CLERIC: 2,
-    ROGUE: 3,
-    DRUID: 4,
-    PALADIN: 5,
-    RANGER: 6,
-    WARLOCK: 7,
-    SORCERER: 8,
-    BARBARIAN: 9,
-    // Add more classes as needed
+
+const consumableTypes = Object.freeze({
+    CASTABLE: 1,
+    USABLE: 2,
+    REFILLABLE: 3
 });
 
-const damageType = Object.freeze({
-    NONE: 0,
-    HEALING: 99,
-    PSYCHIC: 1,
-    FIRE: 2,
-    FROST: 3,
-    LIGHTNING: 4,
-    NECROTIC: 5,
-    FORCE: 6,
-    ACID: 7,
-    POISON: 8,
-    RADIANT: 9,
-    SLASHING: 10,
-    PIERCING: 11,
-    BLUDGEONING: 12,
-    CONJURE: 13,
-    PURE: 14
-    // Add more damage types as needed
+const consumableProperties = Object.freeze({
+    CONSUMED: 1,
+    REFILLABLE: 2
 });
 
-// Enum for damage types
-const statType = Object.freeze({
-    NONE:0,
-    STR: 1,
-    DEX: 2,
-    CON: 3,
-    INT: 4,
-    WIS: 5,
-    CHA: 6,
-    // Add more damage types as needed
+const rollTypes = Object.freeze({
+    SAVING_THROW: 1,
+    PERSPECTION_SAVING_THROW: 2,
+    ABILITY_THROW: 3,
+});
+const objectTypes = Object.freeze({
+    CHARACTER: 1,
+    ENEMY: 2,
+    NPC: 3,
+    OBSTACLE: 4,
+    WALL: 5
 });
 
-const encounterStatType = Object.freeze({
-    PERSPECTION: 1,
-    NATURE: 2,
-})
+const spellTypes = Object.freeze({
+    WEAPON: 1,
+    CANTRIP: 2,
+    SPELL: 3,
+    CONJURE: 4
+});
 
-const weaponType = Object.freeze({
+const additionalEffectTypes = Object.freeze({
+    CAST: 0,
+    AURA: 1,
+    BUFF: 2
+});
+
+const spellPatterns = Object.freeze({
+    CIRCULAR: 1,
+    BOX: 2,
+    CONE_UPWARD: 3,
+    CONE_DOWNWARD: 4,
+    TARGET: 5
+});
+
+const castTypes = Object.freeze({
+    ON_LOCATION:1,
+    FROM_CASTER: 2,
+    AROUND_CASTER: 3
+});
+
+const targetTypes = Object.freeze({
+    SELF: 1,
+    ALLY: 2,
+    ENEMY: 3,
+    ANY: 4,
+    CLOSEST_ENEMY: 5,
+    CLOSEST_ANY: 6,
+    ATTACKER: 7,
+    GROUND_NO_OVERLAP: 8,
+    GROUND: 9
+});
+
+const durationTypes = Object.freeze({
+    TURN_BASED: 1,
+    AFTER_SHORT_REST: 2,
+    AFTER_LONG_REST: 3, 
+    INSTANT: 4,
+});
+
+
+const effectTypes = Object.freeze({
+    DICE_CHANGE: 1,
+    ATTACK_DAMAGE_BONUS: 2,
+    ATTACK_RADIUS_BONUS: 3, // Adjusted for consistency
+    ATTACK_RANGE: 4,        // Moved ATTACK_RANGE to follow ATTACK_RADIUS_BONUS
+    ATTACK_RANGE_BONUS: 5,  // Adjusted to be sequential
+    PATTERN_CHANGE: 6,      // Adjusted to follow ATTACK_RANGE_BONUS
+    HEAL: 7,
+    DEFENSE: 8,
+    VISION_RANGE_BONUS: 9,   // Adjusted to be in sequential order
+    TAKE_DAMAGE: 10
+});
+
+const actionTypes = Object.freeze({
+    BONUS: 1,
+    MAIN: 2,
+    DRUID_SOURCE: 3,
+    WARLOCK_SPELL_SLOT: 4
+});
+
+const characterActions = Object.freeze({
+    IDLE: 1,
+    MOVING: 2,
+    BLOCKING: 3,
+    BLOCKED: 4,
+    HEALING: 6,
+    HEALED: 7,
+    CASTING: 8,
+    CASTED: 9,
+    ATTACKING: 10,  // Assuming you want ATTACKING to come after CASTED
+    DYING: 11,      // Adjusting numbers for consistency
+    DIED: 12,
+    PREPARE: 13,    // If PREPARE should be at the end of the sequence
+    USE: 14,        // Assuming USE should be the last
+    ALWAYS: 15,      // Adding ALWAYS at the end
+    ATTACKED: 16,
+    TURN_END: 17,
+    TURN_START: 18
+});
+
+const weaponTypes = Object.freeze({
     // Add more weapon types as needed
     CLUB           : 1,
     DAGGER         : 2,
@@ -140,197 +195,46 @@ const weaponProperties = Object.freeze({
     THROWN: 6
 });
 
-const consumableTypes = Object.freeze({
-    CASTED: 1,
-    USED: 2,
-    REFILLABLE: 3
+const encounterStatTypes = Object.freeze({
+    PERSPECTION: 1,
+    NATURE: 2,
+})
+
+// Enum for damage types
+const statTypes = Object.freeze({
+    NONE:0,
+    STR: 1,
+    DEX: 2,
+    CON: 3,
+    INT: 4,
+    WIS: 5,
+    CHA: 6,
+    // Add more damage types as needed
 });
 
-const consumableProperties = Object.freeze({
-    CONSUMED: 1,
-    REFILLABLE: 2
+const damageTypes = Object.freeze({
+    NONE: 0,
+    HEALING: 99,
+    PSYCHIC: 1,
+    FIRE: 2,
+    FROST: 3,
+    LIGHTNING: 4,
+    NECROTIC: 5,
+    FORCE: 6,
+    ACID: 7,
+    POISON: 8,
+    RADIANT: 9,
+    SLASHING: 10,
+    PIERCING: 11,
+    BLUDGEONING: 12,
+    PURE: 13
+    // Add more damage types as needed
 });
-
-const characterActions = Object.freeze({
-    IDLE: 1,
-    MOVING: 2,
-    BLOCKING: 3,
-    BLOCKED: 4,
-    HEALING: 6,
-    HEALED: 7,
-    CASTING: 8,
-    CASTED: 9,
-    ATTACKING: 10,  // Assuming you want ATTACKING to come after CASTED
-    DYING: 11,      // Adjusting numbers for consistency
-    DIED: 12,
-    PREPARE: 13,    // If PREPARE should be at the end of the sequence
-    USE: 14,        // Assuming USE should be the last
-    ALWAYS: 15,      // Adding ALWAYS at the end
-    ATTACKED: 16,
-    TURN_END: 17,
-    TURN_START: 18
-});
-
-const effectTypes = Object.freeze({
-    DICE_CHANGE: 1,
-    ATTACK_DAMAGE_BONUS: 2,
-    ATTACK_RADIUS_BONUS: 3, // Adjusted for consistency
-    ATTACK_RANGE: 4,        // Moved ATTACK_RANGE to follow ATTACK_RADIUS_BONUS
-    ATTACK_RANGE_BONUS: 5,  // Adjusted to be sequential
-    PATTERN_CHANGE: 6,      // Adjusted to follow ATTACK_RANGE_BONUS
-    HEAL: 7,
-    DEFENSE: 8,
-    VISION_RANGE_BONUS: 9,   // Adjusted to be in sequential order
-    TAKE_DAMAGE: 10
-});
-
-const effectSourceTypes = Object.freeze({
-    SELF: 1,
-    AURA: 2,
-    ITEM: 3
-});
-
-const additionalEffectTypes = Object.freeze({
-    CAST: 0,
-    AURA: 1,
-    BUFF: 2
-});
-
-const spellPatterns = Object.freeze({
-    CIRCULAR: 1,
-    BOX: 2,
-    CONE_UPWARD: 3,
-    CONE_DOWNWARD: 4,
-    TARGET: 5
-});
-
-const actionType = Object.freeze({
-    BONUS: 1,
-    MAIN: 2,
-    DRUID_SOURCE: 3,
-    WARLOCK_SPELL_SLOT: 4
-});
-
-const castType = Object.freeze({
-    ON_LOCATION:1,
-    FROM_CASTER: 2,
-    AROUND_CASTER: 3
-});
-
-const targetTypes = Object.freeze({
-    SELF: 1,
-    ALLY: 2,
-    ENEMY: 3,
-    ANY: 4,
-    CLOSEST_ENEMY: 5,
-    CLOSEST_ANY: 6,
-    ATTACKER: 7,
-    GROUND_NO_OVERLAP: 8,
-    GROUND: 9
-});
-
-const durationTypes = Object.freeze({
-    ALWAYS: 1,
-    TURN_BASED: 2,
-    AFTER_SHORT_REST: 3,
-    AFTER_LONG_REST: 4, 
-    INSTANT: 5,
-    UNTIL_USE: 6
-});
-
-const defaultWeaponLore = 'Meh regular weapons, crafted by regular crafters :/ (Which Doesnt Require any skill!)';
 
 class Duration {
-    constructor(durationType = durationTypes.INSTANT, value= 1){
-        this.durationType = durationType;
+    constructor(type = durationTypes.INSTANT, value= 1){
+        this.type = type;
         this.value = value;
-    }
-}
-
-class Character {
-    constructor(id, controlledBy = '',{
-        level = gameSettings.MIN_CHARACTER_LVL,
-        name = "",
-        classess = [],
-        race = "",
-        subrace = "",
-        dex = 12,//gameSettings.MIN_STAT_POINT,
-        con = 12,//gameSettings.MIN_STAT_POINT,
-        int = 8,//gameSettings.MIN_STAT_POINT,
-        wis = 12,//gameSettings.MIN_STAT_POINT,
-        cha = 12,//gameSettings.MIN_STAT_POINT,
-        str = 12,//gameSettings.MIN_STAT_POINT,
-        charCurrentAction = characterActions.IDLE,
-        additionalEffects = [],
-        spellSlots = {
-            '1':[5,3],
-            '2':[4,3],
-            '3':[2,2],
-            '4':[2,2]
-        },
-        availableSpells = {
-            1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'],
-            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountainless Dwarf']
-        },
-        learnedSpells = {
-            1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'], 
-            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountainless Dwarf']
-        },
-        inventory = new Inventory(),
-        controlling = []
-    } = {}) {
-        this.id = id;
-        this.controlledBy = controlledBy;
-        this.level = level;
-        this.name = name;
-        this.classess = classess;
-        this.race = race;
-        this.dex = dex;
-        this.con = con;
-        this.int = int;
-        this.wis = wis;
-        this.cha = cha;
-        this.str = str;
-        this.charCurrentAction = charCurrentAction;
-        this.additionalEffects = additionalEffects;
-        this.spellSlots = spellSlots;
-        this.availableSpells = availableSpells;
-        this.learnedSpells = learnedSpells;
-        this.inventory = inventory;
-        this.controlling = controlling;
-    }
-    
-    getKnownSpells(spellLevel) {
-        const spellList = Object.values(listSpells[spellLevel]).map(spell => {
-            if (this.learnedSpells[spellLevel].includes(spell.name)) {
-                return spell.name + knownSpellString;
-            }
-            return spell.name;
-        });
-        return spellList;
-    }
-
-    clone() {
-        return new Character(this.id, this.controlledBy, {
-            level: this.level,
-            name: this.name,
-            classess: [...this.classess],
-            race: this.race,
-            subrace: this.subrace,
-            dex: this.dex,
-            con: this.con,
-            int: this.int,
-            wis: this.wis,
-            cha: this.cha,
-            str: this.str,
-            charCurrentAction: this.charCurrentAction,
-            additionalEffects: [...this.additionalEffects],
-            spellSlots: {...this.spellSlots},
-            availableSpells: {...this.availableSpells},
-            learnedSpells: {...this.learnedSpells},
-            inventory: new Inventory(),
-            controlling: [...this.controlling]
-        });
     }
 }
 
@@ -449,55 +353,104 @@ class Inventory {
     }
 }
 
-class Environment{
-    constructor({
-        triggerTime,
-        endTime,    // Future: May add enivorenment patterns and spells
-        message,
-        additionalEffects = []
+class Character {
+    constructor(id, controlledBy = '',{
+        level = gameSettings.MIN_CHARACTER_LVL,
+        name = "",
+        classess = [],
+        race = "",
+        subrace = "",
+        dex = 12,//gameSettings.MIN_STAT_POINT,
+        con = 12,//gameSettings.MIN_STAT_POINT,
+        int = 8,//gameSettings.MIN_STAT_POINT,
+        wis = 12,//gameSettings.MIN_STAT_POINT,
+        cha = 12,//gameSettings.MIN_STAT_POINT,
+        str = 12,//gameSettings.MIN_STAT_POINT,
+        action = characterActions.IDLE,
+        additionalEffects = [],
+        spellSlots = {
+            '1':[5,3],
+            '2':[4,3],
+            '3':[2,2],
+            '4':[2,2]
+        },
+        availableSpells = {
+            1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'],
+            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountainless Dwarf']
+        },
+        learnedSpells = {
+            1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'], 
+            2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountainless Dwarf']
+        },
+        inventory = new Inventory(),
+        controlling = []
     } = {}) {
-        this.triggerTime = triggerTime,
-        this.endTime = endTime,
-        this.message = message,
-        this.additionalEffects = additionalEffects
+        this.id = id;
+        this.controlledBy = controlledBy;
+        this.level = level;
+        this.name = name;
+        this.classess = classess;
+        this.race = race;
+        this.dex = dex;
+        this.con = con;
+        this.int = int;
+        this.wis = wis;
+        this.cha = cha;
+        this.str = str;
+        this.action = action;
+        this.additionalEffects = additionalEffects;
+        this.spellSlots = spellSlots;
+        this.availableSpells = availableSpells;
+        this.learnedSpells = learnedSpells;
+        this.inventory = inventory;
+        this.controlling = controlling;
+    }
+    clone() {
+        return new Character(this.id, this.controlledBy, {
+            level: this.level,
+            name: this.name,
+            classess: [...this.classess],
+            race: this.race,
+            subrace: this.subrace,
+            dex: this.dex,
+            con: this.con,
+            int: this.int,
+            wis: this.wis,
+            cha: this.cha,
+            str: this.str,
+            charCurrentAction: this.charCurrentAction,
+            additionalEffects: [...this.additionalEffects],
+            spellSlots: {...this.spellSlots},
+            availableSpells: {...this.availableSpells},
+            learnedSpells: {...this.learnedSpells},
+            inventory: new Inventory(),
+            controlling: [...this.controlling]
+        });
     }
 }
-
-class Time{
-    constructor({
-        day = 0,
-        time = 8.0,
-    } = {}) {
-        this.day = day;
-        this.time = time;
-    }
-
-    addTime(){
-        this.time += 1.0;
-        if(this.time >= 24.0){
-            this.time = 0.0;
-            this.day++;
-        }
-        console.log(`Time: ${this.time.toFixed(1)} hours, Day: ${this.day}`);
-    }
-}
-
 
 class SpellPattern  {
-    constructor(pattern, range, area, castType = false, targetList = [targetTypes.ENEMY]) {
+    constructor(
+        pattern = spellPatterns.CIRCULAR,
+        range = 300,
+        area = 100,
+        castType = castTypes.ON_LOCATION,
+        canTarget = [targetTypes.ENEMY]
+    ) {
         this.pattern = pattern; // SpellPattern enum
         this.range = range;
         this.area = area;
         this.castType = castType
-        this.targetList = targetList;
+        this.canTarget = canTarget;
     }
 }
 
 class BuffDebuff {
-    constructor(effectType, value) {
+    constructor(effectType, value, duration = null) {
         this.type = additionalEffectTypes.BUFF;
         this.effectType = effectType;
         this.value = value;
+        this.duration = duration;
     }
 }
 
@@ -511,6 +464,7 @@ class Aura {
     }
 }
 
+
 class Cast {
     constructor(spellName, spellLevel, mana, targetListInOrder) {
         this.type = additionalEffectTypes.CAST;
@@ -522,44 +476,46 @@ class Cast {
 }
 
 class AdditionalEffect {
-    constructor(name, characterAction, effects=[], description, duration= [durationTypes.TURN_BASED, 1], source = objectTypes.SPELL) {
+    constructor(name, characterAction, effects=[], description, duration= new Duration(durationTypes.INSTANT)) {
         this.name = name;  // String
         this.characterAction = characterAction;
         this.effects = effects; // BuffDebuff, Aura or Cast
         this.description = description;
         this.duration = duration;
-        this.source = source;
-    }
-
-    copy(){
-        return new AdditionalEffect(this.characterAction, this.targetEffectType, this.targetEffect, this.description, this.duration);
     }
 }
 
-class Spell {
-    constructor(name= "", availableClasses = [], statType= [], damageType_ = damageType.NONE, description = "", targetEffects=[], 
-        spendManaEffects= {}, spellPattern = new SpellPattern, damage = "1d1", castTime=1, actionCost = actionType.MAIN, 
-        casterRolls = [], targetRolls = [], targetList= [targetTypes.ALLY, targetTypes.ENEMY], spellType = spellTypes.SPELL, spellLvl = 1) {
-        this.name               = name; // String
-        this.availableClasses   = availableClasses; // Array of ClassType enums
-        this.statType           = statType; // StatType enum (e.g., STR, DEX, CON, etc.)
-        this.damageType_        = damageType_; // DamageType enum
-        this.description        = description; // Description object with required mana levels and descriptions
-        this.targetEffects      = targetEffects; //
-        this.spendManaEffects   = spendManaEffects;
-        this.spellPattern       = spellPattern;
-        this.damage             = damage;
-        this.castTime           = castTime;
-        this.actionCost         = actionCost; // ActionType enum
-        this.casterRolls        = casterRolls;
-        this.targetRolls        = targetRolls;
-        this.targetList         = targetList; // TargetType enum
-        this.spellType          = spellType;
-        this.spellLvl           = spellLvl;
-    }
-
-    returnSelf(){
-        return this;
+class Spell{
+    constructor(
+        name = "",
+        type = spellTypes.SPELL,
+        classess = [classTypes.ALL],
+        spellLevel = 1,
+        statType,
+        damageType,
+        damage = "1d1",
+        description = "",
+        castDuration = Duration,
+        actionCost = actionTypes.MAIN,
+        spendManaEffects= {},
+        spellPattern = SpellPattern,
+        casterRolls = [], 
+        targetRolls = [],
+    ) {
+        this.name = name;
+        this.classess = classess;  // Array of ClassType enum 0: ALL, 1: WARRIOR, 2: ROGUE, 3: MAGE, 4: PRIEST, 5: DRUID, 6: PALADIN
+        this.type = type;
+        this.spellLevel = spellLevel;
+        this.statType = statType;
+        this.damageType = damageType;
+        this.damage = damage;
+        this.description = description;
+        this.castDuration = castDuration;
+        this.actionCost = actionCost;
+        this.spendManaEffects = spendManaEffects;
+        this.spellPattern = spellPattern;
+        this.casterRolls = casterRolls;
+        this.targetRolls = targetRolls;
     }
 }
 

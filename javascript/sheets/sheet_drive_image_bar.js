@@ -6,10 +6,12 @@ function addDriveImageBar(){
     addSelectBar(backgroundSelectBar, "Select<br>Background");
 }
 
-function addSelectBar(parentElement, label_text, addIndex = null) {
+function addSelectBar(parentElement, label_text) {
 
     parentElement.classList.add('row');
     parentElement.classList.add('centered');
+    parentElement.style.display = 'flex';
+    parentElement.style.width = '98%';
     parentElement.style.gap = "5px";
 
     // Create the label element
@@ -25,13 +27,13 @@ function addSelectBar(parentElement, label_text, addIndex = null) {
     if (parentElement.id.includes('character')) {
         classNamePrefix = "character";
         appendParent = document.getElementById('character-list');
-        folder = tokenPaths.FOLDER_CHARTOKEN;
-        imageFiles = tokenPaths.IMAGELIST_CHARACTER
+        folder = allFilePaths.folderCharToken;
+        imageFiles = allFilePaths.listCharacter
     } else if (parentElement.id.includes('background')) {
         classNamePrefix = "background";
         appendParent = document.getElementById('background-list');
-        folder = tokenPaths.FOLDER_BACKGROUNDTOKEN;
-        imageFiles = tokenPaths.IMAGELIST_BACKGROUND;      
+        folder = allFilePaths.folderBackgroundToken;
+        imageFiles = Object.keys(allFilePaths.listBackground);      
     }
 
     let labelsList = [];
@@ -40,7 +42,9 @@ function addSelectBar(parentElement, label_text, addIndex = null) {
         labelsList.push(fileName); // Use push to add the fileName to labelsList
     });
 
-    const select = createSelector(imageFiles, labelsList, 'select', parentElement.id + '-selector');
+    const select = createSelector(parentElement.id + '-selector', imageFiles, labelsList, {
+        defaultValue: 'select'
+    });
     
     let selectedFile;
     let firstChangeNotOccurred = true;
@@ -50,14 +54,13 @@ function addSelectBar(parentElement, label_text, addIndex = null) {
         if (firstChangeNotOccurred) {
             firstChangeNotOccurred = false;
             select.remove(0);
-            select.removeEventListener('change', handleChange);
         }
     });
 
-    const addToGameButton = createImageButton(30, `<img src="${userIntarfaceSettings.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_DOWNARROWGREEN}" width="30" height="30">`);
+    const addToGameButton = createImageButton(30, {source: `${uiSettings.folderMenuIcons+'/'+uiSettings.icon_downArrowGreen}`});
     addToGameButton.onclick = () => createDriveImageContainer(selectedFile, classNamePrefix, folder, appendParent);
     
-    const newCharacterButton = createImageButton(30, `<img src="${userIntarfaceSettings.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_NEWFILE}" width="30" height="30">`);
+    const newCharacterButton = createImageButton(30, {source: `${uiSettings.folderMenuIcons+'/'+uiSettings.icon_newFile}`});
     if(classNamePrefix = "character"){
         newCharacterButton.onclick = () => toggleDisplay_SheetWithId('character-create-sheet', true);
     }
@@ -85,7 +88,7 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
     const imageAndButtonsContainer = document.createElement('div');
     imageAndButtonsContainer.id = `drive-${fileName}`
     imageAndButtonsContainer.className = 'drive-image-container';
-    imageAndButtonsContainer.style.backgroundColor = getRandomColor();
+    imageAndButtonsContainer.style.backgroundColor = genareteRandomColor();
 
     const imgContainer = document.createElement('div');
     imgContainer.className = 'image-container';
@@ -133,40 +136,59 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
 
     // Create and append buttons with icons
     if(classNamePrefix == 'character'){
-        const exportButton = createImageButton(34, '⬇️');
+        const exportButton = createImageButton(34, {icon: '⬇️'});
         exportButton.onclick = () => export_CharacterSheet(sheetId);
         buttonContainerRow1.appendChild(exportButton);
 
-        const characterSheetButton = createImageButton(34, null, `${userIntarfaceSettings.FOLDER_MENUICONS+"/"+userIntarfaceSettings.ICON_CHARACTERSHEET}`);
+        const characterSheetButton = createImageButton(34, {source:`${uiSettings.folderMenuIcons+"/"+uiSettings.icon_characterSheet}`});
         characterSheetButton.onclick = () => toggleDisplay_SheetWithId(sheetId, true);
         buttonContainerRow1.appendChild(characterSheetButton);
 
-        const importButton = createImageButton(34, '⬆️');
-        importButton.onclick = () => import_CharacterSheet(sheetId);
+        const importButton = createImageButton(34, {icon: '⬆️'});
+        importButton.onclick = (event) => {
+            const buttonDict = {
+                "Enemy": true,
+                "Ally": true,
+                "NPC": true,
+            }
+            const dropDownFactionChange = createDropdownMenu(userInterface, buttonDict)
+            dropDownFactionChange.style.display = 'block';
+            dropDownFactionChange.style.top = `${event.clientY}px`;
+            dropDownFactionChange.style.left = `${event.clientX}px`;
+            
+            for(let i = 0; i < Object.values(buttonDict).length; i++){
+                const button = dropDownFactionChange.querySelector('.index-'+i)
+                button.onclick = () => {
+                    dropDownFactionChange.remove();
+                    changeCharacterFaction('token-character-'+img.id);
+                }
+            }
+        };
         buttonContainerRow2.appendChild(importButton);
 
-        const removeButton = createImageButton(34, '❌');
+        const removeButton = createImageButton(34, {icon: '❌'});
         removeButton.onclick = () => imageAndButtonsContainer.remove();
         buttonContainerRow2.appendChild(removeButton);
 
         buttonContainer.appendChild(buttonContainerRow1);
         buttonContainer.appendChild(buttonContainerRow2);
+
         addCharacterSheet(imageAndButtonsContainer, sheetId);
 
     }else if(classNamePrefix == 'background'){
-        const exportButton = createImageButton(34, '⬇️');
+        const exportButton = createImageButton(34, {icon: '⬇️'});
         exportButton.onclick = () => export_BackgroundSheet(`${imageAndButtonsContainer.id}-background-sheet`);
         buttonContainerRow1.appendChild(exportButton);
 
-        const backgroundSheetButton = createImageButton(34, '📄');
+        const backgroundSheetButton = createImageButton(34, {icon: '📄'});
         backgroundSheetButton.onclick = () => toggleDisplay_SheetWithId(sheetId, true);
         buttonContainerRow1.appendChild(backgroundSheetButton);
 
-        const importButton = createImageButton(34, '⬆️');
+        const importButton = createImageButton(34, {icon: '⬆️'});
         importButton.onclick = () => import_BackgroundSheet(`${imageAndButtonsContainer.id}-background-sheet`);
         buttonContainerRow2.appendChild(importButton);
 
-        const removeButton = createImageButton(34, '❌');
+        const removeButton = createImageButton(34, {icon: '❌'});
         removeButton.onclick = () => imageAndButtonsContainer.remove();
         buttonContainerRow2.appendChild(removeButton);
 
@@ -174,12 +196,12 @@ function createDriveImageContainer(fileName, classNamePrefix, imageFolder, targe
         buttonContainer.appendChild(buttonContainerRow2);
     }
 
-    const containerBackgroundColorChange = createImageButton(24, `<img src="${userIntarfaceSettings.FOLDER_MENUICONS+"/"+userIntarfaceSettings.ICON_RAINBOWDICE}" width="24" height="24">`);
+    const containerBackgroundColorChange = createImageButton(24, {source: `${uiSettings.folderMenuIcons+"/"+uiSettings.icon_rainbowDice}`});
     containerBackgroundColorChange.style.position = 'absolute';
     containerBackgroundColorChange.style.top = '2px';
     containerBackgroundColorChange.style.left = '2px';
     containerBackgroundColorChange.onclick = () => {
-        imageAndButtonsContainer.style.backgroundColor = getRandomColor();
+        imageAndButtonsContainer.style.backgroundColor = genareteRandomColor();
     };
 
     // Append button container to the main container
@@ -208,18 +230,18 @@ function addDriveImageTopBar() {
 
     let pageIndex = 0;
 
-    const closeButton = createImageButton(32, null, `${userIntarfaceSettings.FOLDER_MENUICONS+'/'+userIntarfaceSettings.ICON_CLOSEBAR}`);
+    const closeButton = createImageButton(32, {source: `${uiSettings.folderMenuIcons+'/'+uiSettings.icon_closeBar}`});
     closeButton.onclick = () =>{
         toggleSliding_SheetWithId('drive-images-bar', false);
     };
 
-    const rightButton = createImageButton(32, '→');
+    const rightButton = createImageButton(32, {icon: '→'});
     rightButton.onclick = () =>{
         if (pageIndex < 3) (pageIndex = pageIndex + 1); else pageIndex = 3;
         changeCurrentDriveImageBar(pageIndex)
     };
 
-    const leftButton = createImageButton(32, '←');
+    const leftButton = createImageButton(32, {icon: '←'});
     leftButton.onclick = () =>{
         if (pageIndex > 0) (pageIndex = pageIndex - 1); else pageIndex = 0;
         changeCurrentDriveImageBar(pageIndex)

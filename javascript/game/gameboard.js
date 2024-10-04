@@ -5,61 +5,13 @@ function setupUI(){
     addDriveImageBar();
     addCharacterCreateSheet(userInterface);
 
-    // Future
-    createDriveImageContainer('dedector', 'character', tokenPaths.FOLDER_CHARTOKEN, document.getElementById('character-list'))
-    createDriveImageContainer('coil', 'character', tokenPaths.FOLDER_CHARTOKEN, document.getElementById('character-list'))
+    // // Future
+    createDriveImageContainer('dedector', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
+    createDriveImageContainer('coil', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
+    createDriveImageContainer('druid_woman', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
+    createDriveImageContainer('elf_warrior_woman', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
 }
 
-function getInGameCharacterById(id) {
-    return inGameCharacters.find(character => character.id === id);
-}
-
-function getInGameCharTokenByCharOrID(char = null, id = null){
-    if (char) {
-        id = char.id;
-    } 
-    const token = document.getElementById(`token-character-${id}`);
-    return token;
-}
-
-
-function getObjectPositionInGameboard(element) {
-    const rect = element.getBoundingClientRect(); // Get the bounding rectangle of the element
-    const gameboardRect = gameboardContent.getBoundingClientRect(); // Get the bounding rectangle of the gameboard
-
-    // Calculate the position and size relative to the gameboard
-    const left = (rect.left - gameboardRect.left) / scale;
-    const top = (rect.top - gameboardRect.top) / scale;
-
-    const right = (rect.right - gameboardRect.right) / scale;
-    const bottom = (rect.bottom - gameboardRect.top) / scale;
-
-    const width = rect.width / scale;
-    const height = rect.height / scale;
-    const centerX = left + width/2;
-    const centerY = top + height/2;
-
-    return { left, top, right, bottom, width, height, centerX, centerY};
-}
-
-function getObjectPositionInObjectPositions(id){
-    if (objectsPositions.get(id)) {
-        return objectsPositions.get(id)[1];
-    } else {
-        console.error(`Object with id ${id} not found in objectsPositions.`);
-        return new DOMRect();
-    }
-}
-
-function getMousePositionOnGameboard(event) {
-    const gameboardRect = gameboardContent.getBoundingClientRect(); // Get the bounding rectangle of the gameboard
-
-    // Calculate the mouse position relative to the gameboard
-    const mouseX = (event.clientX - gameboardRect.left) / scale;
-    const mouseY = (event.clientY - gameboardRect.top) / scale;
-
-    return { x: mouseX, y: mouseY };
-}
 
 // Add dragstart event listener to images
 document.addEventListener("dragstart", function(event) {
@@ -77,13 +29,12 @@ document.addEventListener("dragstart", function(event) {
     }
 });
 
-
 document.addEventListener("DOMContentLoaded", () => {
 
     setupUI();
             
-    gridBackground.style.backgroundSize = `${userIntarfaceSettings.GRID_SIZE}px ${userIntarfaceSettings.GRID_SIZE}px`;
-    const boardSize = userIntarfaceSettings.BOARD_SIZE;
+    gridBackground.style.backgroundSize = `${uiSettings.grid_size}px ${uiSettings.grid_size}px`;
+    const boardSize = uiSettings.board_size;
     
     console.log(`${startX} ${startY} ${boardSize}`);
 
@@ -109,23 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return false;
         }
         return true;
-    }
-
-    function addObjectToBoard(src, layer, x, y) {
-        if (src.className.includes('character')) {
-            if(objectsPositions.has('token-character-'+src.id)) return;
-            createCharacterToken(src, x, y);
-        } else if (src.className.includes('background')) {
-            if(objectsPositions.has('token-background-'+src.id)) return;
-            const parts = src.src.split('/'); // Split the path into an array
-            const secondToLastItem = parts[parts.length - 2]; // Access the second-to-last item
-            const list = listBackgroundFiles[secondToLastItem].LIGHT_FILES.concat(listBackgroundFiles[secondToLastItem].DARK_FILES);
-            // Example usage
-            askForListSelect(list).then(selectedValue => {
-                createBackgroundToken(src, x, y);
-            });
-
-        }
     }
 
     gameboard.addEventListener('mousedown', (event) => {
@@ -158,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gameboard.addEventListener('wheel', (event) => {
         event.preventDefault();
         const scaleAmount = -event.deltaY * 0.001;
-        scale = Math.min(Math.max(userIntarfaceSettings.MAX_ZOOM_OUT, scale + scaleAmount), userIntarfaceSettings.MAX_ZOOM_IN);
+        scale = Math.min(Math.max(uiSettings.max_zoom_out, scale + scaleAmount), uiSettings.max_zoom_in);
         gameboardContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
     });
 

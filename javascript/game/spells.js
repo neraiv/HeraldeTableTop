@@ -8,40 +8,32 @@ const noDescription = null;
 
 let userSpells = {};
 
-function checkSpellUsable(char, spell) {
-    // Check if the character has enough spell slots
-    return Object.keys(spell.spendManaEffects).every((mana) => {
-        const val = char.spellSlots[mana];
-        return val[1] > 0;
-    });
-}
-
 let listCreatedAdditionalEffects = Object.freeze({
     'burningEffect' : new AdditionalEffect("Holy Burn", [characterActions.TURN_END], 
-                            [new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageType.FIRE,'1d8']), [targetTypes.SELF], true)], 
-                            noDescription, [durationTypes.TURN_BASED, 10], effectSourceTypes.SELF),
+                            [new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageTypes.FIRE,'1d8']), [targetTypes.SELF], true)], 
+                            noDescription, [durationTypes.TURN_BASED, 10]),
     'attackRadiusBonus_50' : new AdditionalEffect("Spell Shoot", [characterActions.ATTACKING],
-                          [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 50)], noDescription, [durationTypes.UNTIL_USE]),
+                          [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 50)], noDescription, [durationTypes.INSTANT]),
                           
     'attackRadiusBonus_100' : new AdditionalEffect("Spell Shoot", [characterActions.ATTACKING],
-                              [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], noDescription, [durationTypes.UNTIL_USE]),
+                              [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], noDescription, [durationTypes.INSTANT]),
 
     'attackRangeBonus_100' : new AdditionalEffect("Eagle Spell Shoot", [characterActions.ATTACKING],
-                                  [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 100)], noDescription, [durationTypes.UNTIL_USE]),
+                                  [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 100)], noDescription, [durationTypes.INSTANT]),
 
     'attackRangeBonus_200' : new AdditionalEffect("Eagle Spell Shoot", [characterActions.ATTACKING],
-                                      [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 200)], noDescription, [durationTypes.UNTIL_USE]),
+                                      [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 200)], noDescription, [durationTypes.INSTANT]),
                                         
     'counterSpellEffect' : new AdditionalEffect('Anti-Mage Shield', [characterActions.ATTACKED], 
-                                      [new Cast('Fireball', 1, 2[targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.UNTIL_USE]),
+                                      [new Cast('Fireball', 1, 2[targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.INSTANT]),
 
     'counterMirrorSpell' : new AdditionalEffect('Dont Attack Ur Self', [characterActions.ATTACKED], 
-                          [new Cast(attackerSpellMana, attackerSpellLevel, attackerSpellName , [targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.UNTIL_USE]),
+                          [new Cast(attackerSpellMana, attackerSpellLevel, attackerSpellName , [targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.INSTANT]),
 
     'holyAura' :    new AdditionalEffect("Holy Aura", [characterActions.TURN_END], 
                       [new Aura(100, new BuffDebuff(effectTypes.DEFENSE, '4'), [targetTypes.ALLY], true),
-                      new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageType.RADIANT,'1d8']), [targetTypes.ENEMY], true)], 
-                      noDescription, [durationTypes.TURN_BASED, 10], effectSourceTypes.SELF),
+                      new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageTypes.RADIANT,'1d8']), [targetTypes.ENEMY], true)], 
+                      noDescription, [durationTypes.TURN_BASED, 10]),
 
     'startFireBallParty' : new AdditionalEffect("Fireball For Everyone", [characterActions.TURN_START], 
                                     [new Aura(100, new Cast('Fireball', 1, 2[targetTypes.CLOSEST_ANY]), [targetTypes.ANY], true)], noDescription, [durationTypes.ALWAYS]),
@@ -51,87 +43,75 @@ let listCreatedAdditionalEffects = Object.freeze({
 const level1_spell_list = {
     // Add more spells as needed
     'Fireball' : new Spell('Fireball',
-        [classType.WIZARD], 
-        statType.INT, 
-        damageType.FIRE, 
-        'Conjure a glowing ball of fire.',
-        null,
-        {   '1' : [spellNormalCast],
-            '2' : [listCreatedAdditionalEffects.attackRadiusBonus_100, listCreatedAdditionalEffects.attackRangeBonus_200],
-            '3' : ['2', new AdditionalEffect("Spell Shoot", [characterActions.ATTACKING], [new BuffDebuff(effectTypes.DICE_CHANGE, '4d8')], noDescription, [durationTypes.UNTIL_USE])]
+        spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
+        1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
+        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        {
+            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         },
-        new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castType.ON_LOCATION),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+        new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castTypes.ON_LOCATION, [targetTypes.ENEMY]),
+        [rollTypes.ABILITY_THROW], null
     ),
     'Ice Cone' : new Spell('Ice Cone', 
-        [classType.WIZARD], 
-        statType.INT, 
-        damageType.FROST, 
-        'Conjure a glowing ball of fire.',
-        null,
-        {'1' : [spellNormalCast],
-            '2' : [listCreatedAdditionalEffects.attackRadiusBonus_100]},
-        new SpellPattern(spellPatterns.CONE_UPWARD, 800, 100, castType.ON_LOCATION),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+        spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
+        1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
+        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        {
+            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
+        },
+        new SpellPattern(spellPatterns.CONE_UPWARD, 800, 100, castTypes.FROM_CASTER, [targetTypes.ANY]),
+        [rollTypes.ABILITY_THROW], null
     ),
     'Pillar of Light' : new Spell('Pillar of Light', 
-        [classType.WIZARD], 
-        statType.INT, 
-        damageType.RADIANT, 
-        'Conjure a glowing piller of light.',
-        null,
-        {'1' : [spellNormalCast],
-            '2' : [new AdditionalEffect([characterActions.CASTING],  [new BuffDebuff(durationTypes.UNTIL_USE, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
-        new SpellPattern(spellPatterns.CONE_DOWNWARD, 800, 100, castType.ON_LOCATION),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW], [targetTypes.ENEMY]
+        spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
+        1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
+        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        {
+            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
+        },
+        new SpellPattern(spellPatterns.CONE_UPWARD, 800, 100, castTypes.ON_LOCATION, [targetTypes.ANY]),
+        [rollTypes.ABILITY_THROW], null
     ),   
     'Fire Hands' : new Spell('Fire Hands', 
-        [classType.WIZARD], 
-        statType.INT, 
-        damageType.FIRE, 
-        'Conjure a glowing ball of fire.',
-        null,
-        {'1' : [spellNormalCast],
-            '2' : [new AdditionalEffect([characterActions.CASTING],  [new BuffDebuff(durationTypes.UNTIL_USE, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
-        new SpellPattern(spellPatterns.CONE_DOWNWARD, 800, 100, castType.FROM_CASTER),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+        spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
+        1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
+        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        {
+            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
+        
+        },
+        new SpellPattern(spellPatterns.CONE_DOWNWARD, 800, 100, castTypes.FROM_CASTER, [targetTypes.ANY]),
+        [rollTypes.ABILITY_THROW], null
     ),
     'Lightning Ray' : new Spell('Lightning Ray', 
-        [classType.WIZARD], 
-        statType.INT, 
-        damageType.LIGHTNING, 
-        'Conjure a glowing ball of fire.',
-        null,
-        {'1' : [spellNormalCast],
-            '2' : [new AdditionalEffect([characterActions.CASTING],  [new BuffDebuff(durationTypes.UNTIL_USE, effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Increase Attack Radius by 1')]},
-        new SpellPattern(spellPatterns.BOX, 800, 100, castType.FROM_CASTER),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW]
+        spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
+        1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
+        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        {
+            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
+        },
+        new SpellPattern(spellPatterns.BOX, 800, 100, castTypes.FROM_CASTER, [targetTypes.ANY]),
+        [rollTypes.ABILITY_THROW], null
     ),
     'Heralde' : new Spell('Heralde', 
-        [classType.WIZARD], 
-        statType.INT, 
-        damageType.NONE, 
-        'Increases charisma of all players around caster',
+        spellTypes.SPELL, [classTypes.WIZARD],
+        1, statTypes.CHA, damageTypes.NONE, null, 'Increases charisma of all players around caster', 
+        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
         {
-            '2': [listCreatedAdditionalEffects.counterMirrorSpell],
+            '2' : {caster: [listCreatedAdditionalEffects.holyAura], 
+                    target: [listCreatedAdditionalEffects.counterSpellEffect]},
+            '3' : {caster: [listCreatedAdditionalEffects.attackRadiusBonus_100, listCreatedAdditionalEffects.attackRangeBonus_200]},
+            '4' : {caster: [listCreatedAdditionalEffects.startFireBallParty, listCreatedAdditionalEffects.attackRadiusBonus_100]}
         },
-        {   '1' : [spellNormalCast],
-            '2' : [listCreatedAdditionalEffects.holyAura],
-            '3' : [listCreatedAdditionalEffects.attackRadiusBonus_100, listCreatedAdditionalEffects.attackRangeBonus_200],
-            '4' : [listCreatedAdditionalEffects.startFireBallParty, listCreatedAdditionalEffects.attackRadiusBonus_100]
-        },
-        new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castType.AROUND_CASTER),
-        '2d6', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW], [targetTypes.ALLY, targetTypes.SELF]
+        new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castTypes.AROUND_CASTER, [targetTypes.ALLY, targetTypes.SELF]),
+        [rollTypes.ABILITY_THROW], null
     ),
     'Conjure Mountainless Dwarf': new Spell('Conjure Mountainless Dwarf',
-        [classType.WIZARD], 
-        statType.INT, 
-        damageType.CONJURE, 
-        'Conjure a Mountainless dwarf',
-        null,
-        {'1' : [spellNormalCast]},
-        new SpellPattern(spellPatterns.CIRCULAR, 500, 100, castType.ON_LOCATION),
-        'mountainless_dwarf', durationTypes.INSTANT, actionType.MAIN, [rollTypes.INT_SAVING_THROW], [rollTypes.CON_SAVING_THROW], [targetTypes.ANY]
+        spellTypes.CONJURE,[classTypes.DRUID],
+        1, statTypes.NONE, damageTypes.NONE, 'mountainless_dwarf', 'Conjure a Mountainless dwarf',
+        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        [], new SpellPattern(spellPatterns.CIRCULAR, 500, 100, castTypes.ON_LOCATION, [targetTypes.GROUND_NO_OVERLAP]),
+        [rollTypes.ABILITY_THROW], null
     ),
 };
 

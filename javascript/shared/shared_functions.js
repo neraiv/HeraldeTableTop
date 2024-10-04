@@ -1,6 +1,19 @@
-// Function to parse and roll dice based on the roll list
+function createTestDots(parent, count){
+    let dotList = [];
+    for(let i = 0; i < count; i++){
+        const dot = document.createElement('div');
+        dot.classList.add('test-dot');
+        dotList.push(dot);
+        parent.appendChild(dot);
+    }
+    return dotList;
+}
 
-function createNumberInput(label, id, defaultValue = null, isReadOnly, addIncrementButtons = true) {
+function removeTestDots(parent, dotlist){
+    dotlist.forEach(dot => parent.removeChild(dot));
+}
+
+function createNumberInput({label, id, maxValue=99, minValue=1, isReadOnly = false, addIncrementButtons = true}) {
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
@@ -14,14 +27,23 @@ function createNumberInput(label, id, defaultValue = null, isReadOnly, addIncrem
     labelElement.textContent = label;
 
     const inputElement = document.createElement('input');
-    inputElement.type = 'text';
+    inputElement.type = 'number';
     inputElement.classList.add('input-element');
     inputElement.id = id;
     inputElement.name = label;
-    inputElement.value = defaultValue ? defaultValue : null;
+    inputElement.value = minValue;
 
     if (isReadOnly) {
         inputElement.readOnly = true;
+    }
+
+    inputElement.onchange = () =>{
+        if(inputElement.value < minValue){
+            inputElement.value = minValue;
+        }
+        if(inputElement.value > maxValue){
+            inputElement.value = maxValue;
+        }
     }
 
     formGroup.appendChild(labelElement);
@@ -32,16 +54,21 @@ function createNumberInput(label, id, defaultValue = null, isReadOnly, addIncrem
         const controls = document.createElement('div');
         controls.className = 'number-controls';
     
-        const buttonUp = createImageButton(19, '&#9650;');  
+        const buttonUp = createImageButton(19, {icon: '&#9650;'});  
         buttonUp.classList.add('button-up')
         buttonUp.onclick = function(event){
             event.preventDefault();
-    
+            if(inputElement.value < maxValue){
+                inputElement.value = inputElement.value + 1;
+            }
         }
-        const buttonDown = createImageButton(19, '&#9660;');  
+        const buttonDown = createImageButton(19, {icon: '&#9660;'});  
         buttonDown.classList.add('button-down')
         buttonDown.onclick = function(event){
             event.preventDefault();
+            if(inputElement.value > minValue){
+                inputElement.value = inputElement.value - 1;
+            }
         }
     
         controls.appendChild(buttonUp);
@@ -87,7 +114,16 @@ function createStringInput(label, id = '', defaultValue = null, isReadOnly) {
     return formGroup;
 }
 
-function createSelectorInput(label, valueList, textList, nonSelectableDefault, id = null, disable_filter = null,multiple = true, isReadOnly= false, custom_func= null, defaultValue = null) {
+function createSelectorInput(label, valueList, textList, 
+    {
+    nonSelectableDefault,
+    id,
+    disable_filter,
+    multiple,
+    isReadOnly,
+    custom_func,
+    defaultValue
+    } = { nonSelectableDefault: null, id: null, disable_filter: null, multiple: false, isReadOnly: false, custom_func: null, defaultValue: null  }) {
 
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group')
@@ -101,20 +137,12 @@ function createSelectorInput(label, valueList, textList, nonSelectableDefault, i
     labelElement.style.alignContent = 'center';
     labelElement.style.textAlign = 'center';
 
-    function optionOnclickFunc(event) {  
-        const option = event.target;
+    const inputElement = createSelector(id, valueList, textList, {
+        defaultValue: nonSelectableDefault, 
+        disable_filter: disable_filter, 
+        onclick_func: custom_func? custom_func: chekmarkOptionFunction}
+    );
 
-        // Add tick emoji if selected
-        if (!option.textContent.includes('✓')) {
-            option.textContent += ' ✓';
-        } else {
-            // Remove tick emoji if deselected
-            option.textContent = option.textContent.replace(' ✓', '');
-        }
-            
-    }
-
-    const inputElement = createSelector(valueList, textList, nonSelectableDefault, id, disable_filter, custom_func? custom_func: optionOnclickFunc);
     inputElement.style.height = '98%';
     inputElement.classList.add('input-element');
     inputElement.multiple = multiple;
@@ -146,49 +174,171 @@ function createSelectorInput(label, valueList, textList, nonSelectableDefault, i
     return formGroup;
 }
 
-function roll(rollList, bonuses = 0, rollTime = 1) {
+function chekmarkOptionFunction(event) {  
+    const option = event.target;
 
-    // Iterate through each roll in the rollList
-    let result = 0;
-    for (let i = 0; i < rollTime; i++) {
-        let total = 0;
-        for (let roll of rollList) {
-            // Parse the roll string (e.g., '3d6')
-            const [numDice, diceSides] = roll.split('d').map(Number);
-            
-            // Roll the dice and sum the results
-            let rollTotal = 0;
-            for (let i = 0; i < numDice; i++) {
-                rollTotal += Math.floor(Math.random() * diceSides) + 1;
-            }""
+    // Add tick emoji if selected
+    if (!option.textContent.includes('✓')) {
+        option.textContent += ' ✓';
+    } else {
+        // Remove tick emoji if deselected
+        option.textContent = option.textContent.replace(' ✓', '');
+    }
+        
+}
 
-            // Add bonuses if any
-            rollTotal += bonuses;
-
-            // Add to the total
-            total += rollTotal;
-
-            // Log each roll for reference (optional)
-            console.log(`Rolled ${numDice}d${diceSides}: ${rollTotal}`);
+function getSelectedOptionsWithCheckmark(selectElement) {
+    const selectedValues = [];
+    
+    // Loop through the options of the select element
+    for (let option of selectElement.options) {
+        // Check if the option text contains the checkmark '✓'
+        if (option.text.includes('✓')) {
+            selectedValues.push(option.value);
         }
-        result = Math.max(result, total);
     }
 
-    // Return the total roll result
-    return result;
+    return selectedValues;
 }
 
-function getAdditionalEffects(targetEffect){
-    return effectsList.filter(effect => effect.effect === targetEffect);
+function indexedOptionFunctionWithTransperency(event) {
+    const option = event.target;
+    const select = option.parentElement;
+    
+    if (!select.dataset.index) select.dataset.index = 0;
+
+    const index = parseInt(select.dataset.index);
+
+    // Check if the option is already indexed (if it has a number after a hyphen)
+    if (!/\-\s\d+$/.test(option.textContent)) {
+        const arr = option.textContent.split('-');
+        
+        if (arr.length > 1) {
+            arr[1] = index + 1;
+        } else {
+            arr.push(index + 1);
+        }
+
+        option.textContent = arr.join('- ');
+        select.dataset.index = index + 1;
+
+        // Apply gradient background based on index
+        const transparency = 0.6;
+        const red = 255;
+        const green = 160 + (index * 15);  // Gradually increasing toward skin tone
+        const blue = 122 + (index * 10);   // Gradually increasing toward skin tone
+        option.style.backgroundColor = `rgba(${red}, ${green}, ${blue}, ${transparency})`;
+    }
 }
 
-function getScalingFactor(container, scale) {
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    return {
-        widthFactor: containerWidth / 100 * scale, // Adjust this based on your requirement
-        heightFactor: containerHeight / 100 * scale // Adjust this based on your requirement
-    };
+function indexedOptionFunction(event) {
+    const option = event.target;
+    const select = option.parentElement;
+    
+    if (!select.dataset.index) select.dataset.index = 0;
+
+    const index = parseInt(select.dataset.index);
+
+    // Check if the option is already indexed (if it has a number after a hyphen)
+    if (!/\-\s\d+$/.test(option.textContent)) {
+        const arr = option.textContent.split('-');
+        
+        if (arr.length > 1) {
+            arr[1] = index + 1;
+        } else {
+            arr.push(index + 1);
+        }
+
+        option.textContent = arr.join('- ');
+        select.dataset.index = index + 1;
+    }
+}
+
+function getOrderedSelectedOptions(selectElement) {
+    // Create an array to store the options with their index and value
+    const optionsWithIndex = [];
+    
+    // Loop through the options of the select element
+    for (let option of selectElement.options) {
+        // Check if the option text contains a dash (indicating an index is present)
+        const parts = option.text.split('-');
+        if (parts.length === 2) {
+            const index = parseInt(parts[1], 10); // Extract the index
+            if (!isNaN(index)) { // Ensure it's a valid number
+                optionsWithIndex.push({ index: index, value: option.value });
+            }
+        }
+    }
+
+    // Sort the array based on the index (ascending)
+    optionsWithIndex.sort((a, b) => a.index - b.index);
+
+    // Extract the values in the correct order
+    const orderedValues = optionsWithIndex.map(option => option.value);
+
+    return orderedValues;
+}
+
+function createSpellSelectContainer(id, initalLevel = null, initialSpellName = null){
+    const itemId = id + '-spell-select-container';
+    const spellSelectContainer = document.createElement('div');
+    spellSelectContainer.classList.add('form-group');
+    spellSelectContainer.classList.add('box-circular-border');
+    spellSelectContainer.classList.add('row');
+    spellSelectContainer.classList.add('vertical');
+
+    let selectedSpellLevelList = 1;
+    const spellLevelSelector = createSelectorInput('Spell Level:', gameSettings.includedSpellLevels, gameSettings.includedSpellLevels, {
+        nonSelectableDefault: 'select', 
+        id: itemId + '-spell-level',
+        defaultValue: initalLevel ? [initalLevel] : null});
+
+    spellLevelSelector.classList.add('spell-level-selector')
+    const spellSelect = createSelectorInput('Spell:', Object.keys(listSpells[selectedSpellLevelList]), Object.keys(listSpells[selectedSpellLevelList]), {
+        nonSelectableDefault: 'select', 
+        id: itemId + '-spell-level',
+        defaultValue: initialSpellName ? [initialSpellName] : null});
+    spellSelect.classList.add('spell-name-selector')
+
+    spellLevelSelector.querySelector('.input-element').onchange = function(event){
+        selectedSpellLevelList = event.target.value;
+        spellSelectContainer.spellLevel = spellLevelSelector.querySelector('.input-element').selectedOptions[0].value;
+        updateSelector(Object.keys(listSpells[selectedSpellLevelList]), Object.keys(listSpells[selectedSpellLevelList]),spellSelect.querySelector('.input-element'), null, 'select');
+    }
+
+    spellSelect.querySelector('.input-element').onchange = () => {
+        spellSelectContainer.spellName = spellSelect.querySelector('.input-element').selectedOptions[0].value;
+    }
+
+    spellSelectContainer.spellLevel = 0
+    spellSelectContainer.spellName = null
+
+    spellSelectContainer.appendChild(spellLevelSelector);
+    spellSelectContainer.appendChild(spellSelect);
+
+    return spellSelectContainer;
+}
+
+function createImageButton(fontSize, {icon=null, source=null, custom_padding = 8}) {
+    const button = document.createElement('button');
+    button.className = 'image-button';
+
+    // Apply font size to the button
+    button.style.fontSize = `${fontSize-custom_padding}px`;
+
+    // Set button size
+    button.style.width = `${fontSize}px`; // Width of the button
+    button.style.height = `${fontSize}px`; // Height of the button
+    
+    if (source) {
+        // Use an image source; set width and height to 100% to fill the button
+         button.innerHTML = `<img src="${source}" width="${fontSize-custom_padding}px" height="${fontSize-custom_padding}px" draggable = "false"/>`;
+    } else if (icon) {
+        // Use emoji or text icon; the font size controls the size
+        button.innerHTML = icon;
+    }
+    button.draggable = false;
+    return button;
 }
 
 // Function to set image size while preserving aspect ratio
@@ -211,26 +361,13 @@ function setImageSize(img, maxWidth, maxHeight, extra_ratio = NaN) {
     img.style.height = `${newHeight}px`;
 }
 
-function createImageButton(fontSize, icon=null, source=null, custom_padding = 8) {
-    const button = document.createElement('button');
-    button.className = 'image-button';
-
-    // Apply font size to the button
-    button.style.fontSize = `${fontSize-custom_padding}px`;
-
-    // Set button size
-    button.style.width = `${fontSize}px`; // Width of the button
-    button.style.height = `${fontSize}px`; // Height of the button
-    
-    if (source) {
-        // Use an image source; set width and height to 100% to fill the button
-         button.innerHTML = `<img src="${source}" width="${fontSize-custom_padding}px" height="${fontSize-custom_padding}px" draggable = "false"/>`;
-    } else if (icon) {
-        // Use emoji or text icon; the font size controls the size
-        button.innerHTML = icon;
-    }
-    button.draggable = false;
-    return button;
+function getScalingFactor(container, scale) {
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    return {
+        widthFactor: containerWidth / 100 * scale, // Adjust this based on your requirement
+        heightFactor: containerHeight / 100 * scale // Adjust this based on your requirement
+    };
 }
 
 function toggleSliding_SheetWithId(id, open= null, page= null) {
@@ -275,7 +412,7 @@ function toggleDisplay_SheetWithId(id, open= null, page= null) {
     } 
 }
 
-function getRandomColor() {
+function genareteRandomColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';
     for (let i = 0; i < 6; i++) {
@@ -323,7 +460,40 @@ function addToogleHighlight(element, parentElement = null) {
     }
 }
 
-function createSelector(valueList, textList, defaultValue=null, id= null, disable_filter= null, onclick_func=null) {
+
+function createDropdownMenu(parent, buttonsDict) {
+    // searc querySelector('.index-0')
+    // Create dropdown menu container
+    const dropdownMenu = document.createElement('div');
+    dropdownMenu.classList.add('dropdown-menu');
+    let index = 0;
+    Object.entries(buttonsDict).forEach(([key, value]) => {
+        const button = document.createElement('div');
+        button.textContent = key;
+        button.classList.add('dropdown-menu-button');
+        button.classList.add('index-'+index);
+        if (value === false) {
+            button.style.display = 'none'; // Hide if value is false
+        }
+        dropdownMenu.appendChild(button);
+        index++;
+    });
+
+    const closeButton = document.createElement('div');
+    closeButton.textContent = 'close';
+    closeButton.classList.add('dropdown-menu-close-button');
+    closeButton.classList.add('close-button')
+    closeButton.onclick = () => {
+        dropdownMenu.style.display = 'none';
+    };
+    dropdownMenu.appendChild(closeButton);
+
+    parent.appendChild(dropdownMenu);
+
+    return dropdownMenu;
+}
+
+function createSelector(id, valueList, textList, {defaultValue=null, disable_filter= null, onclick_func=null}) {
     // Create the select element
     const selector = document.createElement('select');
     if (id) selector.id = id;
@@ -359,6 +529,7 @@ function createSelector(valueList, textList, defaultValue=null, id= null, disabl
 
     return selector;
 }
+
 function updateSelector(valueList, textList, selector = null, selectorId = null, defaultValue = 'select', disable_filter = null) {
     // Fetch the selector by ID if it's not directly passed
     if (selectorId) {
@@ -397,6 +568,28 @@ function updateSelector(valueList, textList, selector = null, selectorId = null,
     });
 }
 
+function addDraggableRow(parent){
+    const draggableRow = document.createElement('div');
+    draggableRow.classList.add('draggable-row');
+
+    // Make the draggable row actually draggable (optional)
+    let offsetX, offsetY;
+    draggableRow.onmousedown = function (event) {
+        offsetX = event.clientX - parent.offsetLeft;
+        offsetY = event.clientY - parent.offsetTop;
+        document.onmousemove = function (event) {
+            parent.style.left = `${event.clientX - offsetX}px`;
+            parent.style.top = `${event.clientY - offsetY}px`;
+        };
+        document.onmouseup = function () {
+            document.onmousemove = null;
+            document.onmouseup = null;
+        };
+    };
+
+    parent.appendChild(draggableRow);
+}
+
 function convertToRoman(num) {
     if(num >= 40){
         console.log('cant convert to Roman');
@@ -422,99 +615,6 @@ function convertToRoman(num) {
     
     return roman;
 }
-function handleChange(event) {
-    console.log('Change detected:', event.target.value);
-}
-
-function addDraggableRow(parent){
-    const draggableRow = document.createElement('div');
-    draggableRow.classList.add('draggable-row');
-
-    // Make the draggable row actually draggable (optional)
-    let offsetX, offsetY;
-    draggableRow.onmousedown = function (event) {
-        offsetX = event.clientX - parent.offsetLeft;
-        offsetY = event.clientY - parent.offsetTop;
-        document.onmousemove = function (event) {
-            parent.style.left = `${event.clientX - offsetX}px`;
-            parent.style.top = `${event.clientY - offsetY}px`;
-        };
-        document.onmouseup = function () {
-            document.onmousemove = null;
-            document.onmouseup = null;
-        };
-    };
-
-    parent.appendChild(draggableRow);
-}
-
-function moveObject(element, newX, newY){
-    element.style.left = `${newX}px`;
-    element.style.top = `${newY}px`;
-
-    const elementRect = objectsPositions.get(element.id);
-    elementRect.x = newX;
-    elementRect.y = newY;
-
-    console.log("hello")
-}
-
-function createTestDots(parent, count){
-    let dotList = [];
-    for(let i = 0; i < count; i++){
-        const dot = document.createElement('div');
-        dot.classList.add('test-dot');
-        dotList.push(dot);
-        parent.appendChild(dot);
-    }
-    return dotList;
-}
-
-function removeTestDots(parent, dotlist){
-    dotlist.forEach(dot => parent.removeChild(dot));
-}
-
-function getTokenShape(rect, tokenShapeType){
-    if(tokenShapeType == tokenShapeTypes.BOX){
-        return getBoxFromRect(rect);
-    } else if(tokenShapeType == tokenShapeTypes.HEXAGON){
-        return getHexagonFromRect(rect);
-    }
-}
-
-function getBoxFromRect(rect){
-    const shape = [
-        {x: rect.left, y: rect.top},
-        {x: rect.left + rect.width, y: rect.top},
-        {x: rect.left + rect.width, y: rect.top + rect.height},
-        {x: rect.left, y: rect.top + rect.height}
-    ]
-    return shape;
-}
-
-function getHexagonFromRect(rect){
-    const { x, y, width, height } = rect;
-
-    // Calculate the center of the DOMRect
-    const centerX = x + width / 2;
-    const centerY = y + height / 2;
-
-    // Radius of the hexagon - we use half the smaller dimension for fitting
-    const radius = Math.min(width, height) / 2;
-
-    // Create an array to store the points of the hexagon
-    const hexagonPoints = [];
-
-    // Calculate the 6 corner points using trigonometry
-    for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 3) * i;  // 60 degrees in radians for each vertex
-        const pointX = centerX + radius * Math.cos(angle);
-        const pointY = centerY + radius * Math.sin(angle);
-        hexagonPoints.push({ x: pointX, y: pointY });
-    }
-
-    return hexagonPoints;  
-}
 
 function getKeyFromMapWithValue(map, searchValue){
     const matchingEntry = Object.entries(map).find(([key, value]) => value === searchValue);
@@ -522,51 +622,32 @@ function getKeyFromMapWithValue(map, searchValue){
         return [matchingEntry[0]];
     }else{
         return undefined;
-    }
-    
+    }   
 }
-
-function moveToEnemyAlly(id, to_enemy) {
-    let allyIndex = listAllies.findIndex(ally => ally.id === id);
-    let enemyIndex = listEnemies.findIndex(enemy => enemy.id === id);
-
-    if(to_enemy && allyIndex !== -1) { // Moving from allies to enemies
-        let ally = listAllies.splice(allyIndex, 1)[0]; // Remove from allies
-        listEnemies.push(ally); // Add to enemies
-    } else if (!to_enemy && enemyIndex !== -1) { // Moving from enemies to allies
-        let enemy = listEnemies.splice(enemyIndex, 1)[0]; // Remove from enemies
-        listAllies.push(enemy); // Add to allies
-    }
-}
-
-function getMissingTargetTypes(selectedTypes) {
-    // Get all the possible target type values
-    const allTypes = Object.values(targetTypes);
+function getMissingArrayValues(inputArray, searchArray) {
 
     // Filter out the missing types
-    const missingTypes = allTypes.filter(type => !selectedTypes.includes(type));
+    const missingTypes = searchArray.filter(type => !inputArray.includes(type));
 
     return missingTypes;
 }
 
-function getIdFromTokenId(tokenId){
-    const _ = tokenId.split('-');
-    return _[_.length - 1]; 
-}
+
 
 function createTabbedContainer(tabCount, tabNames = null, id = null, isGrowable = false, tabMainName = null) {
     // Create a parent container for both tab and content containers
-    tabMainName = tabMainName ? tabMainName : 'Tab';
+    tabMainName = tabMainName != null ? tabMainName : 'Tab';
     const tabbedWindowContainer = document.createElement('div');
     tabbedWindowContainer.length = tabCount;
     tabbedWindowContainer.className = id ? `${id}-tabbed-window` : 'default-tabbed-window'; // Optional class for styling
 
     const tabContainer = document.createElement('div');
+    tabContainer.classList.add('tab-container');
     tabContainer.id = id ? `${id}-tab-container` : 'default-tab-container'; // Fallback ID if none is provided
+
+
     const contentContainer = document.createElement('div');
     contentContainer.className = id ? `${id}-tab-content-container` : 'default-tab-content-container';
-
-    tabContainer.classList.add('tab');
     contentContainer.classList.add('tab-content-container'); // Added a class for the content container
 
     // Append the tab and content containers to the tabbed window container
@@ -586,20 +667,17 @@ function createTabbedContainer(tabCount, tabNames = null, id = null, isGrowable 
         tabbedWindowContainer.addTabButton = addTabButton; // Add a method to open tabs
     }
 
-    tabbedWindowContainer.tabContainer = tabContainer;
-    tabbedWindowContainer.contentContainer = contentContainer;
-
     // Return the tabbed window container
     return tabbedWindowContainer;
 }
 
 
-function createTabs(tabContainer, contentContainer, tabCount, tabNames = null, id = null, tabMainName) {
+function createTabs(tabContainer, contentContainer, tabCount, tabNames = null, id = null, tabMainName = null) {
     // Clear any existing tabs
     tabContainer.innerHTML = '';
     contentContainer.innerHTML = '';
 
-    tabMainName = tabMainName ? tabMainName : 'Tab';
+    tabMainName = tabMainName != null ? tabMainName : 'Tab';
 
     for (let i = 1; i <= tabCount; i++) {
         // Create tab button
@@ -650,6 +728,12 @@ function openTab(evt, tabName, contentContainer) {
     evt.currentTarget.classList.add('active');
 }
 
+function getActiveTabIndex(tabContainer){
+    const tabLinks = tabContainer.querySelectorAll('.tablinks');
+    const activeTabLink = Array.from(tabLinks).find(link => link.classList.contains('active'));
+    return activeTabLink.getAttribute('data-index');
+}
+
 // Function to get contentContainer by tab index or name (scoped to parent container)
 function getContentContainer(tabContainer, identifier) {
     let tabButton;
@@ -671,6 +755,7 @@ function getContentContainer(tabContainer, identifier) {
     if (tabButton) {
         const tabIndex = tabButton.getAttribute('data-index');
         const contentContainer = tabContainer.nextElementSibling; // Get the content container within the same parent
+        const tab = `#tab${tabIndex}`
         return contentContainer.querySelector(`#tab${tabIndex}`); // Search only within the content container
     } else {
         console.error("Tab not found with the given identifier:", identifier);
@@ -707,44 +792,4 @@ function addNewTab(tabContainer, contentContainer, name, tabMainName= 'Tab') {
     tabContainer.parentElement.length = newTabIndex;
     // Optionally, activate the new tab after creation
     openTab({ currentTarget: newTabButton }, `tab${newTabIndex}`, contentContainer);
-}
-
-
-function getSelectedOptionsWithCheckmark(selectElement) {
-    const selectedValues = [];
-    
-    // Loop through the options of the select element
-    for (let option of selectElement.options) {
-        // Check if the option text contains the checkmark '✓'
-        if (option.text.includes('✓')) {
-            selectedValues.push(option.value);
-        }
-    }
-
-    return selectedValues;
-}
-
-function getOrderedSelectedOptions(selectElement) {
-    // Create an array to store the options with their index and value
-    const optionsWithIndex = [];
-    
-    // Loop through the options of the select element
-    for (let option of selectElement.options) {
-        // Check if the option text contains a dash (indicating an index is present)
-        const parts = option.text.split('-');
-        if (parts.length === 2) {
-            const index = parseInt(parts[1], 10); // Extract the index
-            if (!isNaN(index)) { // Ensure it's a valid number
-                optionsWithIndex.push({ index: index, value: option.value });
-            }
-        }
-    }
-
-    // Sort the array based on the index (ascending)
-    optionsWithIndex.sort((a, b) => a.index - b.index);
-
-    // Extract the values in the correct order
-    const orderedValues = optionsWithIndex.map(option => option.value);
-
-    return orderedValues;
 }

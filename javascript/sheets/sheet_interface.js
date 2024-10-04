@@ -9,12 +9,12 @@ function addBottomBar(){
     row.style.padding = '4px';
     row.style.gap = '5px';
     
-    const openDriveImageBar = createImageButton(32, '💽');
+    const openDriveImageBar = createImageButton(32, {icon: '💽'});
     openDriveImageBar.addEventListener('click', () => {
         toggleSliding_SheetWithId(driveImagesBar.id);
     });
 
-    const openChat = createImageButton(32, '💬');
+    const openChat = createImageButton(32, {icon: '💬'});
     
     row.appendChild(openDriveImageBar);
     row.appendChild(openChat);
@@ -35,11 +35,11 @@ function addTopRightBar(){
     column.style.gap = '5px';
     
     
-    const openDriveImageBar = createImageButton(32, '⚙️');
+    const openDriveImageBar = createImageButton(32, {icon: '⚙️'});
     openDriveImageBar.addEventListener('click', () => {
     });
 
-    const openSpellCreate = createImageButton(32, '✨');
+    const openSpellCreate = createImageButton(32, {icon: '✨'});
     addClickHighlightListener(openSpellCreate);
     openSpellCreate.addEventListener('click', () => {
         addSpellCreator();
@@ -78,7 +78,7 @@ function addToolsBar(){
     row.style.gap = '4px';
     row.style.backgroundColor = "#ddd";
     
-    const cursorButton = createImageButton(36, null, `${userIntarfaceSettings.FOLDER_MENUICONS}/${userIntarfaceSettings.ICON_CURSOR}`);
+    const cursorButton = createImageButton(36, {source: `${uiSettings.folderMenuIcons}/${uiSettings.icon_cursor}`});
     cursorButton.onclick = () => {
         if(gameboard.style.cursor !== 'auto'){
             gameboard.style.cursor = 'auto';
@@ -86,7 +86,7 @@ function addToolsBar(){
         addToogleHighlight(cursorButton, parent);
     }
 
-    const panningButton = createImageButton(36, null, `${userIntarfaceSettings.FOLDER_MENUICONS}/${userIntarfaceSettings.ICON_PANNING}`);
+    const panningButton = createImageButton(36, {source: `${uiSettings.folderMenuIcons}/${uiSettings.icon_panning}`});
     panningButton.onclick = () => {
         if(gameboard.style.cursor === 'move'){
             gameboard.style.cursor = 'auto';
@@ -96,7 +96,7 @@ function addToolsBar(){
         addToogleHighlight(panningButton, parent);
     }
 
-    const centerButton = createImageButton(36, null, `${userIntarfaceSettings.FOLDER_MENUICONS}/${userIntarfaceSettings.ICON_CENTER}`);
+    const centerButton = createImageButton(36, {source: `${uiSettings.folderMenuIcons}/${uiSettings.icon_center}`});
     centerButton.onclick = () => {
         const gameboardContent = document.getElementById('gameboard-content');
         isPanning = false;     

@@ -1,16 +1,36 @@
-function createCharacterToken(img_src_element, x, y) {
+function createCharacterToken(img_src_element, x, y, faction = characterTypes.ALLY, controlledBy = '') {
+
+    if(controlledBy != ''){
+        controlledByIdentifier = '-'+controlledBy
+    }
+    const tokenID = `token-character-${img_src_element.id}` + controlledByIdentifier
+
     const token = document.createElement('div');
     token.style.position = 'absolute';
-    token.style.width = `${userIntarfaceSettings.GRID_SIZE}px`;
-    token.style.height = `${userIntarfaceSettings.GRID_SIZE}px`;
+    token.style.width = `${uiSettings.grid_size}px`;
+    token.style.height = `${uiSettings.grid_size}px`;
     token.style.left = `${x}px`;
     token.style.top = `${y}px`; 
     token.draggable = true;
     token.className = 'character-token';
-    token.id = `token-character-${img_src_element.id}`;
+    token.id = tokenID;
 
-    const char = getInGameCharacterById(img_src_element.id);
-    listAllies.push(char.id);
+    let char;
+
+    if(faction == characterTypes.CONJURED){
+        char =  listConjurableChars[img_src_element.id].char.clone()
+        char.controlledBy = controlledBy 
+        inGameChars.set(tokenID, char)
+        listDestructinator[listConjurableChars[img_src_element.id].duration.type].push(new Program_Destructionator(destructionTypes.TOKEN, {tokenId: tokenID}))
+    }
+    
+    char = inGameChars.get(tokenID);
+
+    if(faction == characterTypes.CONJURED){
+
+    }
+    dictCharacterFactions[faction].push(tokenID);
+
     const img = document.createElement('img');
     img.position = 'absolute';
     img.style.zIndex = 1;
@@ -20,7 +40,7 @@ function createCharacterToken(img_src_element, x, y) {
 
     const layer = document.getElementById('character-layer');
 
-    setImageSize(img, userIntarfaceSettings.GRID_SIZE, userIntarfaceSettings.GRID_SIZE);
+    setImageSize(img, uiSettings.grid_size, uiSettings.grid_size);
     
     token.addEventListener('dragstart', function (event) {
         toggleButtonsDisplay(false);
@@ -35,10 +55,10 @@ function createCharacterToken(img_src_element, x, y) {
 
     // Create buttons
     const buttonSize = 50; // Size of the buttons
-    const radius = userIntarfaceSettings.GRID_SIZE / 2; // Distance from the center of the token
+    const radius = uiSettings.grid_size / 2; // Distance from the center of the token
 
     const createButton = (iconSrc, angle) => {
-        const button = createImageButton(buttonSize, null, iconSrc);
+        const button = createImageButton(buttonSize, {source: iconSrc});
         button.style.position = 'absolute';
         button.style.zIndex = -1;
         button.style.transition = "all 0.3s ease-in-out"; // Smooth sliding effect
@@ -59,33 +79,25 @@ function createCharacterToken(img_src_element, x, y) {
     };
 
     // Buttons with their respective angles
-    const characterInventoryButton = createButton(userIntarfaceSettings.FOLDER_MENUICONS + "/" + userIntarfaceSettings.ICON_INVENTORY, 45);
+    const characterInventoryButton = createButton(uiSettings.folderMenuIcons + "/" + uiSettings.icon_inventory, 45);
     characterInventoryButton.onclick = function(event){
-        console.log(inGameCharacters);
-        
-
-        // Future
-        char.inventory.addItem(listWeapons["Hammer Of Mouse"], 1);
-        char.inventory.addItem(listWeapons.Sword, 1);
-        char.inventory.addItem(listConsumables["Healing Potion"], 4);
-
         displayInventory(char.inventory, event.clientX, event.clientY);
     }
 
-    const characterSpellbookButton = createButton(userIntarfaceSettings.FOLDER_MENUICONS + "/" + userIntarfaceSettings.ICON_SPELLBOOK, 90);
+    const characterSpellbookButton = createButton(uiSettings.folderMenuIcons + "/" + uiSettings.icon_spellbook, 90);
     characterSpellbookButton.onclick = function(event) {
         displayAvaliableSpells(char, event.clientX, event.clientY);
     }
 
-    const characterSheetButton = createButton(userIntarfaceSettings.FOLDER_MENUICONS + "/" + userIntarfaceSettings.ICON_SWORD, 135);
+    const characterWeaponAttackButton = createButton(uiSettings.folderMenuIcons + "/" + uiSettings.icon_sword, 135);
 
     // 
-    characterSheetButton.onclick = () => toggleDisplay_SheetWithId(`${img_src_element.id}-character-sheet`, true);
+    characterWeaponAttackButton.onclick = () => toggleDisplay_SheetWithId(`${img_src_element.id}-character-sheet`, true);
 
     // Append buttons to token
     token.appendChild(characterInventoryButton);
     token.appendChild(characterSpellbookButton);
-    token.appendChild(characterSheetButton      );
+    token.appendChild(characterWeaponAttackButton);
 
     // Append img to token
     token.appendChild(img);
@@ -96,19 +108,28 @@ function createCharacterToken(img_src_element, x, y) {
 
     const rect = token.getBoundingClientRect();
     // Store original positions
-    objectsPositions.set(token.id, [tokenTypes.CHARACTER, new DOMRect(x, y, userIntarfaceSettings.GRID_SIZE, userIntarfaceSettings.GRID_SIZE)]);
+    objectsPositions.set(token.id, [tokenTypes.CHARACTER, new DOMRect(x, y, uiSettings.grid_size, uiSettings.grid_size)]);
 
     // Add mouseenter and mouseleave events for button animations
     token.addEventListener('mouseenter', () => {
-        [characterInventoryButton, characterSpellbookButton, characterSheetButton].forEach(button => {
-            button.style.transitionDelay = '';
-            button.style.left = `${button.dataset.finalX}px`;
-            button.style.top = `${button.dataset.finalY}px`;
+        let isSomeoneCasting = false;
+        inGameChars.forEach((inGameChar, key) => {
+            if (inGameChar.action === characterActions.CASTING) {
+                isSomeoneCasting = true;
+                return;  // Stops further iteration once a caster is found
+            }
         });
+        if(!isSomeoneCasting){
+            [characterInventoryButton, characterSpellbookButton, characterWeaponAttackButton].forEach(button => {
+                button.style.transitionDelay = '';
+                button.style.left = `${button.dataset.finalX}px`;
+                button.style.top = `${button.dataset.finalY}px`;
+            });
+        }
     });
 
     token.addEventListener('mouseleave', () => {
-        [characterInventoryButton, characterSpellbookButton, characterSheetButton].forEach(button => {
+        [characterInventoryButton, characterSpellbookButton, characterWeaponAttackButton].forEach(button => {
             button.style.transitionDelay = '0.5s'; 
             button.style.left = `${radius - buttonSize / 2}px`;
             button.style.top = `${radius - buttonSize / 2}px`;
@@ -119,11 +140,13 @@ function createCharacterToken(img_src_element, x, y) {
         if(state){
             characterInventoryButton.style.display = 'flex';
             characterSpellbookButton.style.display = 'flex';
-            characterSheetButton    .style.display = 'flex';
+            characterWeaponAttackButton    .style.display = 'flex';
         }else{
             characterInventoryButton.style.display = 'none';
             characterSpellbookButton.style.display = 'none';
-            characterSheetButton    .style.display = 'none';
+            characterWeaponAttackButton    .style.display = 'none';
         }
     }
+
+    return token;
 }
