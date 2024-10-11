@@ -13,7 +13,111 @@ function removeTestDots(parent, dotlist){
     dotlist.forEach(dot => parent.removeChild(dot));
 }
 
-function createNumberInput({label, id, maxValue=99, minValue=1, isReadOnly = false, addIncrementButtons = true}) {
+function createDamageInput(label, id = ""){
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group');
+    formGroup.classList.add('row');
+    formGroup.classList.add('vertical');
+    formGroup.style.minHeight = '50px';
+    formGroup.style.height = '50px';
+
+    formGroup.value = ""
+
+    const labelElement = document.createElement('label');
+    labelElement.setAttribute('for', label);
+    labelElement.classList.add('label-element');
+    labelElement.textContent = label;
+
+    const formColumn = document.createElement('div');
+    formColumn.classList.add('column');
+
+    const damageRow = document.createElement('div');
+    damageRow.classList.add('row');
+    damageRow.classList.add('centered');
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = id; // Assuming `id` is defined elsewhere
+    checkbox.style.width = '15px';
+    checkbox.style.height = '15px';
+    
+    // Create a label element
+    const checkboxLabel = document.createElement('label');
+    checkboxLabel.htmlFor = id+"-checkbox"; // Associate label with the checkbox
+    checkboxLabel.textContent = "Raw"; // Set the label text
+
+    const inputElementRawDamage = document.createElement('input');
+    inputElementRawDamage.type = 'number';
+    inputElementRawDamage.id = id;
+    inputElementRawDamage.value = 0;
+    inputElementRawDamage.style.height = "25px";
+    inputElementRawDamage.style.display = "none";
+
+    const inputElementDiceRollTimes = document.createElement('input');
+    inputElementDiceRollTimes.type = 'number';
+    inputElementDiceRollTimes.id = id;
+    inputElementDiceRollTimes.value = 0;
+    inputElementDiceRollTimes.style.height = "25px";
+    inputElementDiceRollTimes.style.marginRight = "2px"
+
+    const labelD = document.createElement('label');
+
+    labelD.textContent = 'd';
+
+    const inputElementDice = document.createElement('input');
+    inputElementDice.type = 'number';
+    inputElementDice.id = id;
+    inputElementDice.value = 0;
+    inputElementDice.style.height = "25px";
+    inputElementDice.style.marginLeft = "2px"
+
+    checkbox.addEventListener('change', event => {
+        if (checkbox.checked) {
+            inputElementRawDamage.style.display = 'flex';
+            inputElementDiceRollTimes.style.display = 'none';
+            labelD.style.display = 'none';
+            inputElementDice.style.display = 'none';
+        } else {
+            inputElementRawDamage.style.display = 'none';
+            inputElementDiceRollTimes.style.display = 'flex';
+            labelD.style.display = 'flex';
+            inputElementDice.style.display = 'flex';
+        }
+    });
+
+    inputElementRawDamage.addEventListener('input', event => {
+        formGroup.value = event.target.value;
+    })
+
+    inputElementDiceRollTimes.addEventListener('input', event => {
+        formGroup.value = event.target.value +'d'+ inputElementDice.value;
+    })
+
+    inputElementDice.addEventListener('input', event => {
+        formGroup.value = inputElementDiceRollTimes.value + 'd' + event.target.value;
+    })
+
+    // Append the checkbox and label to a container (like a div)
+    const checkboxRow = document.createElement('div'); // Create a container
+    checkboxRow.classList.add('row');
+    checkboxRow.classList.add('vertical');
+
+    formGroup.appendChild(labelElement);
+    addSpacer(formGroup);
+    damageRow.appendChild(inputElementRawDamage);
+    damageRow.appendChild(inputElementDiceRollTimes);
+    damageRow.appendChild(labelD);
+    damageRow.appendChild(inputElementDice);
+    checkboxRow.appendChild(checkbox); // Add the checkbox to the container
+    checkboxRow.appendChild(checkboxLabel); // Add the label to the container
+    formColumn.appendChild(damageRow)
+    formColumn.appendChild(checkboxRow)
+    formGroup.appendChild(formColumn)
+
+    return formGroup
+}
+
+function createNumberInput(label, id, maxValue=99, minValue=1, isReadOnly = false, addIncrementButtons = true) {
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
@@ -59,7 +163,7 @@ function createNumberInput({label, id, maxValue=99, minValue=1, isReadOnly = fal
         buttonUp.onclick = function(event){
             event.preventDefault();
             if(inputElement.value < maxValue){
-                inputElement.value = inputElement.value + 1;
+                inputElement.value = parseInt(inputElement.value) + 1;
             }
         }
         const buttonDown = createImageButton(19, {icon: '&#9660;'});  
@@ -67,7 +171,7 @@ function createNumberInput({label, id, maxValue=99, minValue=1, isReadOnly = fal
         buttonDown.onclick = function(event){
             event.preventDefault();
             if(inputElement.value > minValue){
-                inputElement.value = inputElement.value - 1;
+                inputElement.value = parseInt(inputElement.value) - 1;
             }
         }
     
@@ -79,11 +183,15 @@ function createNumberInput({label, id, maxValue=99, minValue=1, isReadOnly = fal
     return formGroup
 }
 
-function createStringInput(label, id = '', defaultValue = null, isReadOnly) {
+function createStringInput(label,{
+    id = '', 
+    defaultValue = null, 
+    isReadOnly = false,
+    isTextArea = false,
+    maxRows = 10 // Maximum rows for a textarea (if isTextArea is true)
+} = {}) {
     const formGroup = document.createElement('div');
-    formGroup.classList.add('form-group')
-    formGroup.classList.add('row')
-    formGroup.classList.add('centered');
+    formGroup.classList.add('form-group', 'row', 'centered');
     formGroup.style.minHeight = '30px';
     formGroup.style.height = '30px';
 
@@ -94,25 +202,47 @@ function createStringInput(label, id = '', defaultValue = null, isReadOnly) {
     labelElement.style.alignContent = 'center';
     labelElement.style.textAlign = 'center';
 
+    let inputElement;
 
-    const inputElement = document.createElement('input');
+    if (isTextArea) {
+        inputElement = document.createElement('textarea');
+        inputElement.rows = 4;
+        inputElement.cols = 50;
+        inputElement.style.overflowY = 'auto'; // Enable vertical scrolling when necessary
+
+        // Dynamically adjust rows based on content
+        inputElement.addEventListener('input', function() {
+            const scrollHeight = inputElement.scrollHeight;
+            const rowHeight = 24; // Approximate height of one row in pixels
+            const newRows = Math.min(Math.ceil(scrollHeight / rowHeight), maxRows);
+            inputElement.rows = newRows; // Set rows based on content, up to the maximum
+        });
+
+    } else {
+        inputElement = document.createElement('input');
+        inputElement.type = 'text';
+        inputElement.style.overflowX = 'auto'; // Enable horizontal scrolling if the text overflows
+    }
+
     inputElement.classList.add('input-element');
-    inputElement.type = 'text';
     inputElement.id = id; // Set the id for the input
     inputElement.name = id; // Optionally set the name attribute as well
-    inputElement.style.display = 'flex'; //
-    inputElement.value = defaultValue ? defaultValue: "";
+
+    // Convert the default value to a string, preventing [object Object]
+    inputElement.value = defaultValue !== null ? String(defaultValue) : "";
 
     if (isReadOnly) {
         inputElement.readOnly = true;
     }
 
+    // Append the label and input to the form group
     formGroup.appendChild(labelElement);
-    addSpacer(formGroup);
+    addSpacer(formGroup); // Assuming addSpacer is a utility function you've defined
     formGroup.appendChild(inputElement);
 
     return formGroup;
 }
+
 
 function createSelectorInput(label, valueList, textList, 
     {
@@ -655,7 +785,9 @@ function createTabbedContainer(tabCount, tabNames = null, id = null, isGrowable 
     tabbedWindowContainer.appendChild(contentContainer);
 
     // Create tabs
-    createTabs(tabContainer, contentContainer, tabCount, tabNames, id, tabMainName);
+    if(parseInt(tabCount)>0){
+        createTabs(tabContainer, contentContainer, tabCount, tabNames, id, tabMainName);
+    }
 
     // If growable, add an "Add Tab" button/icon at the end
     if (isGrowable) {
@@ -735,7 +867,9 @@ function getActiveTabIndex(tabContainer){
 }
 
 // Function to get contentContainer by tab index or name (scoped to parent container)
-function getContentContainer(tabContainer, identifier) {
+function getContentContainer(tabbedWindowContainer, identifier) {
+    const tabContainer = tabbedWindowContainer.querySelector('.tab-container')
+
     let tabButton;
 
     // If no identifier is provided, get the last tab button
@@ -755,7 +889,7 @@ function getContentContainer(tabContainer, identifier) {
     if (tabButton) {
         const tabIndex = tabButton.getAttribute('data-index');
         const contentContainer = tabContainer.nextElementSibling; // Get the content container within the same parent
-        const tab = `#tab${tabIndex}`
+
         return contentContainer.querySelector(`#tab${tabIndex}`); // Search only within the content container
     } else {
         console.error("Tab not found with the given identifier:", identifier);
@@ -792,4 +926,43 @@ function addNewTab(tabContainer, contentContainer, name, tabMainName= 'Tab') {
     tabContainer.parentElement.length = newTabIndex;
     // Optionally, activate the new tab after creation
     openTab({ currentTarget: newTabButton }, `tab${newTabIndex}`, contentContainer);
+}
+
+function changeVisibiltyOfTab(tabbedWindowContainer, identifier, state) {
+    const tabContainer = tabbedWindowContainer.querySelector('.tab-container')
+
+    let tabButton;
+
+    // If the identifier is a number, treat it as an index
+    if (typeof identifier === 'number') {
+        tabButton = tabContainer.querySelector(`[data-index="${identifier}"]`);
+    } 
+    // If the identifier is a string, treat it as a tab name
+    else if (typeof identifier === 'string') {
+        tabButton = tabContainer.querySelector(`[data-name="${identifier}"]`);
+    }
+
+    if (tabButton) {
+        const tabIndex = tabButton.getAttribute('data-index');
+        const contentContainer = tabContainer.nextElementSibling; // Get the content container within the same parent
+
+        if(tabButton.classList.contains('active')){
+            const nextTabButton = tabContainer.querySelector(`[data-index="${parseInt(tabIndex)+1}"]`)
+            if(nextTabButton){
+                nextTabButton.click()
+            }
+        }
+
+        if(state){
+            tabButton.style.display = 'flex';
+            contentContainer.querySelector(`#tab${tabIndex}`).style.display = 'flex'; // Search only within the content container
+        }else{
+            tabButton.style.display = 'none';
+            contentContainer.querySelector(`#tab${tabIndex}`).style.display = 'none'; // Search only within the content container
+        }
+
+    } else {
+        console.error("Tab not found with the given identifier:", identifier);
+        return null;
+    }
 }

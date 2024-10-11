@@ -180,6 +180,7 @@ h2 {
 .spell-create-sheet {
     display: flex;
     position: absolute;
+    overflow: hidden;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -189,6 +190,7 @@ h2 {
     background: #fff;
     z-index: 52;
 }
+
 /* End Of Spell Create Sheet */
 
 /*SPELLLS */

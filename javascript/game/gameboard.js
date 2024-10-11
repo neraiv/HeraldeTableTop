@@ -10,6 +10,8 @@ function setupUI(){
     createDriveImageContainer('coil', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
     createDriveImageContainer('druid_woman', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
     createDriveImageContainer('elf_warrior_woman', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
+
+    addSpellCreator();
 }
 
 

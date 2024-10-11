@@ -29,6 +29,7 @@ function createCharacterToken(img_src_element, x, y, faction = characterTypes.AL
     if(faction == characterTypes.CONJURED){
 
     }
+    
     dictCharacterFactions[faction].push(tokenID);
 
     const img = document.createElement('img');

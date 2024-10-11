@@ -164,7 +164,20 @@
     height: 90%;
     padding: 8px;
     box-sizing: border-box;
-    text-align: center; /* Center the text horizontally */
+    text-align: left; /* Center the text horizontally */
+    margin-right: 10px;
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield; /* Chrome, Safari, Edge */
+    font-weight: bold;
+    font-size: 16px; /* Optional: adjust font size to improve readability */
+}
+
+.form-group textarea {
+    width: 60%;
+    height: 90%;
+    padding: 8px;
+    box-sizing: border-box;
+    text-align: left; /* Center the text horizontally */
     margin-right: 10px;
     -moz-appearance: textfield; /* Firefox */
     appearance: textfield; /* Chrome, Safari, Edge */
@@ -223,13 +236,13 @@
 }
 
 /* Style for tab navigation */
-.tab {
+.tab-container {
     overflow: hidden;
     background-color: #f1f1f1;
 }
 
 /* Style for tab links */
-.tab button {
+.tab-container button {
     background-color: inherit;
     float: left;
     border: none;
@@ -239,17 +252,17 @@
     transition: 0.3s;
 }
 
-/* Change color of tab links on hover */
-.tab button:hover {
+/* Change color of tab-container links on hover */
+.tab-container button:hover {
     background-color: #ddd;
 }
 
-/* Style for the active tab */
-.tab button.active {
+/* Style for the active tab-container */
+.tab-container button.active {
     background-color: #ccc;
 }
 
-/* Tab content */
+/* tab content */
 .tab-content {
     display: none;
     border-top: none;
