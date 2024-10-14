@@ -490,7 +490,7 @@ class Spell{
         name = "",
         type = spellTypes.SPELL,
         classess = [classTypes.ALL],
-        spellLevel = 6,
+        spellLevel = 0,
         statType,
         damageType,
         damage = "1d1",

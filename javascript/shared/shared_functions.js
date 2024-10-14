@@ -270,7 +270,7 @@ function createSelectorInput(label, valueList, textList,
     const inputElement = createSelector(id, valueList, textList, {
         defaultValue: nonSelectableDefault, 
         disable_filter: disable_filter, 
-        onclick_func: custom_func? custom_func: chekmarkOptionFunction}
+        onclick_func: multiple ? (custom_func ? custom_func: chekmarkOptionFunction) : null}
     );
 
     inputElement.style.height = '98%';
@@ -286,18 +286,11 @@ function createSelectorInput(label, valueList, textList,
     formGroup.appendChild(inputElement);
 
     for(let option of inputElement.options){
-        if(defaultValue && defaultValue.includes(option.index)){
+        if(defaultValue && (defaultValue.includes(option.value) || defaultValue.includes(parseInt(option.value)))){
+            option.click();
             option.selected = true;
-            if(multiple){
-                event_ = {
-                    target: option
-                }
-                if(custom_func){
-                    custom_func(event_)
-                }else{
-                    optionOnclickFunc(event_)
-                }
-            }
+        }else{
+            if(option.selected) option.selected = false;
         }
     }
 
@@ -944,23 +937,45 @@ function changeVisibiltyOfTab(tabbedWindowContainer, identifier, state) {
 
     if (tabButton) {
         const tabIndex = tabButton.getAttribute('data-index');
-        const contentContainer = tabContainer.nextElementSibling; // Get the content container within the same parent
 
-        if(tabButton.classList.contains('active')){
-            const nextTabButton = tabContainer.querySelector(`[data-index="${parseInt(tabIndex)+1}"]`)
-            if(nextTabButton){
-                nextTabButton.click()
+        if(state == false){
+            if(tabButton.classList.contains('active')){
+                const nextTabButton = tabContainer.querySelector(`[data-index="${parseInt(tabIndex)+1}"]`)
+                if(nextTabButton){
+                    nextTabButton.click()
+                    tabButton.style.display = 'none';
+                }
             }
-        }
-
-        if(state){
-            tabButton.style.display = 'flex';
-            contentContainer.querySelector(`#tab${tabIndex}`).style.display = 'flex'; // Search only within the content container
-        }else{
             tabButton.style.display = 'none';
-            contentContainer.querySelector(`#tab${tabIndex}`).style.display = 'none'; // Search only within the content container
+        }
+        if(state == true){
+            tabButton.style.display = 'block';
         }
 
+    } else {
+        console.error("Tab not found with the given identifier:", identifier);
+        return null;
+    }
+}
+
+function activateTab(tabbedWindowContainer, identifier) {
+    const tabContainer = tabbedWindowContainer.querySelector('.tab-container')
+
+    let tabButton;
+
+    // If the identifier is a number, treat it as an index
+    if (typeof identifier === 'number') {
+        tabButton = tabContainer.querySelector(`[data-index="${identifier}"]`);
+    } 
+    // If the identifier is a string, treat it as a tab name
+    else if (typeof identifier === 'string') {
+        tabButton = tabContainer.querySelector(`[data-name="${identifier}"]`);
+    }
+
+    if (tabButton) {
+        tabButton.getAttribute('data-index');
+
+        tabButton.click();
     } else {
         console.error("Tab not found with the given identifier:", identifier);
         return null;

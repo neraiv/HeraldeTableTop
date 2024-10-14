@@ -49,6 +49,8 @@ function addSpellCreator(initalSpell = null){
     form.style.padding = '5px';
     columnContainer.appendChild(form);
 
+    let maxSpellLevel = gameSettings.includedSpellLevels.at(-1);
+
     if(initalSpell == null){
         initalSpell = new Spell();
         spellTypeSelectionContainer()
@@ -107,6 +109,34 @@ function addSpellCreator(initalSpell = null){
     formDescription.style.backgroundColor = formColor;
     form.appendChild(formDescription);
 
+    const spellDuration = createSelectorInput('Cast Duration: ', Object.values(durationTypes), Object.keys(durationTypes), {
+        id:  'spell-create-base-damage-type',
+        defaultValue: [durationTypes.INSTANT]
+    });
+    spellDuration.classList.add('box-circular-border');
+    spellDuration.style.backgroundColor = formColor;
+
+    const spellDurationValue = createNumberInput("Value: ", 'create-spell-duration-value', 50, 1, false, false)
+    spellDurationValue.style.display = "none"
+    spellDuration.querySelector('.input-element').onchange =  (event) => {
+        const value = event.target.value
+        if(value == durationTypes.TURN_BASED){
+            spellDurationValue.style.display = "flex"
+        }else{
+            spellDurationValue.style.display = "none"
+        }
+    }
+    spellDuration.appendChild(spellDurationValue);
+    form.appendChild(spellDuration);
+
+    const spellActionCost = createSelectorInput('Action Cost: ', Object.values(actionTypes), Object.keys(actionTypes),{
+        id: 'create-spell-pattern-cast-type',
+        defaultValue: [actionTypes.MAIN], 
+    })
+    spellActionCost.classList.add('box-circular-border');
+    spellActionCost.style.backgroundColor = formColor;
+    form.appendChild(spellActionCost);
+
     const selectableSpellLevels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
     const formTargetEffects = document.createElement('div');
@@ -119,21 +149,21 @@ function addSpellCreator(initalSpell = null){
     formTargetEffects.style.backgroundColor = formColor;
     
     const formTargetEffectsTitle = document.createElement('label');
-    formTargetEffectsTitle.textContent = 'Target Effects';
+    formTargetEffectsTitle.textContent = 'Target Effects with Spend Mana';
     formTargetEffectsTitle.style.fontWeight = 'bold';
 
-    const targetEffectsContainer = createTabbedContainer(selectableSpellLevels.length, selectableSpellLevels);
-    targetEffectsContainer.style.width = '100%';
-    targetEffectsContainer.style.backgroundColor = formColor;
+    const targetEffectsTabbedWindowContainer = createTabbedContainer(selectableSpellLevels.length, selectableSpellLevels);
+    targetEffectsTabbedWindowContainer.style.width = '100%';
+    targetEffectsTabbedWindowContainer.style.backgroundColor = formColor;
 
     formTargetEffects.appendChild(formTargetEffectsTitle);
-    formTargetEffects.appendChild(targetEffectsContainer);
+    formTargetEffects.appendChild(targetEffectsTabbedWindowContainer);
 
     form.appendChild(formTargetEffects);
 
     for(let i = 0; i < selectableSpellLevels.length; i++){
         const index = parseInt(selectableSpellLevels[i])
-        const tabContent = getContentContainer(targetEffectsContainer, selectableSpellLevels[i])
+        const tabContent = getContentContainer(targetEffectsTabbedWindowContainer, selectableSpellLevels[i])
         tabContent.innerHTML = '';
         const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
         const formTargetEffects = createAdditionalEffectListContainer(tabContent.id + '-additional-effect-target-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
@@ -151,18 +181,126 @@ function addSpellCreator(initalSpell = null){
         tabContent.appendChild(formTargetEffects);
     }
 
-    updateElements();
-
-    userInterface.appendChild(spellCreateSheet);
+    const casterEffects = document.createElement('div');
+    casterEffects.classList.add('column');
+    casterEffects.classList.add('vertical');
+    casterEffects.classList.add('box-circular-border');
+    casterEffects.style.width = '95%';
+    casterEffects.style.padding = '5px';
+    casterEffects.style.gap = '10px';
+    casterEffects.style.backgroundColor = formColor;
     
+    const casterEffectsTitle = document.createElement('label');
+    casterEffectsTitle.textContent = 'Caster Effects with Spend Mana';
+    casterEffectsTitle.style.fontWeight = 'bold';
+
+    const casterEffectsTabbedWindowContainer = createTabbedContainer(selectableSpellLevels.length, selectableSpellLevels);
+    casterEffectsTabbedWindowContainer.style.width = '100%';
+    casterEffectsTabbedWindowContainer.style.backgroundColor = formColor;
+
+    casterEffects.appendChild(casterEffectsTitle);
+    casterEffects.appendChild(casterEffectsTabbedWindowContainer);
+
+    form.appendChild(casterEffects);
+
+    for(let i = 0; i < selectableSpellLevels.length; i++){
+        const index = parseInt(selectableSpellLevels[i])
+        const tabContent = getContentContainer(casterEffectsTabbedWindowContainer, selectableSpellLevels[i])
+        tabContent.innerHTML = '';
+        const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
+        const casterEffects = createAdditionalEffectListContainer(tabContent.id + '-additional-effect-caster-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
+        if(initalSpell.spendManaEffects[index] && initalSpell.spendManaEffects[index].caster){
+            for(let additionalEffect of initalSpell.spendManaEffects[index].caster){
+                const listElement = createAdditionalEffectListElement()
+                casterEffects.elementsList.appendChild(listElement);
+            }
+        }
+        casterEffects.buttons[buttonNames[1]].onclick = () =>{
+            const listElement = createAdditionalEffectListElement()
+            casterEffects.elementsList.appendChild(listElement);
+        }
+        casterEffects.style.height = '150px';
+        tabContent.appendChild(casterEffects);
+    }
+
+    const spellPatternContainer = document.createElement('div');
+    spellPatternContainer.classList.add('column');
+    spellPatternContainer.classList.add('vertical');
+    spellPatternContainer.classList.add('box-circular-border');
+    spellPatternContainer.style.width = '95%';
+    spellPatternContainer.style.padding = '5px';
+    spellPatternContainer.style.gap = '10px';
+    spellPatternContainer.style.backgroundColor = formColor;
+
+    const spellPatternTitle = document.createElement('label');
+    spellPatternTitle.textContent = 'Spell Pattern';
+    spellPatternTitle.style.fontWeight = 'bold';
+    spellPatternContainer.appendChild(spellPatternTitle);
+
+    const spellPatternSelect = createSelectorInput('Spell Pattern: ', Object.values(spellPatterns), Object.keys(spellPatterns),{
+        id: 'create-spell-pattern-select',
+        defaultValue: 'select', 
+    })
+    spellPatternSelect.classList.add('box-circular-border');
+    spellPatternSelect.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellPatternSelect);
+
+    const spellCastArea = createNumberInput("Cast Area:", "create-spell-pattern-cast-area", 9999, 0, false, false)
+    spellCastArea.classList.add('box-circular-border');
+    spellCastArea.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellCastArea);
+
+    const spellCastWidth = createNumberInput("Cast Area:", "create-spell-pattern-cast-area", 500, 0, false, false)
+    spellCastWidth.classList.add('box-circular-border');
+    spellCastWidth.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellCastWidth);
+
+    const spellCastType = createSelectorInput('Spell Cast Type: ', Object.values(castTypes), Object.keys(castTypes),{
+        id: 'create-spell-pattern-cast-type',
+        defaultValue: getKeyFromMapWithValue(castTypes, castTypes.ON_LOCATION), 
+    })
+    spellCastType.classList.add('box-circular-border');
+    spellCastType.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellCastType);
+
+    const spellCanTarget = createSelectorInput('Can Target: ', Object.values(targetTypes), Object.keys(targetTypes),{
+        id: 'create-spell-pattern-can-target',
+        defaultValue: [targetTypes.ANY], 
+        multiple: true,
+        custom_func: indexedOptionFunctionWithTransperency
+    })
+    spellCanTarget.classList.add('box-circular-border');
+    spellCanTarget.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellCanTarget);
+    form.appendChild(spellPatternContainer)
+
+    const spellCasterRolls = createSelectorInput('Caster Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
+        id: 'create-spell-caster-rolls',
+        defaultValue: [rollTypes.ABILITY_THROW], 
+        multiple: true,
+    })
+    spellCasterRolls.classList.add('box-circular-border');
+    spellCasterRolls.style.backgroundColor = formColor;
+    form.appendChild(spellCasterRolls)
+
+    const spellTargetRolls = createSelectorInput('Target Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
+        id: 'create-spell-target-rolls',
+        defaultValue: [rollTypes.SAVING_THROW], 
+        multiple: true,
+    })
+    spellTargetRolls.classList.add('box-circular-border');
+    spellTargetRolls.style.backgroundColor = formColor;
+    form.appendChild(spellTargetRolls)
+    // --------------------------END ------------------------
+    updateElements();
+    userInterface.appendChild(spellCreateSheet);
     function spellTypeSelectionContainer(){
         const rowSpellSelect = document.createElement('div');
         rowSpellSelect.classList.add('row');
         rowSpellSelect.classList.add('vertical');
+        rowSpellSelect.classList.add('form-group')
         rowSpellSelect.classList.add('box-circular-border');
         rowSpellSelect.style.backgroundColor = formColor;
-        rowSpellSelect.style.paddingLeft = '15px';
-        rowSpellSelect.style.width = '95%';
         rowSpellSelect.style.gap = '10px';
         
         const selectSpellType = createSelectorInput('Spell Type: ', Object.values(spellTypes), Object.keys(spellTypes), 'select', 'spell-create-spell-type', null, null);
@@ -171,11 +309,27 @@ function addSpellCreator(initalSpell = null){
         rowSpellSelect.appendChild(spellLevel);
 
         selectSpellType.querySelector('.input-element').onchange = () => {
+            //const oldSpellType = initalSpell.spellType
             initalSpell.spellType = selectSpellType.querySelector('.input-element').selectedOptions[0].value;
+            //if(oldSpellType  == spellTypes.SPELL && initalSpell.spellType == spell)
+            if(initalSpell.spellType == spellTypes.SPELL || initalSpell.spellType == spellTypes.CONJURE){
+                initalSpell.spellLevel = 1
+                maxSpellLevel = gameSettings.includedSpellLevels.at(-1);
+                updateElements();
+            }else if(initalSpell.spellType == spellTypes.CANTRIP){
+                initalSpell.spellLevel = 0
+                maxSpellLevel = 0;
+                updateElements();
+            }else if(initalSpell.spellType == spellTypes.WEAPON){
+                initalSpell.spellLevel = 0
+                maxSpellLevel = gameSettings.includedSpellLevels.at(-1);
+                updateElements();
+            }
         }
 
         spellLevel.querySelector('.input-element').onchange = () => {
             initalSpell.spellLevel = spellLevel.querySelector('.input-element').selectedOptions[0].value;
+            updateElements();
         }
 
         form.appendChild(rowSpellSelect);
@@ -334,19 +488,23 @@ function addSpellCreator(initalSpell = null){
     }
 
     function updateElements(){
-        let hideLevels;
-        hideLevels = selectableSpellLevels.filter(tab => !gameSettings.includedSpellLevels.includes(tab));
+        let displayedLevels;
+        displayedLevels = selectableSpellLevels.filter(level => gameSettings.includedSpellLevels.includes(level));
 
         // Filter out any selectableSpellLevels lower than initialSpell.spellLvl
-        hideLevels = selectableSpellLevels.filter(tab => parseInt(tab) < parseInt(initalSpell.spellLevel));
+        displayedLevels = displayedLevels.filter(level => (parseInt(level) >= parseInt(initalSpell.spellLevel) && parseInt(level) <= parseInt(maxSpellLevel)));
 
         selectableSpellLevels.forEach(level => {
-            if(level == hideLevels){
-                changeVisibiltyOfTab(targetEffectsContainer, level, false)
+            if(displayedLevels.includes(level)){
+                changeVisibiltyOfTab(targetEffectsTabbedWindowContainer, level, true)
+                changeVisibiltyOfTab(casterEffectsTabbedWindowContainer, level, true)
             }else{
-                changeVisibiltyOfTab(targetEffectsContainer, level, true)
+                changeVisibiltyOfTab(targetEffectsTabbedWindowContainer, level, false)
+                changeVisibiltyOfTab(casterEffectsTabbedWindowContainer, level, false)
             }
         })
+        activateTab(targetEffectsTabbedWindowContainer, displayedLevels[0])
+        activateTab(casterEffectsTabbedWindowContainer, displayedLevels[0])
     }
 }
 
