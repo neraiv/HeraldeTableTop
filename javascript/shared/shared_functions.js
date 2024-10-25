@@ -13,45 +13,24 @@ function removeTestDots(parent, dotlist){
     dotlist.forEach(dot => parent.removeChild(dot));
 }
 
-function createDamageInput(label, id = ""){
+function createDiceInput(label = "", id = ""){
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
     formGroup.classList.add('vertical');
-    formGroup.style.minHeight = '50px';
-    formGroup.style.height = '50px';
-
-    formGroup.value = ""
+    formGroup.style.minHeight = '25px';
+    formGroup.style.height = '25px';
+    formGroup.style.display = 'flex';
+    formGroup.style.gap = '10px';
+    formGroup.style.width = '100%';
+    formGroup.style.height = '25px';
+    formGroup.value = "0d0"
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', label);
     labelElement.classList.add('label-element');
     labelElement.textContent = label;
-
-    const formColumn = document.createElement('div');
-    formColumn.classList.add('column');
-
-    const damageRow = document.createElement('div');
-    damageRow.classList.add('row');
-    damageRow.classList.add('centered');
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = id; // Assuming `id` is defined elsewhere
-    checkbox.style.width = '15px';
-    checkbox.style.height = '15px';
-    
-    // Create a label element
-    const checkboxLabel = document.createElement('label');
-    checkboxLabel.htmlFor = id+"-checkbox"; // Associate label with the checkbox
-    checkboxLabel.textContent = "Raw"; // Set the label text
-
-    const inputElementRawDamage = document.createElement('input');
-    inputElementRawDamage.type = 'number';
-    inputElementRawDamage.id = id;
-    inputElementRawDamage.value = 0;
-    inputElementRawDamage.style.height = "25px";
-    inputElementRawDamage.style.display = "none";
+    formGroup.appendChild(labelElement);
 
     const inputElementDiceRollTimes = document.createElement('input');
     inputElementDiceRollTimes.type = 'number';
@@ -59,10 +38,12 @@ function createDamageInput(label, id = ""){
     inputElementDiceRollTimes.value = 0;
     inputElementDiceRollTimes.style.height = "25px";
     inputElementDiceRollTimes.style.marginRight = "2px"
+    formGroup.appendChild(inputElementDiceRollTimes);
 
     const labelD = document.createElement('label');
 
     labelD.textContent = 'd';
+    formGroup.appendChild(labelD);
 
     const inputElementDice = document.createElement('input');
     inputElementDice.type = 'number';
@@ -70,24 +51,7 @@ function createDamageInput(label, id = ""){
     inputElementDice.value = 0;
     inputElementDice.style.height = "25px";
     inputElementDice.style.marginLeft = "2px"
-
-    checkbox.addEventListener('change', event => {
-        if (checkbox.checked) {
-            inputElementRawDamage.style.display = 'flex';
-            inputElementDiceRollTimes.style.display = 'none';
-            labelD.style.display = 'none';
-            inputElementDice.style.display = 'none';
-        } else {
-            inputElementRawDamage.style.display = 'none';
-            inputElementDiceRollTimes.style.display = 'flex';
-            labelD.style.display = 'flex';
-            inputElementDice.style.display = 'flex';
-        }
-    });
-
-    inputElementRawDamage.addEventListener('input', event => {
-        formGroup.value = event.target.value;
-    })
+    formGroup.appendChild(inputElementDice);
 
     inputElementDiceRollTimes.addEventListener('input', event => {
         formGroup.value = event.target.value +'d'+ inputElementDice.value;
@@ -96,28 +60,79 @@ function createDamageInput(label, id = ""){
     inputElementDice.addEventListener('input', event => {
         formGroup.value = inputElementDiceRollTimes.value + 'd' + event.target.value;
     })
+    return formGroup
+}
+function createDamageInput(label, id = ""){
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group');
+    formGroup.classList.add('row');
+    formGroup.classList.add('vertical');
+    formGroup.style.minHeight = '50px';
+    formGroup.style.height = '50px';
+    formGroup.value = ""
 
-    // Append the checkbox and label to a container (like a div)
+    const formColumn = document.createElement('div');
+    formColumn.classList.add('column');
+    formGroup.appendChild(formColumn)
+
+    const damageRow = document.createElement('div');
+    damageRow.classList.add('row');
+    damageRow.classList.add('centered');
+    formColumn.appendChild(damageRow)
+
+    const numberInput = createNumberInput(label, id + "-input", 9999, -9999, false, true, 0);
+    numberInput.style.display = 'none';
+    damageRow.appendChild(numberInput);
+    
+    const diceInput = createDiceInput(label, id + '-dice-input');
+    damageRow.appendChild(diceInput)
+
+    //Check box
     const checkboxRow = document.createElement('div'); // Create a container
     checkboxRow.classList.add('row');
     checkboxRow.classList.add('vertical');
 
-    formGroup.appendChild(labelElement);
-    addSpacer(formGroup);
-    damageRow.appendChild(inputElementRawDamage);
-    damageRow.appendChild(inputElementDiceRollTimes);
-    damageRow.appendChild(labelD);
-    damageRow.appendChild(inputElementDice);
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = id; // Assuming `id` is defined elsewhere
+    checkbox.style.width = '15px';
+    checkbox.style.height = '15px';
     checkboxRow.appendChild(checkbox); // Add the checkbox to the container
+
+    const checkboxLabel = document.createElement('label');
+    checkboxLabel.htmlFor = id+"-checkbox"; // Associate label with the checkbox
+    checkboxLabel.textContent = "Raw"; // Set the label text
     checkboxRow.appendChild(checkboxLabel); // Add the label to the container
-    formColumn.appendChild(damageRow)
     formColumn.appendChild(checkboxRow)
-    formGroup.appendChild(formColumn)
+
+    checkbox.addEventListener('change', event => {
+        if (checkbox.checked) {
+            numberInput.style.display = 'flex';
+            diceInput.style.display = 'none';
+            formGroup.value = numberInput.querySelector('.input-element').value
+        } else {
+            numberInput.style.display = 'none';
+            diceInput.style.display = 'flex';
+            formGroup.value = diceInput.value;
+        }
+    });
+
+    numberInput.querySelector('.input-element').addEventListener('input', event => {
+        formGroup.value = event.target.value;
+    })
+
+    numberInput.querySelector('.input-element').addEventListener('change', event => {
+        formGroup.value = event.target.value;
+    })
+
+    diceInput.addEventListener('change', event => {
+        formGroup.value = diceInput.value;
+    })
 
     return formGroup
 }
 
-function createNumberInput(label, id, maxValue=99, minValue=1, isReadOnly = false, addIncrementButtons = true) {
+function createNumberInput(label, id, maxValue=99, minValue=1, isReadOnly = false, addIncrementButtons = true, defaultValue = null) {
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
@@ -137,17 +152,27 @@ function createNumberInput(label, id, maxValue=99, minValue=1, isReadOnly = fals
     inputElement.name = label;
     inputElement.value = minValue;
 
+    function keepValueInBetween(value){
+        const val = parseFloat(value);
+        if(val < minValue){
+            return minValue;
+        }else if(val > maxValue){
+            return maxValue;
+        }else{
+            return val
+        }
+    }
+
+    if(defaultValue){
+        inputElement.value = keepValueInBetween(defaultValue);
+    }
+
     if (isReadOnly) {
         inputElement.readOnly = true;
     }
 
     inputElement.onchange = () =>{
-        if(inputElement.value < minValue){
-            inputElement.value = minValue;
-        }
-        if(inputElement.value > maxValue){
-            inputElement.value = maxValue;
-        }
+        keepValueInBetween(inputElement.value )
     }
 
     formGroup.appendChild(labelElement);
@@ -286,11 +311,10 @@ function createSelectorInput(label, valueList, textList,
     formGroup.appendChild(inputElement);
 
     for(let option of inputElement.options){
+        option.selected = false;
         if(defaultValue && (defaultValue.includes(option.value) || defaultValue.includes(parseInt(option.value)))){
-            option.click();
-            option.selected = true;
-        }else{
-            if(option.selected) option.selected = false;
+            if(multiple) option.click();
+            else option.selected = true;
         }
     }
 
@@ -405,6 +429,7 @@ function getOrderedSelectedOptions(selectElement) {
 function createSpellSelectContainer(id, initalLevel = null, initialSpellName = null){
     const itemId = id + '-spell-select-container';
     const spellSelectContainer = document.createElement('div');
+    spellSelectContainer.id = itemId;
     spellSelectContainer.classList.add('form-group');
     spellSelectContainer.classList.add('box-circular-border');
     spellSelectContainer.classList.add('row');
@@ -417,7 +442,7 @@ function createSpellSelectContainer(id, initalLevel = null, initialSpellName = n
         defaultValue: initalLevel ? [initalLevel] : null});
 
     spellLevelSelector.classList.add('spell-level-selector')
-    const spellSelect = createSelectorInput('Spell:', Object.keys(listSpells[selectedSpellLevelList]), Object.keys(listSpells[selectedSpellLevelList]), {
+    const spellSelect = createSelectorInput('Spell:', Object.keys(databaseListSpells[selectedSpellLevelList]), databaseListSpells[selectedSpellLevelList], {
         nonSelectableDefault: 'select', 
         id: itemId + '-spell-level',
         defaultValue: initialSpellName ? [initialSpellName] : null});
@@ -426,7 +451,7 @@ function createSpellSelectContainer(id, initalLevel = null, initialSpellName = n
     spellLevelSelector.querySelector('.input-element').onchange = function(event){
         selectedSpellLevelList = event.target.value;
         spellSelectContainer.spellLevel = spellLevelSelector.querySelector('.input-element').selectedOptions[0].value;
-        updateSelector(Object.keys(listSpells[selectedSpellLevelList]), Object.keys(listSpells[selectedSpellLevelList]),spellSelect.querySelector('.input-element'), null, 'select');
+        updateSelector(databaseListSpells[selectedSpellLevelList], databaseListSpells[selectedSpellLevelList],spellSelect.querySelector('.input-element'), null, 'select');
     }
 
     spellSelect.querySelector('.input-element').onchange = () => {
@@ -516,7 +541,7 @@ function toggleSliding_SheetWithId(id, open= null, page= null) {
     } 
 }
 
-function toggleDisplay_SheetWithId(id, open= null, page= null) {
+function toggleDisplay_Sheet({id, page}, open= null, ) {
     if(!page){
         page = document.getElementById(id);
     }
@@ -589,6 +614,8 @@ function createDropdownMenu(parent, buttonsDict) {
     // Create dropdown menu container
     const dropdownMenu = document.createElement('div');
     dropdownMenu.classList.add('dropdown-menu');
+    dropdownMenu.classList.add('column')
+    dropdownMenu.classList.add('vertical')
     let index = 0;
     Object.entries(buttonsDict).forEach(([key, value]) => {
         const button = document.createElement('div');
@@ -628,7 +655,16 @@ function createSelector(id, valueList, textList, {defaultValue=null, disable_fil
         const defaultOption = document.createElement('option');
         defaultOption.value = ''; // Empty value for default
         defaultOption.textContent = defaultValue; 
-        defaultOption.disabled = true; // Make it non-selectable
+        // Define the event listener function
+        function handleClick() {
+            defaultOption.disabled = true;
+            
+            // Remove the event listener after it has run
+            selector.removeEventListener('click', handleClick);
+        }
+
+        // Add the event listener
+        selector.addEventListener('click', handleClick);
         defaultOption.selected = true; // Set as the default selected option
         selector.appendChild(defaultOption);
     }
@@ -787,7 +823,7 @@ function createTabbedContainer(tabCount, tabNames = null, id = null, isGrowable 
         const addTabButton = document.createElement('button');
         addTabButton.className = 'add-tab-button';
         addTabButton.innerText = '+';  // Or set as an icon
-        addTabButton.onclick = () => addNewTab(tabContainer, contentContainer, null, tabMainName);
+        addTabButton.onclick = () => addNewTab(tabbedWindowContainer, null, tabMainName);
         tabContainer.appendChild(addTabButton);  // Add the button to the tab container
         tabbedWindowContainer.addTabButton = addTabButton; // Add a method to open tabs
     }
@@ -891,7 +927,10 @@ function getContentContainer(tabbedWindowContainer, identifier) {
 }
 
 
-function addNewTab(tabContainer, contentContainer, name, tabMainName= 'Tab') {
+function addNewTab(tabbedWindowContainer, name, tabMainName= 'Tab') {
+    const tabContainer = tabbedWindowContainer.querySelector('.tab-container')
+    const contentContainer = tabbedWindowContainer.querySelector('.tab-content-container')
+
     const tabCount = tabContainer.getElementsByClassName('tablinks').length; // Get current number of tabs
     const newTabIndex = tabCount + 1;
     const newTabName = name ? name : `${tabMainName} ${newTabIndex}`; // Default name for the new tab

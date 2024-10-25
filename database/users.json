@@ -1,0 +1,28 @@
+{
+    "robotdeha": {
+        "password": "123321avz",
+        "status": "online",
+        "type": "dungeon_master",
+        "character": "druid_woman",
+        "last_sync": "2024-10-25 07:39:30 UTC"
+    },
+    "yilmo": {
+        "password": "123321avz",
+        "status": "online",
+        "type": "adventurer",
+        "character": "mountainless_dwarf",
+        "last_sync": "2024-10-25 07:45:35 UTC"
+    },
+    "HEBEL": {
+        "password": "BIRIJUS",
+        "status": "offline",
+        "type": "adventurer",
+        "character": "unknown"
+    },
+    "sdasdas": {
+        "password": "dasdasdas",
+        "status": "offline",
+        "type": "adventurer",
+        "character": "unknown"
+    }
+}

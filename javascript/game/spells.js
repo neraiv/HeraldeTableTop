@@ -1,10 +1,4 @@
-const knownSpellString = " / Known";
-const spellNormalCast = "Normal Cast";
-const noEffect = "No Effect";
-const attackerSpellMana     = "Attacker-Spell-Mana";
-const attackerSpellLevel    = "Attacker-Spell-Level";
-const attackerSpellName     = "Attacker-Spell-Name";
-const noDescription = null;
+
 
 let userSpells = {};
 
@@ -45,78 +39,81 @@ const level1_spell_list = {
     'Fireball' : new Spell('Fireball',
         spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
-        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        new Duration(durationTypes.TURN_BASED), [actionTypes.MAIN],
         {
             '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         },
         new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castTypes.ON_LOCATION, [targetTypes.ENEMY]),
-        [rollTypes.ABILITY_THROW], null
+        [rollTypes.ABILITY_THROW], [rollTypes.NONE]
     ),
     'Ice Cone' : new Spell('Ice Cone', 
         spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
-        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        new Duration(durationTypes.TURN_BASED), [actionTypes.MAIN],
         {
             '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         },
         new SpellPattern(spellPatterns.CONE_UPWARD, 800, 100, castTypes.FROM_CASTER, [targetTypes.ANY]),
-        [rollTypes.ABILITY_THROW], null
+        [rollTypes.ABILITY_THROW], [rollTypes.NONE]
     ),
     'Pillar of Light' : new Spell('Pillar of Light', 
         spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
-        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        new Duration(durationTypes.INSTANT), [actionTypes.MAIN],
         {
             '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         },
         new SpellPattern(spellPatterns.CONE_UPWARD, 800, 100, castTypes.ON_LOCATION, [targetTypes.ANY]),
-        [rollTypes.ABILITY_THROW], null
+        [rollTypes.ABILITY_THROW], [rollTypes.NONE]
     ),   
     'Fire Hands' : new Spell('Fire Hands', 
         spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
-        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        new Duration(durationTypes.INSTANT), [actionTypes.MAIN],
         {
             '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         
         },
         new SpellPattern(spellPatterns.CONE_DOWNWARD, 800, 100, castTypes.FROM_CASTER, [targetTypes.ANY]),
-        [rollTypes.ABILITY_THROW], null
+        [rollTypes.ABILITY_THROW], [rollTypes.NONE]
     ),
     'Lightning Ray' : new Spell('Lightning Ray', 
         spellTypes.SPELL, [classTypes.WIZARD, classTypes.DRUID],
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
-        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        new Duration(durationTypes.INSTANT), [actionTypes.MAIN],
         {
             '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         },
         new SpellPattern(spellPatterns.BOX, 800, 100, castTypes.FROM_CASTER, [targetTypes.ANY]),
-        [rollTypes.ABILITY_THROW], null
+        [rollTypes.ABILITY_THROW], [rollTypes.NONE]
     ),
     'Heralde' : new Spell('Heralde', 
         spellTypes.SPELL, [classTypes.WIZARD],
         1, statTypes.CHA, damageTypes.NONE, null, 'Increases charisma of all players around caster', 
-        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        new Duration(durationTypes.INSTANT), [actionTypes.MAIN],
         {
             '2' : {caster: [listCreatedAdditionalEffects.holyAura], 
                     target: [listCreatedAdditionalEffects.counterSpellEffect]},
             '3' : {caster: [listCreatedAdditionalEffects.attackRadiusBonus_100, listCreatedAdditionalEffects.attackRangeBonus_200]},
-            '4' : {caster: [listCreatedAdditionalEffects.startFireBallParty, listCreatedAdditionalEffects.attackRadiusBonus_100]}
+            '4' : {caster: [listCreatedAdditionalEffects.startFireBallParty, listCreatedAdditionalEffects.attackRadiusBonus_100]},
+            '5' : {caster: [new AdditionalEffect('Anti-Mage Shield', [characterActions.ATTACKED], 
+                [new Cast('Fireball', 1, 2, [targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY]), new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 600)], 
+                noDescription, [durationTypes.INSTANT])]},
         },
         new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castTypes.AROUND_CASTER, [targetTypes.ALLY, targetTypes.SELF]),
-        [rollTypes.ABILITY_THROW], null
+        [rollTypes.ABILITY_THROW], [rollTypes.NONE]
     ),
     'Conjure Mountainless Dwarf': new Spell('Conjure Mountainless Dwarf',
         spellTypes.CONJURE,[classTypes.DRUID],
         1, statTypes.NONE, damageTypes.NONE, 'mountainless_dwarf', 'Conjure a Mountainless dwarf',
-        new Duration(durationTypes.INSTANT), actionTypes.MAIN,
+        new Duration(durationTypes.INSTANT), [actionTypes.MAIN],
         [], new SpellPattern(spellPatterns.CIRCULAR, 500, 100, castTypes.ON_LOCATION, [targetTypes.GROUND_NO_OVERLAP]),
-        [rollTypes.ABILITY_THROW], null
+        [rollTypes.ABILITY_THROW], [rollTypes.NONE]
     ),
 };
 
 
-let listSpells = {
+listSpells = {
     0: level1_spell_list,
     1: level1_spell_list,
     2: level1_spell_list,    //Future

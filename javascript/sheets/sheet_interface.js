@@ -35,18 +35,77 @@ function addTopRightBar(){
     column.style.gap = '5px';
     
     
-    const openDriveImageBar = createImageButton(32, {icon: '⚙️'});
-    openDriveImageBar.addEventListener('click', () => {
+    const openSettingsBar = createImageButton(32, {icon: '⚙️'});
+    openSettingsBar.addEventListener('click', () => {
+        fetch('http://localhost:5000/getSpells', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Retrieved Spells:', data);
+            // Use the retrieved spell data as needed
+            listSpells = data;
+        })
+        .catch(error => console.error('Error:', error));
     });
 
     const openSpellCreate = createImageButton(32, {icon: '✨'});
     addClickHighlightListener(openSpellCreate);
-    openSpellCreate.addEventListener('click', () => {
-        addSpellCreator();
+
+    const buttons = {
+        "Edit Spell": true,
+        "Create Spell": true
+    }
+
+    const spellCreateDropdown = createDropdownMenu(userInterface, buttons);
+
+    spellCreateDropdown.querySelector('.index-'+0).onclick = (event) => {
+        console.log(databaseListSpells);
+        
+        if(!document.getElementById("spell-create")){
+            const spellSelect = createSpellSelectContainer("spell-create")
+            const rect = spellCreateDropdown.getBoundingClientRect();
+            spellSelect.style.position = 'absolute'
+            spellSelect.style.width = "500px"
+            spellSelect.style.top = `${event.clientY}px`;
+            spellSelect.style.left = `${rect.right + 10}px`;
+            spellSelect.style.zIndex = 1000;
+            userInterface.appendChild(spellSelect)
+
+            const button = document.createElement("button");
+            button.innerText = "Open";
+            spellSelect.appendChild(button);
+            button.onclick = () => {
+                addEditSpell(spellSelect.spellLevel, spellSelect.spellName);
+                spellSelect.remove();
+                spellCreateDropdown.style.display = 'none';         
+            }
+        }
+    }
+
+    spellCreateDropdown.querySelector('.index-'+1).onclick = () => {
+        addSpellCreator()
+    }; 
+
+    openSpellCreate.addEventListener('click', (event) => {
+        const rect = spellCreateDropdown.getBoundingClientRect();
+        spellCreateDropdown.style.position = 'absolute';
+        spellCreateDropdown.style.display = 'flex';
+        spellCreateDropdown.style.top = `${event.clientY}px`;
+        spellCreateDropdown.style.left = `${- rect.width}px`; 
     });      
 
-    column.appendChild(openDriveImageBar);
+    const saveGame = createImageButton(36, {source: `${uiSettings.folderMenuIcons}/${uiSettings.icon_save}`});
+    saveGame.onclick = () => {
+        saveSpells();
+    }
+
+    column.appendChild(openSettingsBar);
     column.appendChild(openSpellCreate);
+    column.appendChild(saveGame);
 
     TopRightMenuBar.appendChild(column);
 }

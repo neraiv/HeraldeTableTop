@@ -10,6 +10,10 @@ const tokenTypes = Object.freeze({
     BACKGROUND: 2,
 });
 
+const userTypes = Object.freeze({
+    PLAYER: "adventurer",
+    DM: "dungeon_master",
+});
 class Program_FilePathsHolder {
     constructor({folderClassIcons, folderCharToken,  folderBackgroundToken,folderGeneralSounds, listCharacter, listNPC, listBackground, 
                 listClassIcons, listSounds, default_char_profile = "tokens/character/default_profile/char.png"
@@ -26,6 +30,46 @@ class Program_FilePathsHolder {
         this.default_char_profile   = default_char_profile;
     }
 };
+
+class Porgram_User {
+    constructor({
+        name,
+        type,
+        char,
+        last_sync        
+    } = {}){
+        this.name       = name;
+        this.type      = type;
+        this.char        = char;
+        this.last_sync    = last_sync;
+    }
+}
+
+class Porgram_ServerInfo {
+    constructor({
+        isUpdating = false,
+        name,
+        version,
+        description,
+        server_time,
+        objectPositions,
+        listEnemies,
+        listAllies,
+        listNPC,
+        inGameChars       
+    } = {}){
+        this.isUpdating      = isUpdating;
+        this.name           = name;
+        this.version        = version;
+        this.description    = description;
+        this.server_time     = server_time;
+        this.objectPositions = objectPositions;
+        this.listEnemies    = listEnemies;
+        this.listAllies    = listAllies;
+        this.listNPC         = listNPC;
+        this.inGameChars     = inGameChars;
+    }
+}
 
 class Program_GameUISettings {
     constructor({
@@ -48,6 +92,7 @@ class Program_GameUISettings {
         icon_buffDebuff     = "buff_debuff.png",
         icon_aura           = "aura.png",  
         icon_cast           = "cast.png",
+        icon_save           = "save.png",
         board_size          = 4000,    
         grid_size           = 100,
         max_zoom_in         = 6,
@@ -70,7 +115,8 @@ class Program_GameUISettings {
         this.icon_edit              = icon_edit             ;
         this.icon_buffDebuff        = icon_buffDebuff       ;
         this.icon_aura              = icon_aura             ;
-        this.icon_cast              = icon_cast;
+        this.icon_save              = icon_save             ;
+        this.icon_cast              = icon_cast             ;
         this.folderMenuIcons       = folderMenuIcons;
         this.board_size             = board_size;
         this.grid_size              = grid_size;

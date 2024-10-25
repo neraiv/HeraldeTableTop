@@ -1,9 +1,15 @@
 function addDriveImageBar(){
     addDriveImageTopBar()
-    const characterSelectBar = document.getElementById("character-select-bar");
-    addSelectBar(characterSelectBar, "Select<br>Character");
-    const backgroundSelectBar = document.getElementById("background-select-bar");
-    addSelectBar(backgroundSelectBar, "Select<br>Background");
+    
+    if(user.type == userTypes.DM){
+        const characterSelectBar = document.getElementById("character-select-bar");
+        addSelectBar(characterSelectBar, "Select<br>Character");
+    }
+    
+    if(user.type == userTypes.DM){
+        const backgroundSelectBar = document.getElementById("background-select-bar");
+        addSelectBar(backgroundSelectBar, "Select<br>Background");
+    }
 }
 
 function addSelectBar(parentElement, label_text) {

@@ -1,18 +1,31 @@
-function setupUI(){
+
+
+async function setupUI() {
+    await fetchAvailableSpells();
+    await loginScreenConstruct(); // Wait for login to complete
+    
+    if(user.type == userTypes.DM){
+        serverInfo.inGameChars = inGameChars
+        await updateServerInfo()
+    }
+
+    await getServerInfo()
+
     addBottomBar();
     addTopBar();
     addTopRightBar();
     addDriveImageBar();
     addCharacterCreateSheet(userInterface);
 
-    // // Future
-    createDriveImageContainer('dedector', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
-    createDriveImageContainer('coil', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
-    createDriveImageContainer('druid_woman', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
-    createDriveImageContainer('elf_warrior_woman', 'character', allFilePaths.folderCharToken, document.getElementById('character-list'))
-
-    addSpellCreator();
+    for (const char in serverInfo.inGameChars){
+        const data = char.split('-')
+        const type = data[1];
+        const charName = data[2];
+        createDriveImageContainer(charName, type, allFilePaths.folderCharToken, document.getElementById('character-list')); // Future
+    }
+    // addSpellCreator();
 }
+
 
 
 // Add dragstart event listener to images
@@ -32,6 +45,7 @@ document.addEventListener("dragstart", function(event) {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+
 
     setupUI();
             

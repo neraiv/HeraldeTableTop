@@ -48,6 +48,7 @@ const consumableProperties = Object.freeze({
 });
 
 const rollTypes = Object.freeze({
+    NONE: 0,
     SAVING_THROW: 1,
     PERSPECTION_SAVING_THROW: 2,
     ABILITY_THROW: 3,
@@ -490,13 +491,13 @@ class Spell{
         name = "",
         type = spellTypes.SPELL,
         classess = [classTypes.ALL],
-        spellLevel = 0,
+        spellLevel = 1,
         statType,
         damageType,
         damage = "1d1",
         description = "",
         castDuration = Duration,
-        actionCost = actionTypes.MAIN,
+        actionCost = [actionTypes.MAIN],
         spendManaEffects= {},
         spellPattern = SpellPattern,
         casterRolls = [], 

@@ -24,6 +24,35 @@ let inGameChars = new Map();
 let listEnemies = [];
 let listAllies = [];
 let listNPC = [];
+let listSpells = {
+    0: {"No Spell": "No Spell"},
+    1: {"No Spell": "No Spell"},
+    2: {"No Spell": "No Spell"},
+    3: {"No Spell": "No Spell"},
+    4: {"No Spell": "No Spell"},
+    5: {"No Spell": "No Spell"},
+    6: {"No Spell": "No Spell"},
+    7: {"No Spell": "No Spell"},
+    8: {"No Spell": "No Spell"},
+    9: {"No Spell": "No Spell"}
+};
+
+// Database related
+let user = new Porgram_User();
+let serverInfo = new Porgram_ServerInfo();
+
+let databaseListSpells = {
+    0: ["No Spell"],
+    1: ["No Spell"],
+    2: ["No Spell"],
+    3: ["No Spell"],
+    4: ["No Spell"],
+    5: ["No Spell"],
+    6: ["No Spell"],
+    7: ["No Spell"],
+    8: ["No Spell"],
+    9: ["No Spell"]
+};  
 
 const dictCharacterFactions = {
     1: listAllies, 
@@ -62,3 +91,11 @@ const allFilePaths = new Program_FilePathsHolder({
 const uiSettings = new Program_GameUISettings();
 
 let gameSettings = new Program_GameSettings();
+
+const knownSpellString = " / Known";
+const spellNormalCast = "Normal Cast";
+const noEffect = "No Effect";
+const attackerSpellMana     = "Attacker-Spell-Mana";
+const attackerSpellLevel    = "Attacker-Spell-Level";
+const attackerSpellName     = "Attacker-Spell-Name";
+const noDescription = null;

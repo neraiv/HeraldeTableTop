@@ -1,0 +1,284 @@
+{
+    "name": "HeraldeTableTop",
+    "version": "0.0.1",
+    "description": "A tabletop game management system",
+    "server_time": "2024-10-25T07:19:23.954Z",
+    "objectPositions": {},
+    "listEnemies": [],
+    "listAllies": [],
+    "listNPC": [],
+    "inGameChars": {
+        "token-character-dedector": {
+            "id": "dedector",
+            "controlledBy": "",
+            "name": "",
+            "classess": [],
+            "race": "",
+            "dex": 12,
+            "con": 12,
+            "int": 8,
+            "wis": 12,
+            "cha": 12,
+            "str": 12,
+            "action": 1,
+            "additionalEffects": [],
+            "spellSlots": {
+                "1": [
+                    5,
+                    3
+                ],
+                "2": [
+                    4,
+                    3
+                ],
+                "3": [
+                    2,
+                    2
+                ],
+                "4": [
+                    2,
+                    2
+                ]
+            },
+            "availableSpells": {
+                "1": [
+                    "Fireball",
+                    "Ice Cone",
+                    "Heralde",
+                    "Pillar of Light"
+                ],
+                "2": [
+                    "Lightning Ray",
+                    "Fire Hands",
+                    "Conjure Mountainless Dwarf"
+                ]
+            },
+            "learnedSpells": {
+                "1": [
+                    "Fireball",
+                    "Ice Cone",
+                    "Heralde",
+                    "Pillar of Light"
+                ],
+                "2": [
+                    "Lightning Ray",
+                    "Fire Hands",
+                    "Conjure Mountainless Dwarf"
+                ]
+            },
+            "inventory": {
+                "items": [],
+                "currency": {
+                    "gold": 0,
+                    "silver": 0,
+                    "bronze": 0
+                }
+            },
+            "controlling": []
+        },
+        "token-character-coil": {
+            "id": "coil",
+            "controlledBy": "",
+            "name": "",
+            "classess": [],
+            "race": "",
+            "dex": 12,
+            "con": 12,
+            "int": 8,
+            "wis": 12,
+            "cha": 12,
+            "str": 12,
+            "action": 1,
+            "additionalEffects": [],
+            "spellSlots": {
+                "1": [
+                    5,
+                    3
+                ],
+                "2": [
+                    4,
+                    3
+                ],
+                "3": [
+                    2,
+                    2
+                ],
+                "4": [
+                    2,
+                    2
+                ]
+            },
+            "availableSpells": {
+                "1": [
+                    "Fireball",
+                    "Ice Cone",
+                    "Heralde",
+                    "Pillar of Light"
+                ],
+                "2": [
+                    "Lightning Ray",
+                    "Fire Hands",
+                    "Conjure Mountainless Dwarf"
+                ]
+            },
+            "learnedSpells": {
+                "1": [
+                    "Fireball",
+                    "Ice Cone",
+                    "Heralde",
+                    "Pillar of Light"
+                ],
+                "2": [
+                    "Lightning Ray",
+                    "Fire Hands",
+                    "Conjure Mountainless Dwarf"
+                ]
+            },
+            "inventory": {
+                "items": [],
+                "currency": {
+                    "gold": 0,
+                    "silver": 0,
+                    "bronze": 0
+                }
+            },
+            "controlling": []
+        },
+        "token-character-druid_woman": {
+            "id": "druid_woman",
+            "controlledBy": "",
+            "name": "",
+            "classess": [],
+            "race": "",
+            "dex": 12,
+            "con": 12,
+            "int": 8,
+            "wis": 12,
+            "cha": 12,
+            "str": 12,
+            "action": 1,
+            "additionalEffects": [],
+            "spellSlots": {
+                "1": [
+                    5,
+                    3
+                ],
+                "2": [
+                    4,
+                    3
+                ],
+                "3": [
+                    2,
+                    2
+                ],
+                "4": [
+                    2,
+                    2
+                ]
+            },
+            "availableSpells": {
+                "1": [
+                    "Fireball",
+                    "Ice Cone",
+                    "Heralde",
+                    "Pillar of Light"
+                ],
+                "2": [
+                    "Lightning Ray",
+                    "Fire Hands",
+                    "Conjure Mountainless Dwarf"
+                ]
+            },
+            "learnedSpells": {
+                "1": [
+                    "Fireball",
+                    "Ice Cone",
+                    "Heralde",
+                    "Pillar of Light"
+                ],
+                "2": [
+                    "Lightning Ray",
+                    "Fire Hands",
+                    "Conjure Mountainless Dwarf"
+                ]
+            },
+            "inventory": {
+                "items": [],
+                "currency": {
+                    "gold": 0,
+                    "silver": 0,
+                    "bronze": 0
+                }
+            },
+            "controlling": []
+        },
+        "token-character-elf_warrior_woman": {
+            "id": "elf_warrior_woman",
+            "controlledBy": "",
+            "name": "",
+            "classess": [],
+            "race": "",
+            "dex": 12,
+            "con": 12,
+            "int": 8,
+            "wis": 12,
+            "cha": 12,
+            "str": 12,
+            "action": 1,
+            "additionalEffects": [],
+            "spellSlots": {
+                "1": [
+                    5,
+                    3
+                ],
+                "2": [
+                    4,
+                    3
+                ],
+                "3": [
+                    2,
+                    2
+                ],
+                "4": [
+                    2,
+                    2
+                ]
+            },
+            "availableSpells": {
+                "1": [
+                    "Fireball",
+                    "Ice Cone",
+                    "Heralde",
+                    "Pillar of Light"
+                ],
+                "2": [
+                    "Lightning Ray",
+                    "Fire Hands",
+                    "Conjure Mountainless Dwarf"
+                ]
+            },
+            "learnedSpells": {
+                "1": [
+                    "Fireball",
+                    "Ice Cone",
+                    "Heralde",
+                    "Pillar of Light"
+                ],
+                "2": [
+                    "Lightning Ray",
+                    "Fire Hands",
+                    "Conjure Mountainless Dwarf"
+                ]
+            },
+            "inventory": {
+                "items": [],
+                "currency": {
+                    "gold": 0,
+                    "silver": 0,
+                    "bronze": 0
+                }
+            },
+            "controlling": []
+        }
+    }
+}
