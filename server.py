@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS  # Import the CORS package
 import os
 import json
@@ -194,6 +194,9 @@ def update_server_info():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/game')
+def home():
+    return render_template('index.html')  # Render the HTML file
 
 # Run the server on localhost:5000
 if __name__ == '__main__':
