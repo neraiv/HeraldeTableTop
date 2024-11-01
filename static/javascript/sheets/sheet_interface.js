@@ -52,6 +52,13 @@ function addTopRightBar(){
         .catch(error => console.error('Error:', error));
     });
 
+    const registerServerButton = createImageButton(32, {source: "OK"});
+    registerServerButton.addEventListener('click', () => {
+        // Register server logic here
+        register_game("hebelerip", "192.168.1.2")
+    });
+
+
     const openSpellCreate = createImageButton(32, {icon: '✨'});
     addClickHighlightListener(openSpellCreate);
 
@@ -106,6 +113,7 @@ function addTopRightBar(){
     column.appendChild(openSettingsBar);
     column.appendChild(openSpellCreate);
     column.appendChild(saveGame);
+    column.appendChild(registerServerButton)
 
     TopRightMenuBar.appendChild(column);
 }

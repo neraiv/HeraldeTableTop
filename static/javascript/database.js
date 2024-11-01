@@ -164,3 +164,55 @@ function addSpell(level, spellName, spellData) {
     }
 }
 
+async function register_game(gameId, hostIp) {
+    // Validate input
+    if (!gameId || !hostIp) {
+        console.error("Game ID and Host IP are required.");
+        return {
+            success: false,
+            message: "Game ID and Host IP are required."
+        };
+    }
+
+    // URL to your PHP script on InfinityFree
+    const url = 'https://heraldednd.wuaze.com/register_game.php'; // Update this with your actual URL
+
+    // Prepare the data to send
+    const data = {
+        gameId: gameId,
+        hostIp: hostIp
+    };
+
+    try {
+        // Send POST request to the PHP script
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' // Set content type to JSON
+            },
+            body: JSON.stringify(data) // Convert the data to JSON
+        });
+
+        // Check if the response is ok (status in the range 200-299)
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        // Parse the JSON response
+        const result = await response.json();
+
+        return result; // Return the result from the PHP script
+
+    } catch (error) {
+        console.error("Error registering game:", error);
+        return {
+            success: false,
+            message: error.message
+        };
+    }
+}
+
+// Example usage
+register_game('example_game_id', '192.168.1.1').then(result => {
+    console.log("Registration result:", result);
+});

@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS  # Import the CORS package
+import requests
 import os
 import json
 
@@ -198,6 +199,47 @@ def update_server_info():
 def home():
     return render_template('index.html')  # Render the HTML file
 
-# Run the server on localhost:5000
+@app.route('/register_game', methods=['POST'])
+def register_game():
+    # Get game data from the request
+    game_id = request.json.get('gameId')
+    host_ip = request.json.get('hostIp')
+
+    if not game_id or not host_ip:
+        return jsonify({"success": False, "message": "Game ID and Host IP are required."}), 400
+
+    # URL to your PHP script on InfinityFree
+    url = 'https://heraldednd.wuaze.com/register_game.php'  # Update this with your actual URL
+
+    # Prepare the data to send to the PHP script
+    data = {
+        'gameId': game_id,
+        'hostIp': host_ip
+    }
+
+    try:
+        # Send POST request to the PHP script using requests.post
+        response = requests.post(url, data=data)
+
+        # Return the JSON response from the PHP script
+        return jsonify(response.json())
+
+    except requests.exceptions.RequestException as e:  # Correctly handling requests exceptions
+        return jsonify({"success": False, "message": str(e)}), 500
+    
+def run_register_game():
+    # You can modify this function to include necessary data for registration
+    # Example static data; replace with dynamic data as needed
+    game_data = {
+        'gameId': 'example_game_id',  # Replace with actual game ID
+        'hostIp': '192.168.1.2'        # Replace with actual host IP
+    }
+
+    # Simulate a POST request to register the game
+    with app.test_request_context('/register_game', method='POST', json=game_data):
+        register_game()
+
+# Run the registration function when starting the server
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug= True)
+    run_register_game()  # Call the function here to register the game at startup
+    app.run(host='0.0.0.0', port=5000, debug=True)
