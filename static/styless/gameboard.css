@@ -1,0 +1,158 @@
+/* GAMEBOARD */
+#gameboard-content {
+    position: absolute;
+    transform-origin: center;
+    border: 2px solid black; /* Add this line for the border */
+}
+
+#grid-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(to right, rgba(204, 204, 204, 0.5) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(204, 204, 204, 0.5) 1px, transparent 1px);
+    pointer-events: none; /* Allow interaction with layers above */
+    z-index: 1; /* Ensure background is at the bottom */
+}
+
+#background-layer {
+    z-index: 2; /* Background images */
+}
+#character-layer {
+    z-index: 3; /* Character images */
+}
+
+#fog-layer {
+    z-index: 4; /* Fog images (if applicable) */
+}
+
+/* When moving characters, show avaliable*/
+.drag-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid red; /* Border color for visual effect */
+    background: rgba(0, 255, 0, 0.6); /* Green color with 60% opacity */
+    pointer-events: none; /* Ensure it does not interfere with dragging */
+    display: none; /* Initially hidden */
+    z-index: 3;
+}
+
+/* To highlight targets */
+.highlight-overlay {  
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(207, 48, 48, 0.651); /* A yellow semi-transparent overlay */
+    pointer-events: none; /* Ensure this overlay doesn't block clicks */
+    z-index: 3; /* Ensure it stays above the token */
+}
+/* GAMEBOARD  END */
+
+/* Char Token */
+.character-token{
+    position: absolute;
+    object-fit: contain;
+}
+
+.character-token img {
+    position: absolute;
+    width: 99%;
+    height: 99%;
+    z-index: 1;
+}
+
+.circular-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 50%; /* Makes the image circular */
+    object-fit: cover; /* Ensures the image covers the circle area */
+    display: block; /* Remove any extra space below the image */
+}
+
+.spell-range {
+    position: absolute;
+    border-radius:50%;
+    border: 2px dashed red;
+    pointer-events: none; /* Allow mouse events to pass through */
+    z-index: 100;
+}
+
+.spell-cast{   
+    position: absolute;
+    border: 2px solid blue;
+    background-color: #7fffd462;
+    pointer-events: none; /* Allow mouse events to pass through */
+    z-index: 100;
+}
+
+.spell-circular{
+    border-radius: 50%;
+}
+
+.spell-cone{
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    background-color: transparent;
+    border-top: 0px solid #7fffd462; /* The color of the triangle */
+    border-bottom: 0px solid #7fffd462; /* The color of the triangle */
+}
+
+.spell-from-caster{
+    transform-origin: top center !important;
+}
+
+.slot-display {
+    min-width: 42px; /* Fixed width */
+    min-height: 40px; /* Minimum height */
+    height: 100%;
+    background-color: rgb(24, 21, 21); /* Outer square background */
+    border: 2px solid #333; /* Darker border */
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    object-fit: contain;
+    margin: 3px;
+}
+
+.font-slot {
+    position: relative;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.slot-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    padding-bottom: 3px;
+    grid-gap: 5px;
+    width: 80%;
+    height: 80%;
+}
+
+.slot-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%; /* Makes the shape circular */
+    border: 2px solid rgb(30, 30, 207); /* Outer border */
+    display: flex;
+}
+
+.slot-mana {
+    background-color: rgb(37, 183, 231); /* Inner color */
+}
+
+.slot-spend {
+    background-color: rgb(90, 104, 109); /* Inner color */
+}
+/* End Char Token */
+

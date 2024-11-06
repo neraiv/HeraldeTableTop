@@ -1,28 +1,32 @@
 {
     "robotdeha": {
         "password": "123321avz",
-        "status": "online",
+        "status": "offline",
         "type": "dungeon_master",
         "character": "druid_woman",
-        "last_sync": "2024-10-31 13:38:32 UTC"
+        "last_sync": "2024-11-06 12:18:31 UTC",
+        "game_save_number": 3
     },
     "yilmo": {
         "password": "123321avz",
-        "status": "online",
+        "status": "offline",
         "type": "adventurer",
         "character": "mountainless_dwarf",
-        "last_sync": "2024-10-26 18:20:34 UTC"
+        "last_sync": "2024-11-06 12:10:23 UTC",
+        "game_save_number": 3
     },
     "HEBEL": {
         "password": "BIRIJUS",
         "status": "offline",
         "type": "adventurer",
-        "character": "unknown"
+        "character": "unknown",
+        "game_save_number": 0
     },
     "sdasdas": {
         "password": "dasdasdas",
         "status": "offline",
         "type": "adventurer",
-        "character": "unknown"
+        "character": "unknown",
+        "game_save_number": 0
     }
 }

@@ -1,103 +1,25 @@
+
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS  # Import the CORS package
-import requests
-import os
 import json
+import os
+
+from import_db_files import *
+import db_handler
+from db_handler import wait_until_file_is_closed
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Path to the file where spell data is stored
-SPELLS_FILE = os.path.join(os.getcwd(), 'database/spells.json')
-USERS_FILE = os.path.join(os.getcwd(), 'database/users.json')
-SERVER_INFO = os.path.join(os.getcwd(), 'database/server_info.json')
-
-# Ensure spells file exists
-if not os.path.exists(SPELLS_FILE):
-    with open(SPELLS_FILE, 'w') as f:
-        json.dump({}, f)  # Create an empty dictionary to start with
-
-if not os.path.exists(USERS_FILE):
-    with open(USERS_FILE, 'w') as f:
-        json.dump({}, f)  # Create an empty dictionary to start with
+# Define the on_exit function
 
 
-
-@app.route('/getUser', methods=['GET'])
-def get_user():
-    try:
-        user_id = request.args.get('user_id')
-        password = request.args.get('password')  # Assuming password is passed as a query parameter
-        if not user_id:
-            return jsonify({"error": "user_id not provided"}), 400
-
-        # Load the user data from the file
-        if os.path.exists(USERS_FILE):
-            with open(USERS_FILE, 'r') as file:
-                users_data = json.load(file)
-        else:
-            users_data = {}
-
-        # Check if the user exists and matches password if provided
-        user = users_data.get(user_id)
-        if user and (user["password"] == password):
-            # Update last_sync to current time
-            user["last_sync"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
-            user["status"] = "online"
-
-            # Save updated last_sync and status back to the file
-            with open(USERS_FILE, 'w') as file:
-                json.dump(users_data, file, indent=4)
-
-            game_user = {
-                "user_id": user_id,
-                "status": user["status"],
-                "type": user["type"],
-                "character": user["character"],
-                "last_sync": user["last_sync"]
-            }
-            return jsonify(game_user)
-
-        elif not user and len(password) >= 5:
-            # Create a new user with default values
-            new_user = {
-                "password": password,
-                "status": "online",
-                "type": "adventurer",  # Default type
-                "character": "unknown",  # Default character
-                "last_sync": datetime.utcnow().isoformat()
-            }
-            users_data[user_id] = new_user
-
-            # Save the new user to the file
-            with open(USERS_FILE, 'w') as file:
-                json.dump(users_data, file, indent=4)
-
-            game_user = {
-                "user_id": user_id,
-                "status": "online",
-                "type": "adventurer",
-                "character": "unknown",
-                "last_sync": new_user["last_sync"]
-            }
-            return jsonify(game_user)
-
-        else:
-            return jsonify({"error": "Invalid user_id or password."}), 400
-
-    except FileNotFoundError:
-        return jsonify({"error": "Users file not found."}), 404
-    except json.JSONDecodeError:
-        return jsonify({"error": "Error decoding JSON."}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-# Route to get the spells data
 @app.route('/avaliableSpells', methods=['GET'])
-def get_spells():
+def get_available_spells():
     try:
-        with open(SPELLS_FILE, 'r') as file:
+        wait_until_file_is_closed(SPELLS)
+        with open(SPELLS, 'r') as file:
             spells_data = json.load(file)
 
         # Transform the data into the desired format
@@ -108,25 +30,28 @@ def get_spells():
     except FileNotFoundError:
         return jsonify({"error": "Spells file not found."}), 404
     except json.JSONDecodeError:
-        return jsonify({"error": "Error decoding JSON."}), 500
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-# Route to save the spells data
+    
 @app.route('/saveSpells', methods=['POST'])
-def save_spells():
+def save_all_spells():
     try:
         data = request.get_json()  # Expecting JSON data from the request
-        with open(SPELLS_FILE, 'w') as file:
+        wait_until_file_is_closed(SPELLS)
+        with open(SPELLS, 'w') as file:
             json.dump(data, file, indent=4)
         return jsonify({"message": "Spells saved successfully!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
 @app.route('/getSpell/<int:spellLevel>/<string:spellName>', methods=['GET'])
-def get_spell(spellLevel, spellName):
+def get_spell_data(spellLevel, spellName):
     try:
-        with open(SPELLS_FILE, 'r') as file:
+        wait_until_file_is_closed(SPELLS)
+        with open(SPELLS, 'r') as file:
             spells_data = json.load(file)
 
         print(spells_data)
@@ -140,16 +65,18 @@ def get_spell(spellLevel, spellName):
     except FileNotFoundError:
         return jsonify({"error": "Spells file not found."}), 404
     except json.JSONDecodeError:
-        return jsonify({"error": "Error decoding JSON."}), 500
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Route to get server information
 @app.route('/getServerInfo', methods=['GET'])
 def get_server_info():
     try:
         # Load the server info from the JSON file
         if os.path.exists(SERVER_INFO):
+            wait_until_file_is_closed(SERVER_INFO)
             with open(SERVER_INFO, 'r') as file:
                 server_info = json.load(file)
                 
@@ -160,13 +87,13 @@ def get_server_info():
         return jsonify({"error": "Error decoding server info JSON."}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-# Route to update server information
+
 @app.route('/updateServerInfo', methods=['POST'])
 def update_server_info():
     try:
         # Load the existing server info
         if os.path.exists(SERVER_INFO):
+            wait_until_file_is_closed(SERVER_INFO)
             with open(SERVER_INFO, 'r') as file:
                 server_info = json.load(file)
         else:
@@ -185,61 +112,202 @@ def update_server_info():
                 server_info[key] = data[key]
 
         # Save the updated server info back to the file
+        wait_until_file_is_closed(SERVER_INFO)
         with open(SERVER_INFO, 'w') as file:
             json.dump(server_info, file, indent=4)
 
         return jsonify({"message": "Server info updated successfully!"}), 200
 
     except json.JSONDecodeError:
-        return jsonify({"error": "Error decoding JSON."}), 500
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/game')
+@app.route('/')  # Renamed this route
 def home():
     return render_template('index.html')  # Render the HTML file
 
-@app.route('/register_game', methods=['POST'])
-def register_game():
-    # Get game data from the request
-    game_id = request.json.get('gameId')
-    host_ip = request.json.get('hostIp')
-
-    if not game_id or not host_ip:
-        return jsonify({"success": False, "message": "Game ID and Host IP are required."}), 400
-
-    # URL to your PHP script on InfinityFree
-    url = 'https://heraldednd.wuaze.com/register_game.php'  # Update this with your actual URL
-
-    # Prepare the data to send to the PHP script
-    data = {
-        'gameId': game_id,
-        'hostIp': host_ip
-    }
-
+@app.route('/getUser', methods=['GET'])
+def get_user():
     try:
-        # Send POST request to the PHP script using requests.post
-        response = requests.post(url, data=data)
+        user_id = request.args.get('user_id')
+        password = request.args.get('password')  # Assuming password is passed as a query parameter
+        if not user_id:
+            return jsonify({"error": "user_id not provided"}), 400
 
-        # Return the JSON response from the PHP script
-        return jsonify(response.json())
+        # Load the user data from the file
+        if os.path.exists(USERS):
+            wait_until_file_is_closed(USERS)
+            with open(USERS, 'r') as file:
+                users_data = json.load(file)
+        else:
+            users_data = {}
 
-    except requests.exceptions.RequestException as e:  # Correctly handling requests exceptions
-        return jsonify({"success": False, "message": str(e)}), 500
-    
-def run_register_game():
-    # You can modify this function to include necessary data for registration
-    # Example static data; replace with dynamic data as needed
-    game_data = {
-        'gameId': 'example_game_id',  # Replace with actual game ID
-        'hostIp': '192.168.1.2'        # Replace with actual host IP
-    }
+        # Check if the user exists and matches password if provided
+        user = users_data.get(user_id)
+        if user and (user["password"] == password):
+            if user["status"] == "offline":
+                # Update last_sync to current time
+                user["last_sync"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
+                user["status"] = "online"
 
-    # Simulate a POST request to register the game
-    with app.test_request_context('/register_game', method='POST', json=game_data):
-        register_game()
+                # Save updated last_sync and status back to the file
+                wait_until_file_is_closed(USERS)
+                with open(USERS, 'w') as file:
+                    json.dump(users_data, file, indent=4)
 
-# Run the registration function when starting the server
+                game_user = {
+                    "user_id": user_id,
+                    "status": user["status"],
+                    "type": user["type"],
+                    "character": user["character"],
+                    "last_sync": user["last_sync"],
+                    "game_save_number": user["game_save_number"]
+                }
+                return jsonify(game_user)
+            else:
+                return jsonify({"error": "User is already online."}), 400
+        else:
+            return jsonify({"error": "Invalid user_id or password."}), 400
+
+    except FileNotFoundError:
+        return jsonify({"error": "Users file not found."}), 404
+    except json.JSONDecodeError:
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/userSync', methods=['GET'])
+def user_sync():
+    try:
+        user_id = request.args.get('user_id')
+        password = request.args.get('password')  # Assuming password is passed as a query parameter
+        if not user_id:
+            return jsonify({"error": "user_id not provided"}), 400
+
+        # Load the user data from the file
+        if os.path.exists(USERS):
+            wait_until_file_is_closed(USERS)
+            with open(USERS, 'r') as file:
+                users_data = json.load(file)
+        else:
+            users_data = {}
+
+        # Check if the user exists and matches password if provided
+        user = users_data.get(user_id)
+        if user and (user["password"] == password):
+            # Update last_sync to current time
+            user["last_sync"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
+            user["status"] = "online"
+
+            # Save updated last_sync and status back to the file
+            wait_until_file_is_closed(USERS)
+            with open(USERS, 'w') as file:
+                json.dump(users_data, file, indent=4)
+
+            if os.path.exists(SERVER_INFO):
+                wait_until_file_is_closed(SERVER_INFO)
+                with open(SERVER_INFO, 'r') as file:
+                    server_data = json.load(file)
+            else:
+                raise FileNotFoundError("SERVER_INFO file does not exist")
+
+
+            if server_data:
+                user_game_save_number = int(user["game_save_number"])  # Convert to int
+                server_game_save_number = int(server_data["game_save_number"])  # Convert to int
+
+                if user_game_save_number != server_game_save_number:
+                    update_status = "true"
+                else:
+                    update_status = "false"
+                
+
+            return jsonify({"message": "User Synced", "update_status": update_status}), 200
+        else:
+            return jsonify({"error": "Invalid user_id or password."}), 400
+
+    except FileNotFoundError:
+        return jsonify({"error": "Users file not found."}), 404
+    except json.JSONDecodeError:
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    return send_from_directory('static/images', filename)
+
+@app.route('/getPaths')
+def get_images_list():
+    try:
+        user_id = request.args.get('user_id')
+        password = request.args.get('password')  # Assuming password is passed as a query parameter
+        if not user_id:
+            return jsonify({"error": "user_id not provided"}), 400
+
+        # Load the user data from the file
+        if os.path.exists(USERS):
+            wait_until_file_is_closed(USERS)
+            with open(USERS, 'r') as file:
+                users_data = json.load(file)
+        else:
+            users_data = {}
+
+        # Check if the user exists and matches password if provided
+        user = users_data.get(user_id)
+        if user and (user["password"] == password):
+            # Update last_sync to current time
+
+            wait_until_file_is_closed(IMAGES)
+            with open(IMAGES, 'r') as file:
+                data = json.load(file)
+
+            # Extract the character list from the 'character' section
+            class_icons     = list(data.get("class-icons", {}).keys())
+            character_list  = list(data.get("character", {}).keys())
+            background_list = list(data.get("background"))
+            general_sounds_list = list(data.get("general-sounds", {}).keys())
+            menu_icons = list(data.get("menu-icons", {}).keys())
+
+            if os.path.exists(SERVER_INFO):
+                wait_until_file_is_closed(SERVER_INFO)
+                with open(SERVER_INFO, 'r') as file:
+                    server_data = json.load(file)
+            else:
+                raise FileNotFoundError("SERVER_INFO file does not exist")
+            
+            user["game_save_number"] = int(server_data["game_save_number"])  # Convert to int
+
+                        # Save updated last_sync and status back to the file
+            wait_until_file_is_closed(USERS)
+            with open(USERS, 'w') as file:
+                json.dump(users_data, file, indent=4)
+
+            return jsonify({
+                "class_icons":     class_icons,
+                "character_list":  character_list,
+                "background_list": background_list,
+                "general_sounds_list": general_sounds_list,
+                "menu_icons": menu_icons
+            })
+        else:
+            return jsonify({"error": "Invalid user_id or password."}), 400
+
+    except FileNotFoundError:
+        return jsonify({"error": "Spells file not found."}), 404
+    except json.JSONDecodeError:
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
-    run_register_game()  # Call the function here to register the game at startup
     app.run(host='0.0.0.0', port=5000, debug=True)

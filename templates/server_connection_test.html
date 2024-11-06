@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Games</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Optional: Link to a CSS file for styling -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery for AJAX -->
+</head>
+<body>
+    <header>
+        <h1>Active Games</h1>
+    </header>
+    
+    <main>
+        <section id="activeGames">
+            <h2>Currently Active Games</h2>
+            <ul id="gameList"></ul> <!-- List to display active games -->
+        </section>
+
+        <section id="joinGame">
+            <h2>Join a Game</h2>
+            <input type="text" id="gameId" placeholder="Enter Game ID">
+            <button id="joinButton">Join Game</button>
+            <p id="gameStatus" style="color: green;"></p>
+        </section>
+
+        <section id="registerGame">
+            <h2>Register a Game</h2>
+            <form id="registerGameForm">
+                Game ID: <input type="text" id="newGameId" name="gameId" required><br>
+                Host IP: <input type="text" id="newHostIp" name="hostIp" required><br>
+                <button type="button" id="registerButton">Add Game</button>
+            </form>
+            <p id="registerStatus" style="color: green;"></p>
+        </section>
+
+        <section id="getGameStatus">
+            <h2>Get Game Status</h2>
+            <input type="text" id="statusGameId" placeholder="Enter Game ID to check status">
+            <button id="statusButton">Get Status</button>
+            <p id="statusResult"></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Heralded DnD</p>
+    </footer>
+
+    <script>
+        $(document).ready(function() {
+            // Handle game registration form submission
+            $(document).ready(function() {
+                // Handle game registration form submission
+                $('#registerButton').click(function() {
+                    const hostIp = $('#newHostIp').val();
+
+                    $.post('http://localhost:5000/registerGame', { hostIp: hostIp }, function(response) {
+                        // Parse JSON directly without JSON.parse as jQuery does it automatically
+                        if (response.status === 'success') {
+                            $('#registerStatus').text('Game registered! Game ID: ' + response.gameId);
+                        } else {
+                            $('#registerStatus').text('Registration failed: ' + response.message);
+                        }
+                    }).fail(function(xhr) {
+                        $('#registerStatus').text('Failed to connect to the server: ' + xhr.status);
+                    });
+                });
+            });
+            // Handle game join button click
+             $('#joinButton').on('click', function() {
+                var gameId = $('#gameId').val();
+
+                // Basic validation
+                if (gameId === '') {
+                    alert('Please enter a Game ID');
+                    return;
+                }
+
+                // Send AJAX POST request to join_game.php
+                $.ajax({
+                    url: 'join_game.php',
+                    type: 'POST',
+                    data: { gameId: gameId },
+                    success: function(response) {
+                        var data = JSON.parse(response);
+                        if (data.url) {
+                            // Redirect to the game URL
+                            window.location.href = data.url;
+                        } else {
+                            alert(data.error);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error: ' + xhr.responseText);
+                    }
+                });
+            });
+            // Handle get game status button click
+            $('#statusButton').on('click', function() {
+                var statusGameId = $('#statusGameId').val();
+
+                // Basic validation
+                if (statusGameId === '') {
+                    $('#statusResult').text('Please enter a Game ID').css('color', 'red');
+                    return;
+                }
+
+                // Send AJAX POST request to get_game_status.php
+                $.ajax({
+                    url: 'get_game_status.php',
+                    type: 'POST',
+                    data: {
+                        gameId: statusGameId
+                    },
+                    success: function(response) {
+                        // Assuming the response is in JSON format
+                        var result = JSON.parse(response);
+                        if (result) {
+                            $('#statusResult').text('GameID: ' + result.gameId + ', Status: ' + result.gameStatus + ', Last Active: ' + result.lastActive).css('color', 'green');
+                        } else {
+                            $('#statusResult').text('No game found with the provided Game ID.').css('color', 'red');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $('#statusResult').text('Failed to retrieve game status: ' + xhr.status).css('color', 'red');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
