@@ -1,7 +1,8 @@
 const serverUrl = DEBUG_MODE ? "http://localhost:5000/" : godLevelServerDomain ;
 
 function saveSpells(){
-    fetch(serverUrl + 'saveSpells', {
+    const creadaantials = `user_id=${user_id}&password=${password}`
+    fetch(serverUrl + 'saveSpells?' + creadaantials, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -70,7 +71,8 @@ async function fetchSpellWait(spellLevel, spellName) {
 
 async function fetchLogin(user_id, password) {
     try {
-        const fullURL = serverUrl + `getUser?user_id=${user_id}&password=${password}`;
+        const creadaantials = `user_id=${user_id}&password=${password}`
+        const fullURL = serverUrl + `getUser?`+ creadaantials;
         const response = await fetch(fullURL);
         const result = await response.json();
 

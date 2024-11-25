@@ -46,8 +46,8 @@ let listSpells = {
 let userName = "";
 let userPassword = "";
 
-let user;
-let serverInfo;
+let user = new Program_User();
+let serverInfo = new Program_ServerInfo();
 
 let databaseListSpells = {
     0: ["No Spell"],

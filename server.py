@@ -14,7 +14,39 @@ CORS(app)  # Enable CORS for all routes
 
 # Define the on_exit function
 
+ 
+@app.route('/saveSpells', methods=['POST'])
+def save_all_spells():
+    try:
+        user_id = request.args.get('user_id')
+        password = request.args.get('password')  # Assuming password is passed as a query parameter
+        if not user_id:
+            return jsonify({"error": "user_id not provided"}), 400
 
+        # Load the user data from the file
+        if os.path.exists(USERS):
+            wait_until_file_is_closed(USERS)
+            with open(USERS, 'r') as file:
+                users_data = json.load(file)
+        else:
+            users_data = {}
+
+        # Check if the user exists and matches password if provided
+        user = users_data.get(user_id)
+        if user and (user["password"] == password):
+            if(user["type"] == "dungeon_master"):
+                data = request.get_json()  # Expecting JSON data from the request
+                wait_until_file_is_closed(SPELLS)
+                with open(SPELLS, 'w') as file:
+                    json.dump(data, file, indent=4)
+                return jsonify({"message": "Spells saved successfully!"}), 200
+            else:
+                return jsonify({"error": "Only dungeon masters can save spells."}), 403
+        else:
+            return jsonify({"error": "Invalid user or password."}), 401        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 @app.route('/avaliableSpells', methods=['GET'])
 def get_available_spells():
     try:
@@ -33,17 +65,6 @@ def get_available_spells():
         return jsonify({
             "error": f"Error decoding JSON in function {__name__}"
         }), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-@app.route('/saveSpells', methods=['POST'])
-def save_all_spells():
-    try:
-        data = request.get_json()  # Expecting JSON data from the request
-        wait_until_file_is_closed(SPELLS)
-        with open(SPELLS, 'w') as file:
-            json.dump(data, file, indent=4)
-        return jsonify({"message": "Spells saved successfully!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
@@ -299,12 +320,11 @@ def get_images_list():
             })
         else:
             return jsonify({"error": "Invalid user_id or password."}), 400
-
     except FileNotFoundError:
         return jsonify({"error": "Spells file not found."}), 404
     except json.JSONDecodeError:
         return jsonify({
-            "error": f"Error decoding JSON in function {__name__}"
+            "error": f"Error decoding JSON in function get_image_list()"
         }), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
