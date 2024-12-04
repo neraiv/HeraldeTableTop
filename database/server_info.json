@@ -1,7 +1,4 @@
 {
-    "name": "HeraldeTableTop",
-    "version": "0.0.1",
-    "description": "A tabletop game management system",
-    "server_time": "2024-11-06 12:18:32 UTC",
-    "game_save_number": 3
+    "server_time": "2024-12-04 13:58:09 UTC",
+    "server_status": "online"
 }

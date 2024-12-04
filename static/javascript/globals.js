@@ -1,7 +1,9 @@
 const godLevelServerDomain = "https://heraldednd.wuaze.com/"
 
 const DEBUG_MODE = true;
+function fetchUserSync (){
 
+}
 const gameboard = document.getElementById('gameboard');
 const gameboardContent = document.getElementById('gameboard-content');
 const driveImagesBar = document.getElementById('drive-images-bar');
@@ -74,9 +76,9 @@ let listDestructinator = {
 };
 
 
-let allFilePaths; 
-let uiSettings;
-let gameSettings;
+let allFilePaths = new Program_FilePathsHolder(); 
+let uiSettings = new Program_GameUISettings();
+let gameSettings = new Program_GameSettings();
 
 const knownSpellString = " / Known";
 const spellNormalCast = "Normal Cast";

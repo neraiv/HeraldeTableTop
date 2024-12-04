@@ -1,19 +1,6 @@
 
 
 async function setupUI() {
-    const userData = await loginScreenConstruct(); // Wait for login to complete
-    
-    user = new Program_User({
-        name: userData.user_id,  // Map user_id to name
-        type: userData.type,
-        char: userData.character,  // Map character to char
-        last_sync: userData.last_sync,
-        game_save_number: userData.game_save_number
-    });
-    await fetchAvailableSpells();
-
-    await startSyncTimer();
-
     addBottomBar();
     addTopBar();
     addTopRightBar();

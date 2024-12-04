@@ -356,7 +356,7 @@ class Inventory {
 
 class Character {
     constructor(id, controlledBy = '',{
-        level = gameSettings.MIN_CHARACTER_LVL,
+        level = 0,
         name = "",
         classess = [],
         race = "",

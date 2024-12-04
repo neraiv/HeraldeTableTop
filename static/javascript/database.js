@@ -68,46 +68,6 @@ async function fetchSpellWait(spellLevel, spellName) {
     }
 }
 
-async function fetchLogin(user_id, password) {
-    try {
-        const fullURL = serverUrl + `getUser?user_id=${user_id}&password=${password}`;
-        const response = await fetch(fullURL);
-        const result = await response.json();
-
-        if (response.ok) {
-            user = result;
-            console.log(user);
-            alert('User created or logged in successfully!');
-            return user;
-        } else {
-            alert(result.error);
-            return null;
-        }
-    } catch (error) {
-        console.error('Error logging in:', error);
-        alert('There was an error with the login process.', error);
-        return null;
-    }
-}
-
-async function fetchUserSync(user_id, password) {
-    try {
-        const fullURL = serverUrl + `userSync?user_id=${user_id}&password=${password}`;
-        const response = await fetch(fullURL);
-        const result = await response.json();
-
-        if (response.ok) {      
-            return result;
-        } else {
-            console.log(result);
-            return null;
-        }
-    } catch (error) {
-        console.error('Error logging in:', error);
-        return null;
-    }
-}
-
 async function fetchGetFilePaths(user_id, password){
     try {
         const fullURL = serverUrl + `getPaths?user_id=${user_id}&password=${password}`;

@@ -1,0 +1,8 @@
+{
+    "bodyguard" : {
+        "objectPositions" : {
+            "1" : [ "char-token-yilmo", 582, 100],
+            "2" : [ "char-token-kahlo", 582, 160]
+        } 
+    }
+}
