@@ -51,7 +51,7 @@ def getGameInfo():
 def getChat():
     return getChat_func()
 
-@app.route('/getChar', methods=['POST'])
+@app.route('/getChar', methods=['GET'])
 def getChar():
     return getChar_func()
 
@@ -167,11 +167,8 @@ def registerChar_func():
     
 def getChar_func():
     try:
-        data: dict = request.get_json()
-        if data is None:
-            return jsonify({"error": "Invalid JSON data."}), 400
-        
-        key = data.get("key")
+        key = request.args.get('key')  # Extract 'key' from query parameters
+        char_name = request.args.get('char')  # Extract 'info' from query parameters
 
         if not key:
             return jsonify({"error": "Key is not provided."}), 400
@@ -179,13 +176,15 @@ def getChar_func():
         user = controlKey(key)
 
         if user:
-            wait_until_file_is_closed(CHARS)
-            with open(CHARS, 'r') as file:
-                all_chars: dict = json.load(file)
             
-            char = all_chars.get(user['character'])
+            all_chars: dict = getGameFile("chars.json")
+            
+            char = all_chars.get(char_name)
 
-            return jsonify({"success": "Character data retrieved.", "char": char}), 200
+            if char:
+                return jsonify({"success": "Character data retrieved.", "char": char}), 200
+            else:
+                return jsonify({"error": "Character not found."}), 200
         else:
             return jsonify({"error": "User not found or not online."}), 404
         

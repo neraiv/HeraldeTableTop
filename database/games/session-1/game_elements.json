@@ -3,5 +3,5 @@
     "listEnemies": [],
     "listAllies": [],
     "listNPC": [],
-    "inGameChars": ["Faramir"]
+    "inGameChars": ["Faramir","mountainless_dwarf", "Sir Gawain"]
 }

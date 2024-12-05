@@ -19,7 +19,7 @@ const dragOverlay = document.getElementById('drag-overlay');
 // let dragStartX, dragStartY; // Variables to store the drag start position
 // let currentLayer = 'character-layer'; // Default to character layer
 
-
+let inGameChars = {};
 
 // let objectsPositions = new Map(); // Store original positions for each image
 // let inGameChars = new Map();

@@ -13,6 +13,32 @@ function removeTestDots(parent, dotlist){
     dotlist.forEach(dot => parent.removeChild(dot));
 }
 
+function compareWithDb(arr1, arr2) {
+    const result = {
+        updateStatus: false,
+        missing: [], // Elements in arr2 but not in arr1
+        removed: []  // Elements in arr1 but not in arr2
+    };
+
+    // Find elements in arr2 that are missing in arr1
+    for (const elem of arr2) {
+        if (!arr1.includes(elem)) {
+            result.missing.push(elem);
+            result.updateStatus = true; // Mark that there are missing elements
+        }
+    }
+
+    // Find elements in arr1 that are not in arr2 and remove them
+    for (let i = arr1.length - 1; i >= 0; i--) {
+        if (!arr2.includes(arr1[i])) {
+            result.removed.push(arr1[i]);
+            result.updateStatus = true; // Mark that there are missing elements
+        }
+    }
+
+    return result;
+}
+
 function createDiceInput(label = "", id = ""){
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');

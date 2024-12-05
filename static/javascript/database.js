@@ -1,116 +1,80 @@
 const serverUrl = DEBUG_MODE ? "http://localhost:5000/" : godLevelServerDomain ;
+let isUpdating = false; // Flag to prevent multiple updates
 
-function saveSpells(){
-    fetch(serverUrl + 'saveSpells', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(listSpells),
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-    })
-    .catch(error => console.error('Error:', error));
-}
 
-async function fetchAvailableSpells() {
-    await fetch( serverUrl + 'avaliableSpells') // Make sure the URL matches the Flask endpoint
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Available Spells:', data);
-            // Process the available spells here
-            // Example: displaying the spells in a list
-            databaseListSpells = data
-        })
-        .catch(error => console.error('Error fetching available spells:', error));
-    return
-}
+async function getChar(char) {
+    const params = new URLSearchParams({
+        key: userKey,
+        char: char,
+    });
 
-function fetchSpell(spellLevel, spellName) {
-    fetch( serverUrl + `getSpell/${spellLevel}/${spellName}`) // Ensure the URL matches the Flask endpoint
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            listSpells[spellLevel] 
-            console.log('Fetched Spell:', data);
-            addSpell(spellLevel, spellName, data)
-            // Process the fetched spell data here
-        })
-        .catch(error => console.error('Error fetching spell:', error));
-}
-
-async function fetchSpellWait(spellLevel, spellName) {
     try {
-        const response = await fetch( serverUrl + `getSpell/${spellLevel}/${spellName}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await fetch(`${serverUrl}getChar?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
         const data = await response.json();
-        console.log('Fetched Spell:', data);
-        
-        // Assuming listSpells is a global or accessible object
-        addSpell(spellLevel, spellName, data); // Process the fetched spell data here
-        return data;
-    } catch (error) {
-        console.error('Error fetching spell:', error);
-        return null; // Return a default spell object in case of error
+        return data.char; // Return the fetched character data
+    } catch (err) {
+        console.error("Error in getChar: ", err);
+        throw err; // Throw the error to handle it in the caller
     }
 }
-
-async function fetchGetFilePaths(user_id, password){
-    try {
-        const fullURL = serverUrl + `getPaths?user_id=${user_id}&password=${password}`;
-        const response = await fetch(fullURL);
-        const result = await response.json();
-
-        console.log(result);
-
-        if (response.ok) {      
-            return result;
-        } else {
-            return null;
-        }
-    } catch (error) {
-        console.error('Error logging in:', error);
-        return null;
-    }
-}
-
-async function getGameFile(file){
+async function getGameFile(file) {
     const params = new URLSearchParams({
         key: userKey,
         info: file,
     });
-    
-    fetch(`${serverUrl}getGameInfo?${params.toString()}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        return data;
-    })
+
+    try {
+        const response = await fetch(`${serverUrl}getGameInfo?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const data = await response.json();
+        
+        if(data === undefined || data.data === undefined || data.data.inGameChars === undefined) return; 
+
+        const charDiff = compareWithDb(Object.keys(inGameChars), data.data.inGameChars);
+
+        if (charDiff.updateStatus) {
+            isUpdating = true
+            if (charDiff.missing.length > 0) {
+                for (let char of charDiff.missing) {
+                    const charStats = await getChar(char); // Await here works now
+                    console.log("New character added: ", char, charStats);
+                    inGameChars[char] = charStats; // Add the fetched charStats to the array
+                }
+            }
+            if(charDiff.removed.length > 0) {
+                for (let char of charDiff.removed) {
+                    console.log("Char removed: ", char);
+                    delete inGameChars[char]; // Add the fetched charStats to the array
+                }
+            }
+            isUpdating = false
+        }
+
+        return data; // Return the fetched data
+    } catch (err) {
+        console.error("Error in getGameFile: ", err);
+        throw err; // Throw the error to handle it in the caller
+    }
 }
+
 
 function startSyncTimer() {
     
     let cnt = 0;
     async function update() {
         cnt++;
-        await getGameFile("game_elements.json")
+        if(isUpdating === false){
+            await getGameFile("game_elements.json")
+        }
     }
     setInterval(update, 1000); // Update every second
 }
