@@ -3,5 +3,5 @@
     "listEnemies": [],
     "listAllies": [],
     "listNPC": [],
-    "inGameChars": {}
+    "inGameChars": ["Faramir"]
 }

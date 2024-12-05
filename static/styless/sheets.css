@@ -44,7 +44,7 @@ h2 {
     z-index: 51;
 }
 
-#drive-images-bar {
+#ui-storage {
     position: absolute;
     top: 0;
     left: -330px;
@@ -60,7 +60,6 @@ h2 {
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     transition: left 0.3s ease-in-out; /* Smooth sliding effect */
-    z-index: 50;
 }
 
 #drive-images-bar.active {

@@ -12,6 +12,8 @@ TEST_MODE = True
 SETTING_USER_SYNC_TIME_IN_SECONDS = 100000
 SETTING_SERVER_SYNC_TIME_IN_SECONDS = 1
 
+default_server_info = {"server_time": "", "server_status": "online", "last_session": "session-1"}
+
 def generate_key():
     if os.path.exists(USERS):
         wait_until_file_is_closed(USERS)
@@ -81,7 +83,7 @@ def update_server_time():
             if os.stat(SERVER_INFO).st_size == 0:
                 wait_until_file_is_closed(SERVER_INFO)
                 with open(SERVER_INFO, 'w') as file:
-                    json.dump({"server_time": "", "server_status": "online"}, file)
+                    json.dump(default_server_info, file)
 
             wait_until_file_is_closed(SERVER_INFO)
             with open(SERVER_INFO, 'r') as file:
@@ -101,8 +103,13 @@ def update_server_time():
           
     except json.JSONDecodeError:
         print(f"Error decoding JSON. update_server_time")
+        wait_until_file_is_closed(SERVER_INFO)
+        with open(SERVER_INFO, 'w') as file:
+            json.dump(default_server_info, file)
     except Exception as e:
         print(f"Error: {str(e)}")
+
+
 # Function to periodically check user sync status every 5 seconds
 def start_sync_timer():
     lastUserSyncTime = time.time()  # Initial time for the first check
@@ -133,8 +140,12 @@ def on_exit():
     
     if os.path.exists(SERVER_INFO):
         wait_until_file_is_closed(SERVER_INFO)
+        with open(SERVER_INFO, 'r') as file:
+            server_data = json.load(file)
+        server_data["server_status"] = "Offline"
+        wait_until_file_is_closed(SERVER_INFO)
         with open(SERVER_INFO, 'w') as file:
-            json.dump({"server_time": "", "server_status": "Offline"}, file)
+            json.dump(server_data, file)
     else:
         print("Server data file not found.")
         return

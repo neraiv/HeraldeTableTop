@@ -87,26 +87,31 @@ async function fetchGetFilePaths(user_id, password){
     }
 }
 
-async function startSyncTimer() {
+async function getGameFile(file){
+    const params = new URLSearchParams({
+        key: userKey,
+        info: file,
+    });
+    
+    fetch(`${serverUrl}getGameInfo?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        return data;
+    })
+}
 
+function startSyncTimer() {
+    
+    let cnt = 0;
     async function update() {
-        const result = await fetchUserSync(userName, userPassword);
-
-        if(result.update_status == "true"){
-            let paths = null;
-            while(paths == null){
-                paths = await fetchGetFilePaths(userName, userPassword)
-            }
-            allFilePaths = new Program_FilePathsHolder({
-                listCharacter: paths["character_list"],
-                listNPC: paths["npc_list"],
-                listClassIcons: paths["class_icon_list"],
-                listSounds: paths["general_sounds_list"],
-                listBackground: paths["background_list"],
-            })
-        }
+        cnt++;
+        await getGameFile("game_elements.json")
     }
-
     setInterval(update, 1000); // Update every second
 }
 

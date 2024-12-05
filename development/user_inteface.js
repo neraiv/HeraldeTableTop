@@ -1,3 +1,5 @@
+const userInterface = document.getElementById('user-interface');
+
 const leftSideBar = document.createElement('div');
 leftSideBar.classList.add('column');
 leftSideBar.classList.add('vertical')
@@ -22,10 +24,10 @@ separator1.style.height = "1px";
 separator1.style.backgroundColor = 'red';
 leftSideBar.appendChild(separator1);
 
-const storageButton = createImageButton(40, {icon: "storage"})
-storageButton.id = "ui-storage-button"
-storageButton.style.fontFamily = 'Material Icons Outlined'
-leftSideBar.appendChild(storageButton);
+const databaseButton = createImageButton(40, {icon: "storage"})
+databaseButton.id = "ui-storage-button"
+databaseButton.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(databaseButton);
 
 const spellBook = createImageButton(40, {icon: "menu_book"})
 spellBook.id = "ui-spellbook-button"
@@ -54,6 +56,5 @@ const chatButton = createImageButton(40, {icon: "chat"})
 chatButton.id = "ui-chat-button"
 chatButton.style.fontFamily = 'Material Icons Outlined'
 rightSideBar.appendChild(chatButton);
-
 
 

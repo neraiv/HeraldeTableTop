@@ -489,6 +489,143 @@ function createImageButton(fontSize, {icon=null, source=null, custom_padding = 8
     return button;
 }
 
+function createStorageImageContainer(fileName, classNamePrefix, imageFolder, targetElement) {
+    // Create image element
+    if (document.getElementById(`storage-${fileName}`)) {
+        return
+    }
+
+    // FUTURE UPDATE : GETS THE CHARACTER FROM FILE
+    const sheetId = `${fileName}-character-sheet`;
+
+    // Create a div to hold the image and buttons
+    const imageAndButtonsContainer = document.createElement('div');
+    imageAndButtonsContainer.id = `drive-${fileName}`
+    imageAndButtonsContainer.className = 'drive-image-container';
+    imageAndButtonsContainer.style.backgroundColor = genareteRandomColor();
+
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'image-container';
+    targetElement.appendChild(imgContainer);
+
+    const img = document.createElement('img');
+    let imgPrefix;
+    if(classNamePrefix == 'background'){
+        imgPrefix = listBackgroundFiles[fileName].LIGHT_FILES[0];
+    }else if(classNamePrefix == "character"){
+        imgPrefix = "char.jpg"
+    }
+
+    img.src = `${imageFolder}/${fileName}/${imgPrefix}`;
+    img.className = `drive-${classNamePrefix}-image`;
+    img.id = fileName;
+    img.dataset.filename = fileName;
+    img.draggable = true;
+
+    // img.addEventListener('load', function() {
+    //     // Set image size based on scaling factor and preserve aspect ratio
+    //     const scalingFactor = getScalingFactor(targetElement, 80);
+    //     setImageSize(img, scalingFactor.widthFactor, scalingFactor.heightFactor);
+    // });
+
+    img.addEventListener('dragstart', function (event) {
+        event.dataTransfer.setData('text/plain', event.target.dataset.filename);
+        event.dataTransfer.effectAllowed = 'move';
+    });
+
+    // Append image to the container
+    imgContainer.appendChild(img)
+    imageAndButtonsContainer.appendChild(imgContainer);
+
+    // Create button container
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'button-container';
+    buttonContainer.style.width = '40%';
+
+    const buttonContainerRow1 = document.createElement('div');
+    buttonContainerRow1.className = "row"
+
+    const buttonContainerRow2 = document.createElement('div');
+    buttonContainerRow2.className = "row"
+
+    // Create and append buttons with icons
+    if(classNamePrefix == 'character'){
+        const exportButton = createImageButton(34, {icon: '⬇️'});
+        exportButton.onclick = () => export_CharacterSheet(sheetId);
+        buttonContainerRow1.appendChild(exportButton);
+
+        const characterSheetButton = createImageButton(34, {source:`${uiSettings.folderMenuIcons+"/"+uiSettings.icon_characterSheet}`});
+        characterSheetButton.onclick = () => toggleDisplay_SheetWithId(sheetId, true);
+        buttonContainerRow1.appendChild(characterSheetButton);
+
+        const importButton = createImageButton(34, {icon: '⬆️'});
+        importButton.onclick = (event) => {
+            const buttonDict = {
+                "Enemy": true,
+                "Ally": true,
+                "NPC": true,
+            }
+            const dropDownFactionChange = createDropdownMenu(userInterface, buttonDict)
+            dropDownFactionChange.style.display = 'block';
+            dropDownFactionChange.style.top = `${event.clientY}px`;
+            dropDownFactionChange.style.left = `${event.clientX}px`;
+            
+            for(let i = 0; i < Object.values(buttonDict).length; i++){
+                const button = dropDownFactionChange.querySelector('.index-'+i)
+                button.onclick = () => {
+                    dropDownFactionChange.remove();
+                    changeCharacterFaction('token-character-'+img.id);
+                }
+            }
+        };
+        buttonContainerRow2.appendChild(importButton);
+
+        const removeButton = createImageButton(34, {icon: '❌'});
+        removeButton.onclick = () => imageAndButtonsContainer.remove();
+        buttonContainerRow2.appendChild(removeButton);
+
+        buttonContainer.appendChild(buttonContainerRow1);
+        buttonContainer.appendChild(buttonContainerRow2);
+
+        addCharacterSheet(imageAndButtonsContainer, sheetId);
+
+    }else if(classNamePrefix == 'background'){
+        const exportButton = createImageButton(34, {icon: '⬇️'});
+        exportButton.onclick = () => export_BackgroundSheet(`${imageAndButtonsContainer.id}-background-sheet`);
+        buttonContainerRow1.appendChild(exportButton);
+
+        const backgroundSheetButton = createImageButton(34, {icon: '📄'});
+        backgroundSheetButton.onclick = () => toggleDisplay_SheetWithId(sheetId, true);
+        buttonContainerRow1.appendChild(backgroundSheetButton);
+
+        const importButton = createImageButton(34, {icon: '⬆️'});
+        importButton.onclick = () => import_BackgroundSheet(`${imageAndButtonsContainer.id}-background-sheet`);
+        buttonContainerRow2.appendChild(importButton);
+
+        const removeButton = createImageButton(34, {icon: '❌'});
+        removeButton.onclick = () => imageAndButtonsContainer.remove();
+        buttonContainerRow2.appendChild(removeButton);
+
+        buttonContainer.appendChild(buttonContainerRow1);
+        buttonContainer.appendChild(buttonContainerRow2);
+    }
+
+    const containerBackgroundColorChange = createImageButton(24, {source: `${uiSettings.folderMenuIcons+"/"+uiSettings.icon_rainbowDice}`});
+    containerBackgroundColorChange.style.position = 'absolute';
+    containerBackgroundColorChange.style.top = '2px';
+    containerBackgroundColorChange.style.left = '2px';
+    containerBackgroundColorChange.onclick = () => {
+        imageAndButtonsContainer.style.backgroundColor = genareteRandomColor();
+    };
+
+    // Append button container to the main container
+    imageAndButtonsContainer.appendChild(containerBackgroundColorChange);
+    imageAndButtonsContainer.appendChild(buttonContainer);
+    
+    // Append the main container to the target element
+    targetElement.appendChild(imageAndButtonsContainer);
+}
+
 // Function to set image size while preserving aspect ratio
 function setImageSize(img, maxWidth, maxHeight, extra_ratio = NaN) {
     let ratio = img.naturalWidth / img.naturalHeight;

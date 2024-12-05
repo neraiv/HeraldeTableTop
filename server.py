@@ -7,6 +7,7 @@ import os
 from import_db_files import *
 from db_handler import wait_until_file_is_closed, generate_key
 
+DEBUG_MODE = False
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -33,13 +34,22 @@ def debug():
 def home():
     return render_template('debug_login.html')  # Render the HTML file
     
-@app.route('/game/<string:key>')  # Route with parameters
-def game(key):
+@app.route('/game')  # Route with parameters
+def game():
+    key = request.args.get('key')  # Assuming key is passed as a query parameter
     return openGamePage(key)
 
 @app.route('/requestLogin', methods=['POST'])
 def login():
     return login_func()
+
+@app.route('/getGameInfo', methods=['GET'])
+def getGameInfo():
+    return getGameInfo_func()
+
+@app.route('/getChat', methods=['GET'])
+def getChat():
+    return getChat_func()
 
 @app.route('/getChar', methods=['POST'])
 def getChar():
@@ -48,6 +58,71 @@ def getChar():
 @app.route('/registerChar', methods=['POST'])
 def registerChar():
     return registerChar_func()
+
+def getGameFile(name, from_session = True):
+    wait_until_file_is_closed(SERVER_INFO)
+    with open(SERVER_INFO, 'r') as file:
+        server_info = json.load(file)
+        #FUTURE LAST SESSİON VARMI YOKMU BAKILMASI LAZIM
+    last_session = server_info["last_session"]
+
+    path = GAMES_PATH + ("/" + last_session if from_session else "")+ "/" + name
+    with open(path, 'r') as file:
+        return json.load(file)
+
+def getChat_func():
+    try:
+        key = request.args.get('key')  # Extract 'key' from query parameters
+        info = request.args.get('info')  # Extract 'info' from query parameters
+
+        if not key and not DEBUG_MODE:
+            return jsonify({"error": "Key is not provided."}), 400
+        
+        if not DEBUG_MODE:
+            user = controlKey(key)
+
+        if user or DEBUG_MODE:
+            db_data = getGameFile(info)
+            if db_data:
+                return jsonify({"success": "Successfully got game info file.", "data": db_data}) 
+            else:
+                return jsonify({"error": "Game info not found."}), 404
+        else:
+            return jsonify({"error": "User not found or not online."}), 404
+        
+    except json.JSONDecodeError:
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+def getGameInfo_func():
+    try:
+        key = request.args.get('key')  # Extract 'key' from query parameters
+        info = request.args.get('info')  # Extract 'info' from query parameters
+
+        if not key and not DEBUG_MODE:
+            return jsonify({"error": "Key is not provided."}), 400
+        
+        if not DEBUG_MODE:
+            user = controlKey(key)
+
+        if user or DEBUG_MODE:
+            db_data = getGameFile(info)
+            if db_data:
+                return jsonify({"success": "Successfully got game info file.", "data": db_data}) 
+            else:
+                return jsonify({"error": "Game info not found."}), 404
+        else:
+            return jsonify({"error": "User not found or not online."}), 404
+        
+    except json.JSONDecodeError:
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def registerChar_func():
     try:
@@ -80,10 +155,6 @@ def registerChar_func():
                 return jsonify({"success": "Character registered.", "char_name": char_name}), 200
             else:
                 return jsonify({"error": "Character already registered."}), 400
-            
-
-            
-            return jsonify({"success": "Character registered.", "char_name": char_name}), 200
         else:
             return jsonify({"error": "User not found or not online."}), 404
         
@@ -143,7 +214,7 @@ def openGamePage(key):
     except json.JSONDecodeError:
         return jsonify({
             "error": f"Error decoding JSON in function {__name__}"
-        }), 500
+        }), 500 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -179,7 +250,7 @@ def login_func():
                 with open(USERS, 'w') as file:
                     json.dump(users_data, file, indent=4)
 
-                return jsonify({"success": "Successfully logged in as " + user["type"], "url": user["key"]}), 200
+                return jsonify({"success": "Successfully logged in as " + user["type"], "key": user["key"]}), 200
             else:
                 return jsonify({"error": "User is already logged in."})
         else:

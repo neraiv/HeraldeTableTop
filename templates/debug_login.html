@@ -82,15 +82,15 @@
         <form class="login-form">
             <div class="form-group">
                 <label for="server-key">Server Key</label>
-                <input type="text" id="server-key" name="server-key" placeholder="Enter Server Key">
+                <input type="text" id="server-key" name="server-key" placeholder="Enter Server Key" value="123521">
             </div>
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Enter Username">
+                <input type="text" id="username" name="username" placeholder="Enter Username" value="yilmo">
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="text" id="password" name="password" placeholder="Enter Password">
+                <input type="text" id="password" name="password" placeholder="Enter Password" value="123321avz">
             </div>
             <button id="login-button" type="submit">Login</button>
         </form>
@@ -100,30 +100,7 @@
     </div>
 </body>
     <script>
-        // Handle game join button click
-        function openGame(username, key){
-            $.ajax({
-                url: "http://127.0.0.1:5000/game", // Same URL as before
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    username: username,
-                    password: key,
-                }),
-                success: function(response) {
-                    // If the server responds with an HTML page after login
-                    if (response.error) {
-                        alert('Login failed: ' + response.error); // Show an error if login fails
-                    }else{
-                        window.location.href = response; // Redirect to /game
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                    alert('An error occurred while processing the login.');
-                }
-            });        
-        }
+        // Handle game join button clic
         $('#login-button').on('click', function(event) {
             event.preventDefault();
             
@@ -140,7 +117,10 @@
                     if (response.error) {
                         alert('Login failed: ' + response.error); // Show an error if login fails
                     }else{
-                        window.location.href = "/game/"+response.url; // Redirect to /game
+                        let urlParams = new URLSearchParams(window.location.search);
+                        urlParams.set("game_id", $('#server-key').val());
+                        urlParams.set("key", response.key)
+                        window.location.href = "/game?" + urlParams.toString(); 
                     }
                 },
                 error: function(xhr, status, error) {
