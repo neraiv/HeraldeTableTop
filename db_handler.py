@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 from import_db_files import *  # Ensure this has the USERS path or constants
 import secrets
+from chat_handeler import ChatHandler
 
 
 DEBUG_MODE = True
@@ -12,7 +13,9 @@ TEST_MODE = True
 SETTING_USER_SYNC_TIME_IN_SECONDS = 100000
 SETTING_SERVER_SYNC_TIME_IN_SECONDS = 1
 
-default_server_info = {"server_time": "", "server_status": "online", "last_session": "session-1"}
+DB_CHAT = ChatHandler(os.path.join(DB_MAIN_PATH, 'database', 'chat.csv'))
+
+default_server_info = {"server_time": "", "server_status": "online", "last_session": "session-1", "chat_idx": 0}
 
 def generate_key():
     if os.path.exists(USERS):
@@ -95,6 +98,8 @@ def update_server_time():
         # Update the server time in the server data
         server_data["server_time"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
         server_data["server_status"] = "online"
+        if str(DB_CHAT.last_idx) != server_data["chat_idx"]:
+            server_data["chat_idx"] = DB_CHAT.last_idx
         
         # Save the updated server data back to the file
         wait_until_file_is_closed(SERVER_INFO)

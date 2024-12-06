@@ -1,7 +1,19 @@
 const godLevelServerDomain = "https://heraldednd.wuaze.com/"
 
 const DEBUG_MODE = true;
-let userKey;
+
+class ClassPlayer {
+    constructor(
+        userKey = null,
+        userName = null
+    ) {
+        this.userKey = userKey;
+        this.userName = userName;
+    }
+}
+let player = new ClassPlayer()
+let serverInfo = null
+let gameElements = null
 
 const gameboard = document.getElementById('gameboard');
 const gameboardContent = document.getElementById('gameboard-content');
@@ -20,6 +32,9 @@ const dragOverlay = document.getElementById('drag-overlay');
 // let currentLayer = 'character-layer'; // Default to character layer
 
 let inGameChars = {};
+
+// UI 
+let chatData = []
 
 // let objectsPositions = new Map(); // Store original positions for each image
 // let inGameChars = new Map();

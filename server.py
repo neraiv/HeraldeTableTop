@@ -4,8 +4,9 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS  # Import the CORS package
 import json
 import os
+
 from import_db_files import *
-from db_handler import wait_until_file_is_closed, generate_key
+from db_handler import wait_until_file_is_closed, generate_key, DB_CHAT
 
 DEBUG_MODE = False
 
@@ -13,7 +14,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Define the on_exit function
-def controlKey(key) -> dict:
+def controlKey(key) -> tuple[str, dict]:
     wait_until_file_is_closed(USERS)
     with open(USERS, 'r') as file:
         users_data: dict = json.load(file)
@@ -23,8 +24,8 @@ def controlKey(key) -> dict:
     for username in users_data.keys():
         user = users_data[username]
         if user['key'] == key and user['status'] == 'online':
-            return user
-    return None
+            return username, user
+    return None, None
 
 @app.route('/debug')  # Renamed this route
 def debug():
@@ -51,6 +52,10 @@ def getGameInfo():
 def getChat():
     return getChat_func()
 
+@app.route('/sendMessage', methods=['POST'])
+def sendMessage():
+    return sendMessage_func()
+
 @app.route('/getChar', methods=['GET'])
 def getChar():
     return getChar_func()
@@ -66,25 +71,64 @@ def getGameFile(name, from_session = True):
         #FUTURE LAST SESSİON VARMI YOKMU BAKILMASI LAZIM
     last_session = server_info["last_session"]
 
-    path = GAMES_PATH + ("/" + last_session if from_session else "")+ "/" + name
+    path = ""
+    if from_session:
+        path = os.path.join(GAMES_PATH, last_session, name)
+    else:
+        path = os.path.join(DB_MAIN_PATH,"database", name)
+
     with open(path, 'r') as file:
         return json.load(file)
 
-def getChat_func():
+def sendMessage_func():
     try:
-        key = request.args.get('key')  # Extract 'key' from query parameters
-        info = request.args.get('info')  # Extract 'info' from query parameters
+
+        data: dict = request.get_json()
+        if data is None:
+            return jsonify({"error": "Invalid JSON data."}), 400
+        key = data.get('key')
+        message = data.get('message')
 
         if not key and not DEBUG_MODE:
             return jsonify({"error": "Key is not provided."}), 400
         
         if not DEBUG_MODE:
-            user = controlKey(key)
+            username = controlKey(key)[0]
+
+        if username or DEBUG_MODE:
+            try:
+                DB_CHAT.addMessage(username, message)
+                return jsonify({"success": "Message sent successfully."})
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+        else:
+            return jsonify({"error": "User not found or not online."}), 404        
+    except json.JSONDecodeError:
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def getChat_func():
+    try:
+        key = request.args.get('key')  # Extract 'key' from query parameters
+        idx = int(request.args.get('idx'))  # Extract 'info' from query parameters
+        len = int(request.args.get('len')) # Extract
+
+        if not key or not idx or not len and not DEBUG_MODE:
+            return jsonify({"error": "Key is not provided."}), 400
+        
+        print(len, idx , request.args.get('len'), request.args.get('idx'))
+            
+        if not DEBUG_MODE:
+            user = controlKey(key)[0]
 
         if user or DEBUG_MODE:
-            db_data = getGameFile(info)
-            if db_data:
-                return jsonify({"success": "Successfully got game info file.", "data": db_data}) 
+            chat_data = DB_CHAT.getMessages(idx, len)
+            print(chat_data)
+            if chat_data:
+                return jsonify({"success": "Successfully got game info file.", "data": chat_data}) 
             else:
                 return jsonify({"error": "Game info not found."}), 404
         else:
@@ -101,15 +145,21 @@ def getGameInfo_func():
     try:
         key = request.args.get('key')  # Extract 'key' from query parameters
         info = request.args.get('info')  # Extract 'info' from query parameters
+        state = request.args.get('state') # Extract 'state' from query
 
-        if not key and not DEBUG_MODE:
-            return jsonify({"error": "Key is not provided."}), 400
+        if not key or not info or not state and not DEBUG_MODE:
+            return jsonify({"error": "Missing data"}), 400
         
+        if state  == "true":
+            state = True
+        elif state == "false":
+            state = False
+
         if not DEBUG_MODE:
-            user = controlKey(key)
+            user = controlKey(key)[0]
 
         if user or DEBUG_MODE:
-            db_data = getGameFile(info)
+            db_data = getGameFile(info, state)
             if db_data:
                 return jsonify({"success": "Successfully got game info file.", "data": db_data}) 
             else:
@@ -135,7 +185,7 @@ def registerChar_func():
         if not key:
             return jsonify({"error": "Key is not provided."}), 400
         
-        user = controlKey(key)
+        user = controlKey(key)[1]
 
         if user:
             
@@ -173,7 +223,7 @@ def getChar_func():
         if not key:
             return jsonify({"error": "Key is not provided."}), 400
         
-        user = controlKey(key)
+        user = controlKey(key)[0]
 
         if user:
             
@@ -200,7 +250,7 @@ def openGamePage(key):
         if not key:
             return jsonify({"error": "Key or username not provided."}), 400
         
-        user = controlKey(key)
+        user = controlKey(key)[1]
         
         if user:
             if user['type'] == "dungeon_master":

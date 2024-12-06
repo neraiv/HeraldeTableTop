@@ -135,9 +135,7 @@
 }
 
 .menu-bar {
-    position: absolute;
-    right: 5px;
-    top: 5px;
+    margin-top: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
