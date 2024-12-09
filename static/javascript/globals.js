@@ -78,7 +78,6 @@ let sceneInfo = new ClassSceneInfo()
 // UI 
 let chatData = []
 
-const gameboard = document.getElementById('gameboard');
 const gameboardContent = document.getElementById('gameboard-content');
 const userInterface = document.getElementById('user-interface');
 const gridBackground = document.getElementById('grid-background');

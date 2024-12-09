@@ -1,20 +1,14 @@
 /* GAMEBOARD */
 
-#gameboard{
-    z-index: -1
-
-}
 #gameboard-content {
     z-index: -1;
     transform-origin: center;
     position: absolute;
+    border: #333 solid;
 }
 
 #grid-background {
-    z-index: -1;
-    position: absolute;
-    width: 100%;
-    height: 100%;
+    z-index: -2;
     top: 0;
     left: 0;
     background-image: 
@@ -24,23 +18,20 @@
 }
 
 #background-layer {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: -2; /* Background images */
+    z-index: -3; /* Background images */
 }
 #character-layer {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: -3; /* Character images */
+    z-index: -4; /* Character images */
 }
 
 #fog-layer {
-    position: absolute;
+    z-index: -5; /* Fog images (if applicable) */
+}
+
+.layer{
+    position: relative;
     width: 100%;
     height: 100%;
-    z-index: -4; /* Fog images (if applicable) */
 }
 
 .background {

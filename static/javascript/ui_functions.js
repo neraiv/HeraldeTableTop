@@ -113,8 +113,6 @@ async function initGameBoard() {
 
         gameboardContent.style.width = `${width}px`
         gameboardContent.style.height = `${height}px`;
-        gameboardContent.style.left = `${-width/2}px`;
-        gameboardContent.style.top = `${-height/2}px`;
 
         gameboardContent.style.transform = `translate(0px, 0px) scale(1)`;
 
@@ -124,26 +122,26 @@ async function initGameBoard() {
     }
 
     async function initGameBoardFunctions(){
-        gameboard.addEventListener('mousedown', (event) => {
-            if (event.button === 0 && gameboard.style.cursor === 'move') { // Middle mouse button
+        gameboardContent.addEventListener('mousedown', (event) => {
+            if (event.button === 0 && gameboardContent.style.cursor === 'move') { // Middle mouse button
                 isPanning = true;
                 startX = event.clientX - panX;
                 startY = event.clientY - panY;
             }
-            if (event.button === 1 && gameboard.style.cursor !== 'move') { // Middle mouse button
+            if (event.button === 1 && gameboardContent.style.cursor !== 'move') { // Middle mouse button
                 isPanning = true;
                 startX = event.clientX - panX;
                 startY = event.clientY - panY;
-                gameboard.style.cursor = 'grabbing';
+                gameboardContent.style.cursor = 'grabbing';
             }
         });
     
-        gameboard.addEventListener('mouseup', (event) => {
+        gameboardContent.addEventListener('mouseup', (event) => {
             isPanning = false;
-            if (event.button === 1 && gameboard.style.cursor !== 'move') gameboard.style.cursor = 'auto';
+            if (event.button === 1 && gameboardContent.style.cursor !== 'move') gameboardContent.style.cursor = 'auto';
         });
     
-        gameboard.addEventListener('mousemove', (event) => {
+        gameboardContent.addEventListener('mousemove', (event) => {
             if (!isPanning) return;
             panX = event.clientX - startX;
             panY = event.clientY - startY;
@@ -151,7 +149,7 @@ async function initGameBoard() {
             gameboardContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
         });
     
-        gameboard.addEventListener('wheel', (event) => {
+        gameboardContent.addEventListener('wheel', (event) => {
             event.preventDefault();
             const scaleAmount = -event.deltaY * 0.001;
             scale = Math.min(Math.max(uiSettings.max_zoom_out, scale + scaleAmount), uiSettings.max_zoom_in);
