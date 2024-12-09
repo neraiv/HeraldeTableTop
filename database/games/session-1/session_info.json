@@ -1,0 +1,27 @@
+{
+    "currentScene" : {
+        "name": "The Depths",
+        "layer" : 1
+    },
+    "inGameChars" : [
+        {
+            "name": "Faramir",
+            "x": 200,
+            "y":100,
+            "team" : "Enemy"
+        },
+        {
+            "name": "Sir Gwain",
+            "x": 200,
+            "y": 200,
+            "team" : "Ally"
+        },
+        {
+            "name": "mountainless_dwarf",
+            "x": 200,
+            "y":100,
+            "team" : "Enemy"
+        }
+    ],
+    "object_positions" : []
+}

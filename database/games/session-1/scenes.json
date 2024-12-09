@@ -1,8 +1,61 @@
 {
-    "bodyguard" : {
-        "objectPositions" : {
-            "1" : [ "char-token-yilmo", 582, 100],
-            "2" : [ "char-token-kahlo", 582, 160]
-        } 
+    "The Depths" : {
+        "width" : 2000,
+        "height" : 2000,
+        "grid_size" : 100,
+        "layers" : {
+            "1": {
+                "img" : "living-depths-1",
+                "type": "dark",
+                "x": -400,
+                "y": -300,
+                "scale": 1,
+                "portals":{
+                    "1":{
+                        "type": "layer",
+                        "to": "2",
+                        "x": 300,
+                        "y": 200,
+                        "scale": 1   
+                    }
+                }
+            },
+            "2": {
+                "img" : "living-depths-2",
+                "type": "dark",
+                "x": -200,
+                "y": -200,
+                "scale": 1,
+                "portals":{
+                    "1":{
+                        "type": "layer",
+                        "to": "1",
+                        "x": 300,
+                        "y": 200,
+                        "scale": 1   
+                    }
+                }
+            }
+        }
+    },
+    "The Royal Bank":{
+        "layers" : {
+            "1": {
+                "img" : "royal-bank-1",
+                "type": "light",
+                "x": -300,
+                "y": -300,
+                "scale": 1,
+                "portals":{
+                    "1":{
+                        "type": "scene",
+                        "to": "The Depths",
+                        "x": 300,
+                        "y": 200,
+                        "scale": 1   
+                    }
+                }
+            }
+        }
     }
 }

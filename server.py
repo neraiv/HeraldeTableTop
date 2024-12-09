@@ -4,18 +4,25 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS  # Import the CORS package
 import json
 import os
+import atexit
 
 from import_db_files import *
-from db_handler import wait_until_file_is_closed, generate_key, DB_CHAT
+from db_handler import *
 
 DEBUG_MODE = False
 
+db = DBHandeler(os.path.join(DB_MAIN_PATH, 'database', 'chat.csv'))
+
+sync_thread = threading.Thread(target=db.start_sync_timer, daemon=True)
+sync_thread.start()
+
+atexit.register(db.on_exit)
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Define the on_exit function
 def controlKey(key) -> tuple[str, dict]:
-    wait_until_file_is_closed(USERS)
+    db.wait_until_file_is_closed(USERS)
     with open(USERS, 'r') as file:
         users_data: dict = json.load(file)
     
@@ -27,14 +34,18 @@ def controlKey(key) -> tuple[str, dict]:
             return username, user
     return None, None
 
+@app.route('/')  # Renamed this route
+def home():
+    return render_template('debug_login.html')  # Render the HTML file
+
 @app.route('/debug')  # Renamed this route
 def debug():
     return render_template('debug_game.html')  # Render the HTML file
+   
+@app.route('/getSession', methods=['GET'])  # Route with parameters
+def getSession():
+    return getSession_func()
 
-@app.route('/login')  # Renamed this route
-def home():
-    return render_template('debug_login.html')  # Render the HTML file
-    
 @app.route('/game')  # Route with parameters
 def game():
     key = request.args.get('key')  # Assuming key is passed as a query parameter
@@ -65,7 +76,7 @@ def registerChar():
     return registerChar_func()
 
 def getGameFile(name, from_session = True):
-    wait_until_file_is_closed(SERVER_INFO)
+    db.wait_until_file_is_closed(SERVER_INFO)
     with open(SERVER_INFO, 'r') as file:
         server_info = json.load(file)
         #FUTURE LAST SESSİON VARMI YOKMU BAKILMASI LAZIM
@@ -79,6 +90,65 @@ def getGameFile(name, from_session = True):
 
     with open(path, 'r') as file:
         return json.load(file)
+
+def templeteGetFunc():
+    try:
+        key = request.args.get('key')  # Extract 'key' from query parameters
+
+        if not key and not DEBUG_MODE:
+            return jsonify({"error": "Key is not provided."}), 400
+        
+        if not DEBUG_MODE:
+            user = controlKey(key)[0]
+
+        if user or DEBUG_MODE:
+            # Here
+            pass
+            # --------------------------------------------------
+        else:
+            return jsonify({"error": "User not found or not online."}), 404
+        
+    except json.JSONDecodeError:
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+def getSession_func():
+    try:
+        key = request.args.get('key')  # Extract 'key' from query parameters
+
+        if not key and not DEBUG_MODE:
+            return jsonify({"error": "Key is not provided."}), 400
+        
+        if not DEBUG_MODE:
+            user = controlKey(key)[0]
+
+        if user or DEBUG_MODE:
+            session_data: dict = getGameFile("session_info.json")
+            
+            # Get the current scene
+            currentSceneName = session_data["currentScene"]["name"]
+            scenes_data = getGameFile("scenes.json")
+            currentSceneData = scenes_data[currentSceneName]
+                        
+            if session_data and currentSceneData:
+                return jsonify({"success": "200", "session": session_data, "scene": currentSceneData}), 200
+            else:
+                # FUTURE Find what is missing?   
+                return jsonify({"error": "Something is missing in session."}), 404
+        else:
+            return jsonify({"error": "User not found or not online."}), 404
+        
+    except json.JSONDecodeError:
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 
 def sendMessage_func():
     try:
@@ -97,7 +167,7 @@ def sendMessage_func():
 
         if username or DEBUG_MODE:
             try:
-                DB_CHAT.addMessage(username, message)
+                db.addMessage(username, message)
                 return jsonify({"success": "Message sent successfully."})
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
@@ -125,7 +195,7 @@ def getChat_func():
             user = controlKey(key)[0]
 
         if user or DEBUG_MODE:
-            chat_data = DB_CHAT.getMessages(idx, len)
+            chat_data = db.getMessages(idx, len)
             print(chat_data)
             if chat_data:
                 return jsonify({"success": "Successfully got game info file.", "data": chat_data}) 
@@ -190,7 +260,7 @@ def registerChar_func():
         if user:
             
             if user.get("character") == "":
-                wait_until_file_is_closed(CHARS)
+                db.wait_until_file_is_closed(CHARS)
                 with open(CHARS, 'r') as file:
                     all_chars: dict = json.load(file)
                 
@@ -198,7 +268,7 @@ def registerChar_func():
                 char_name = char["name"]
                 all_chars[char_name] = char
 
-                wait_until_file_is_closed(CHARS)
+                db.wait_until_file_is_closed(CHARS)
                 with open(CHARS, 'w') as file:
                     json.dump(all_chars, file)
                 
@@ -278,7 +348,7 @@ def login_func():
 
         # Load the user data from the file
         if os.path.exists(USERS):
-            wait_until_file_is_closed(USERS)
+            db.wait_until_file_is_closed(USERS)
             with open(USERS, 'r') as file:     
                 users_data: dict = json.load(file)
 
@@ -291,11 +361,11 @@ def login_func():
             if user["status"] == "offline":       
                 # Update last_sync to current time
                 user["last_sync"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
-                user["key"] = generate_key()
+                user["key"] = db.generate_key()
                 user["status"] = "online"
 
                 # Save updated last_sync and status back to the file
-                wait_until_file_is_closed(USERS)
+                db.wait_until_file_is_closed(USERS)
                 with open(USERS, 'w') as file:
                     json.dump(users_data, file, indent=4)
 

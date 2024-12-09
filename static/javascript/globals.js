@@ -11,30 +11,91 @@ class ClassPlayer {
         this.userName = userName;
     }
 }
+
+class ClassPortalInfo {
+    constructor(
+        type,
+        to,
+        x,
+        y,
+        scale,
+    ) {
+        this.type = type;
+        this.to = to;
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+    }
+}
+
+class ClassLayerInfo {
+    constructor(
+        img,
+        type,
+        x,
+        y,
+        scale,
+        portals
+    ) {
+        this.img = img;
+        this.type = type;
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+        this.portals = portals;
+    }
+}
+class ClassSceneInfo {
+    constructor(
+        width,
+        height,
+        grid_size,
+        layers = {}
+    ) {
+        this.width = width;
+        this.height = height;
+        this.grid_size = grid_size;
+        this.layers = layers;
+    }
+}
+class ClassSessionInfo {
+    constructor(
+        currentScene = {},
+        ingGameChars = [],
+        object_positions = []
+    ) {
+        this.currentScene = currentScene;
+        this.ingGameChars = ingGameChars;
+        this.object_positions = object_positions;
+    }
+}
+
 let player = new ClassPlayer()
 let serverInfo = null
 let gameElements = null
+let sessionInfo = new ClassSessionInfo()
+let sceneInfo = new ClassSceneInfo()
+// UI 
+let chatData = []
 
 const gameboard = document.getElementById('gameboard');
 const gameboardContent = document.getElementById('gameboard-content');
-const driveImagesBar = document.getElementById('drive-images-bar');
 const userInterface = document.getElementById('user-interface');
 const gridBackground = document.getElementById('grid-background');
+const backgroundLayer = document.getElementById('background-layer')
+
+const driveImagesBar = document.getElementById('drive-images-bar');
 const dragOverlay = document.getElementById('drag-overlay');
 
 // /* GAMEBOARD VARIABLES */
-// let isPanning = false;
-// let startX, startY;
-// let scale = 1;
-// let panX = 0;
-// let panY = 0;
-// let dragStartX, dragStartY; // Variables to store the drag start position
-// let currentLayer = 'character-layer'; // Default to character layer
+let isPanning = false;
+let startX, startY;
+let scale = 1;
+let panX = 0;
+let panY = 0;
+let dragStartX, dragStartY; // Variables to store the drag start position
 
-let inGameChars = {};
 
-// UI 
-let chatData = []
 
 // let objectsPositions = new Map(); // Store original positions for each image
 // let inGameChars = new Map();

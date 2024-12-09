@@ -2,6 +2,26 @@ const serverUrl = DEBUG_MODE ? "http://localhost:5000/" : godLevelServerDomain ;
 let isUpdating = false; // Flag to prevent multiple updates
 
 
+async function dbGetSession(){
+    const params = new URLSearchParams({
+        "key": player.userKey
+    });
+
+    try {
+        const response = await fetch(`${serverUrl}getSession?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error("Error in getChar: ", err);
+        return null
+    }  
+}
+
 async function getChat(idx, len) {
     const params = new URLSearchParams({
         "key": player.userKey,
