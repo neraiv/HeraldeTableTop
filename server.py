@@ -75,6 +75,39 @@ def getChar():
 def registerChar():
     return registerChar_func()
 
+@app.route('/getUrlForImage', methods=['GET'])
+def getUrlForImage():
+    return getUrlForImage_func()
+
+def getUrlForImage_func():
+    try:
+        key = request.args.get('key')  # Extract 'key' from query parameters
+        name = request.args.get('name')  # Extract 'name' from query parameters
+        location = request.args.get('location')  # Extract 'location' from query parameters
+        type = request.args.get('type')  # Extract 'type' from query parameters
+
+        if not key or not name and location and type and not DEBUG_MODE:
+            return jsonify({"error": "Key or image name is not provided."}), 400
+        
+        if not DEBUG_MODE:
+            user = controlKey(key)[0]
+
+        if user or DEBUG_MODE:
+            db_result = db.check_image(location, name, type)
+            if db_result[0]:
+                return jsonify({"success": "Image URL retrieved.", "url": f"static/images/{location}/{name}/{db_result[1]}"}), 200
+            else:
+                return jsonify({"error": "Image not found."}), 404
+        else:
+            return jsonify({"error": "User not found or not online."}), 404
+        
+    except json.JSONDecodeError:
+        return jsonify({
+            "error": f"Error decoding JSON in function {__name__}"
+        }), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 def getGameFile(name, from_session = True):
     db.wait_until_file_is_closed(SERVER_INFO)
     with open(SERVER_INFO, 'r') as file:
@@ -131,10 +164,9 @@ def getSession_func():
             # Get the current scene
             currentSceneName = session_data["currentScene"]["name"]
             scenes_data = getGameFile("scenes.json")
-            currentSceneData = scenes_data[currentSceneName]
                         
-            if session_data and currentSceneData:
-                return jsonify({"success": "200", "session": session_data, "scene": currentSceneData}), 200
+            if session_data and scenes_data:
+                return jsonify({"success": "200", "session": session_data, "scenes": scenes_data}), 200
             else:
                 # FUTURE Find what is missing?   
                 return jsonify({"error": "Something is missing in session."}), 404

@@ -1,6 +1,7 @@
 const leftSideBar = document.getElementById('ui-letside-bar');
 leftSideBar.classList.add('column');
 leftSideBar.classList.add('vertical')
+leftSideBar.style.backgroundColor = "#d3dae2";
 leftSideBar.style.top = '0px';
 leftSideBar.style.left = '0px';
 leftSideBar.style.width = "50px";
@@ -121,13 +122,24 @@ const sendButton = createImageButton(40, {icon: "send"})
 sendButton.style.fontFamily = 'Material Icons Outlined';
 chatWriteArea.appendChild(sendButton);
 
+/*
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////// TOP BAR //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+*/
 
 const topBar = document.getElementById("ui-top-bar");
 topBar.classList.add("row");
 topBar.style.display = "flex";
-topBar.style.height = "40px";
 topBar.style.marginTop = "5px";
 topBar.style.gap = "5px";
+
+const topBarSceneInfo = document.createElement("div");
+topBarSceneInfo.classList.add("column");
+topBarSceneInfo.classList.add("centered");
+topBarSceneInfo.style.flex = "auto";
+topBarSceneInfo.style.overflow = "overflow"
+topBar.appendChild(topBarSceneInfo);
 
 const topBarSceneName = document.createElement("h2");
 topBarSceneName.textContent = "Scene Name";
@@ -138,9 +150,27 @@ topBarSceneName.style.background = "linear-gradient(135deg, #8e44ad, #3498db)"; 
 topBarSceneName.style.color = "#f5f5f5"; // Light text color
 topBarSceneName.style.borderRadius = "8px"; // Rounded corners
 topBarSceneName.style.fontFamily = "'Cinzel', serif"; // DnD theme font
-topBarSceneName.style.fontSize = "24px"; // Larger font size
+topBarSceneName.style.fontSize = "20px"; // Larger font size
 topBarSceneName.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 0.3)"; // Subtle shadow for depth
 topBarSceneName.style.padding = "5px"; // Padding to keep text off the edges
 topBarSceneName.style.margin = "0px"; // No margin
+topBarSceneInfo.appendChild(topBarSceneName);
 
-topBar.appendChild(topBarSceneName);
+const topBarLayerName = document.createElement("h3");
+topBarLayerName.textContent = "Layer 1";
+topBarLayerName.style.flex = "auto";
+topBarLayerName.style.textAlign = "center";
+topBarLayerName.style.background = "red";
+topBarLayerName.style.color = "#f5f5f5"; // Light text color
+topBarLayerName.style.borderBottomLeftRadius = "8px"; // Rounded corners
+topBarLayerName.style.borderBottomRightRadius = "8px"; // Rounded corners
+topBarLayerName.style.fontFamily = "'Cinzel', serif"; // DnD theme font
+topBarLayerName.style.fontSize = "14px"; // Larger font size
+topBarLayerName.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 0.3)"; // Subtle shadow for depth
+topBarLayerName.style.padding = "5px"; // Padding to keep text off the edges
+topBarLayerName.style.margin = "0px"; // No margin
+topBarSceneInfo.appendChild(topBarLayerName);
+
+
+
+

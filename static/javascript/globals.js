@@ -74,6 +74,7 @@ let player = new ClassPlayer()
 let serverInfo = null
 let gameElements = null
 let sessionInfo = new ClassSessionInfo()
+let scenes = null
 let sceneInfo = new ClassSceneInfo()
 // UI 
 let chatData = []

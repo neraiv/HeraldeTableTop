@@ -5,8 +5,9 @@ from datetime import datetime, timezone
 from import_db_files import *  # Ensure this has the USERS path or constants
 import secrets
 from chat_handeler import ChatHandler
+from images_handler import ImagesHandeler
 
-class DBHandeler(ChatHandler):
+class DBHandeler(ChatHandler, ImagesHandeler):
     def __init__(self, file_path):
         """
         Initialize the DBHandeler with the path to the CSV file.

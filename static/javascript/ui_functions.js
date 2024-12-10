@@ -1,20 +1,59 @@
 // Game Board -----------------------------------------------------------------------
 async function addBackground(width, height, x, y, img = null){
-    const background = document.createElement("div")
-    background.classList.add("background")
-    background.style.left = `${x}px`
-    background.style.top = `${y}px`
-    background.style.width = `${width}px`
-    background.style.height = `${height}px`
-    background.draggable = true
+    const backgroundToken = document.createElement("div")
+    backgroundToken.classList.add("background")
+    backgroundToken.style.left = `${x}px`
+    backgroundToken.style.top = `${y}px`
+    backgroundToken.style.width = `${width}px`
+    backgroundToken.style.height = `${height}px`
+    backgroundToken.draggable = true
 
     if(img){
-        background.style.backgroundImage = `url(${img})`
-        background.style.backgroundSize = "cover"
-        background.style.backgroundPosition = "center"
+        // if image loading fails retry after 1 second
+        backgroundToken.style.backgroundImage = `url(${img})` 
+        backgroundToken.style.backgroundSize = "cover"
+        backgroundToken.style.backgroundPosition = "center"
     }
 
-    backgroundLayer.appendChild(background)
+    backgroundLayer.appendChild(backgroundToken)
+
+    return backgroundToken
+}
+
+async function addPortal(portal, parent){
+    const portalToken = document.createElement("div")
+    portalToken.classList.add("portal")
+    portalToken.classList.add("type-"+portal.type)
+    portalToken.style.left = `${portal.x}px`
+    portalToken.style.top = `${portal.y}px`
+    portalToken.style.width = `${portal.width}px`
+    portalToken.style.height = `${portal.height}px`
+    portalToken.to = portal.to
+    portalToken.type = portal.type
+
+    portalToken.addEventListener("click", async function(event){
+        if(portalToken.type == "layer"){
+            if(sceneInfo.layers[portalToken.to]){
+                sessionInfo.currentScene.layer = portalToken.to
+                initLayer()
+            }else{
+                alert("Layer does not exist")
+            }
+        }else if(portalToken.type == "scene"){
+            if(scenes[portalToken.to]){
+                sceneInfo = scenes[portalToken.to]
+                sessionInfo.currentScene.name = portalToken.to
+                sessionInfo.currentScene.layer = 1
+                initScene()
+            }else{
+                alert("Scene does not exist")
+            }
+        }
+    })
+    
+    parent.appendChild(portalToken)
+
+    return portalToken
 }
 
 async function addCharacter(char, width, height, x, y, img = null){
@@ -31,6 +70,7 @@ async function addCharacter(char, width, height, x, y, img = null){
         charToken.style.backgroundImage = `url(${img})`
         charToken.style.backgroundSize = "cover"
         charToken.style.backgroundPosition = "center"
+        charToken.style.backgroundColor = "transparent"
     }
 
     characterLayer.appendChild(charToken)
@@ -40,16 +80,37 @@ async function initLayer(){
     // future get image  width and heigh with scale factor
     const layer = sceneInfo.layers[sessionInfo.currentScene.layer]
 
+    topBarLayerName.textContent = "Layer " + sessionInfo.currentScene.layer
+
     backgroundLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
+    characterLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
 
-    const width = undefined
-    const height = undefined
+    //const imgUrl = await dbGetUrlForImage(layer.img, "background", layer.type)
 
+    const background = await addBackground(layer.width, layer.height, layer.x, layer.y, "static/images/background/"+layer.img)
+    
+    if(layer.portals){
+        for(let portal of Object.values(layer.portals)){
+            addPortal(portal, background)
+        }
+    }
 
-    if(width === undefined || height === undefined){
-        addBackground(sceneInfo.grid_size, sceneInfo.grid_size, layer.x, layer.y)
-    }else{
-        addBackground(layer.width, layer.height, layer.x, layer.y)
+    async function addCharFromDb(char){
+        const charInfo =  await dbGetChar(char.name)
+            
+        if(charInfo){
+            addCharacter(charInfo.char, charInfo.width, charInfo.height, char.x, char.y, "static/images/character/"+charInfo.img)
+        }else{
+            console.log("Character not found", char.name, ". Retrying in 1 second")
+            setTimeout(addCharFromDb, 1000, char)
+        }
+    }
+
+    if(sessionInfo.inGameChars){
+        
+        for(const char of Object.values(sessionInfo.inGameChars)){
+            addCharFromDb(char)
+        }
     }
     
 }
@@ -69,38 +130,8 @@ async function initScene(){
 
     gameboardContent.style.transform = `translate(0px, 0px) scale(1)`;
 
+    topBarSceneName.textContent = sessionInfo.currentScene.name
     initLayer()
-}
-
-async function addPortal(portal){
-    const portalToken = document.createElement("div")
-    portalToken.classList.add("portal")
-    portalToken.classList.add(portal.type)
-    portalToken.style.left = `${portal.x}px`
-    portalToken.style.top = `${portal.y}px`
-    portalToken.style.width = `${portal.width}px`
-    portalToken.style.height = `${portal.height}px`
-    portalToken.to = portal.to
-
-    portalToken.addEventListener("click", async function(event){
-        if(portalToken.classList.contains("layer")){
-            if(sceneInfo.layers[portalToken.to]){
-                sessionInfo.currentScene.layer = portalToken.to
-                initLayer()
-            }else{
-                alert("Layer does not exist")
-            }
-        }else if(portalToken.classList.contains("scene")){
-            if(sceneInfo[portalToken.to]){
-                sessionInfo.currentScene = sceneInfo[portalToken.to]
-                sessionInfo.currentScene.layer = 1
-                initScene()
-            }
-        }
-
-    })
-    
-    characterLayer.appendChild(portalToken)
 }
 
 async function initGameBoard() {
@@ -139,7 +170,7 @@ async function initGameBoard() {
         gameboardContent.addEventListener('wheel', (event) => {
             event.preventDefault();
             const scaleAmount = -event.deltaY * 0.001;
-            boardEvent.scale = Math.min(Math.max(maxZoomOut, scale + scaleAmount), maxZoomIn);
+            boardEvent.scale = Math.min(Math.max(maxZoomOut, boardEvent.scale + scaleAmount), maxZoomIn);
             gameboardContent.style.transform = `translate(${boardEvent.panX}px, ${boardEvent.panY}px) scale(${boardEvent.scale})`;
         });
 
@@ -164,8 +195,9 @@ async function initGameBoard() {
 
             console.log(sessionInfo)
         }
-        if (newSessionData.scene){
-            sceneInfo = newSessionData.scene
+        if (newSessionData.scenes){
+            scenes = newSessionData.scenes
+            sceneInfo = scenes[sessionInfo.currentScene.name]
             console.log(newSessionData.scene)
             initScene()
             initGameBoardFunctions()

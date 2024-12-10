@@ -11,14 +11,14 @@
             "team" : "Enemy"
         },
         {
-            "name": "Sir Gwain",
+            "name": "Sir Gawain",
             "x": 200,
             "y": 200,
             "team" : "Ally"
         },
         {
             "name": "mountainless_dwarf",
-            "x": 200,
+            "x": 300,
             "y":100,
             "team" : "Enemy"
         }

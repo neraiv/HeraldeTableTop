@@ -38,6 +38,19 @@
     background-color: greenyellow;
 }
 
+.portal {
+    position: absolute;
+    
+}
+
+.portal.type-layer{
+    background-color: blue;
+}
+
+.portal.type-scene{
+    background-color: rgb(0, 255, 21);
+}
+
 .character{
     position: absolute;
     background-color: red;

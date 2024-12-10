@@ -5,12 +5,11 @@
         "grid_size" : 50,
         "layers" : {
             "1": {
-                "img" : "living-depths-1",
-                "type": "dark",
+                "img" : "living-depths-1/dark.jpg",
                 "x": 400,
                 "y": 300,
-                "width": 300,
-                "height": 300,
+                "width": 1000,
+                "height": 590,
                 "portals":{
                     "1":{
                         "type": "layer",
@@ -19,12 +18,19 @@
                         "y": 200,
                         "width": 50,
                         "height": 50  
+                    },
+                    "2":{
+                        "type": "scene",
+                        "to": "The Royal Bank",
+                        "x": 150,
+                        "y": 0,
+                        "width": 50,
+                        "height": 50  
                     }
                 }
             },
             "2": {
-                "img" : "living-depths-2",
-                "type": "dark",
+                "img" : "living-depths-2/dark.jpg",
                 "x": 500,
                 "y": 400,
                 "width": 200,
@@ -43,20 +49,24 @@
         }
     },
     "The Royal Bank":{
+        "width" : 2000,
+        "height" : 2000,
+        "grid_size" : 50,
         "layers" : {
             "1": {
-                "img" : "royal-bank-1",
-                "type": "light",
-                "x": -300,
-                "y": -300,
-                "scale": 1,
+                "img" : "royal-bank-1/light.jpg",
+                "x": 400,
+                "y": 300,
+                "width": 1000,
+                "height": 590,
                 "portals":{
                     "1":{
                         "type": "scene",
                         "to": "The Depths",
                         "x": 300,
                         "y": 200,
-                        "scale": 1   
+                        "width": 100,
+                        "height": 100  
                     }
                 }
             }

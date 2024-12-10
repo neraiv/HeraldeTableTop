@@ -2,6 +2,29 @@ const serverUrl = DEBUG_MODE ? "http://localhost:5000/" : godLevelServerDomain ;
 let isUpdating = false; // Flag to prevent multiple updates
 
 
+// async function dbGetUrlForImage(name, location, type) {
+//     const params = new URLSearchParams({
+//         "key": player.userKey,
+//         "name": name,
+//         "location": location,
+//         "type": type
+//     });
+
+//     try {
+//         const response = await fetch(`${serverUrl}getUrlForImage?${params.toString()}`, {
+//             method: 'GET',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
+//         const data = await response.json();
+//         return data.url;
+//     } catch (err) {
+//         console.error("Error in dbGetUrlForImage: ", err);
+//         return null;
+//     }
+// }
+
 async function dbGetSession(){
     const params = new URLSearchParams({
         "key": player.userKey
@@ -76,7 +99,7 @@ async function sendMessage(message) {
     return data
 }
 
-async function getChar(char) {
+async function dbGetChar(char) {
     const params = new URLSearchParams({
         "key": player.userKey,
         "char": char,
