@@ -1,72 +1,3 @@
-//Storage
-const storage = document.getElementById("ui-storage");
-
-const menuBar = document.createElement("div");
-menuBar.classList.add("menu-bar")
-storage.appendChild(menuBar);
-
-const menuName = document.createElement("div");
-menuName.textContent = "Storage"; 
-menuName.classList.add("menu-name")
-menuBar.appendChild(menuName);
-
-const closeButton = createImageButton(40, {icon: "arrow_circle_left"});
-closeButton.id = "ui-storage-close-button";
-closeButton.style.fontFamily = 'Material Icons Outlined';
-menuBar.appendChild(closeButton);
-
-const tabbedContainer = createTabbedContainer(3, ["Chars", "Env", "NPC"], "ui-storage-tabbed-container", false)
-tabbedContainer.style.width = "96%";
-tabbedContainer.style.flex= "auto";
-storage.appendChild(tabbedContainer);
-
-const contentChars = getContentContainer(tabbedContainer, "Chars")
-contentChars.innerHTML = ""
-const contentEnv   = getContentContainer(tabbedContainer, "Env")
-contentEnv.innerHTML = ""
-const contentNPC    = getContentContainer(tabbedContainer, "NPC")
-contentNPC.innerHTML = ""
-
-
-// CHAT
-const chat = document.getElementById("ui-chat");
-
-chat.last_idx = 0;
-
-const chatMenuBar = document.createElement("div");
-chatMenuBar.classList.add("menu-bar")
-chat.appendChild(chatMenuBar);
-
-const chatMenuName = document.createElement("div");
-chatMenuName.textContent = "Chat"; 
-chatMenuName.classList.add("menu-name")
-chatMenuBar.appendChild(chatMenuName);
-
-const chatCloseButton = createImageButton(40, {icon: "arrow_circle_right"});
-chatCloseButton.id = "ui-storage-close-button";
-chatCloseButton.style.fontFamily = 'Material Icons Outlined';
-chatMenuBar.appendChild(chatCloseButton);
-
-const chatContainer = document.createElement("div");
-chatContainer.id = "chat-container";
-chat.appendChild(chatContainer);
-
-const chatMessages = document.createElement("div")
-chatMessages.classList.add('chat-messages-container')
-chatContainer.appendChild(chatMessages);
-
-const chatWriteArea = document.createElement("div")
-chatWriteArea.classList.add('chat-write-area')
-chatContainer.appendChild(chatWriteArea);
-
-const chatWriteInput = document.createElement("textarea");
-chatWriteInput.placeholder = "Write a message...";
-chatWriteArea.appendChild(chatWriteInput);
-
-const sendButton = createImageButton(40, {icon: "send"})
-sendButton.style.fontFamily = 'Material Icons Outlined';
-chatWriteArea.appendChild(sendButton);
-
 // Game Board -----------------------------------------------------------------------
 async function addBackground(width, height, x, y, img = null){
     const background = document.createElement("div")
@@ -75,6 +6,7 @@ async function addBackground(width, height, x, y, img = null){
     background.style.top = `${y}px`
     background.style.width = `${width}px`
     background.style.height = `${height}px`
+    background.draggable = true
 
     if(img){
         background.style.backgroundImage = `url(${img})`
@@ -85,76 +17,141 @@ async function addBackground(width, height, x, y, img = null){
     backgroundLayer.appendChild(background)
 }
 
+async function addCharacter(char, width, height, x, y, img = null){
+    const charToken = document.createElement("div")
+    charToken.classList.add("character")
+    charToken.id = char.id
+    charToken.style.left = `${x}px`
+    charToken.style.top = `${y}px`
+    charToken.style.width = `${width}px`
+    charToken.style.height = `${height}px`
+    charToken.draggable = true
+
+    if(img){
+        charToken.style.backgroundImage = `url(${img})`
+        charToken.style.backgroundSize = "cover"
+        charToken.style.backgroundPosition = "center"
+    }
+
+    characterLayer.appendChild(charToken)
+}
+
+async function initLayer(){
+    // future get image  width and heigh with scale factor
+    const layer = sceneInfo.layers[sessionInfo.currentScene.layer]
+
+    backgroundLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
+
+    const width = undefined
+    const height = undefined
+
+
+    if(width === undefined || height === undefined){
+        addBackground(sceneInfo.grid_size, sceneInfo.grid_size, layer.x, layer.y)
+    }else{
+        addBackground(layer.width, layer.height, layer.x, layer.y)
+    }
+    
+}
+
+async function initScene(){
+
+    const gridSize = sceneInfo.grid_size
+    const width = sceneInfo.width
+    const height = sceneInfo.height
+
+    gridBackground.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+
+    gameboardContent.style.width = `${width}px`
+    gameboardContent.style.height = `${height}px`;
+    gameboardContent.style.top = `${-height/2}px`
+    gameboardContent.style.left = `${-width/2}px`;
+
+    gameboardContent.style.transform = `translate(0px, 0px) scale(1)`;
+
+    initLayer()
+}
+
+async function addPortal(portal){
+    const portalToken = document.createElement("div")
+    portalToken.classList.add("portal")
+    portalToken.classList.add(portal.type)
+    portalToken.style.left = `${portal.x}px`
+    portalToken.style.top = `${portal.y}px`
+    portalToken.style.width = `${portal.width}px`
+    portalToken.style.height = `${portal.height}px`
+    portalToken.to = portal.to
+
+    portalToken.addEventListener("click", async function(event){
+        if(portalToken.classList.contains("layer")){
+            if(sceneInfo.layers[portalToken.to]){
+                sessionInfo.currentScene.layer = portalToken.to
+                initLayer()
+            }else{
+                alert("Layer does not exist")
+            }
+        }else if(portalToken.classList.contains("scene")){
+            if(sceneInfo[portalToken.to]){
+                sessionInfo.currentScene = sceneInfo[portalToken.to]
+                sessionInfo.currentScene.layer = 1
+                initScene()
+            }
+        }
+
+    })
+    
+    characterLayer.appendChild(portalToken)
+}
+
 async function initGameBoard() {
     const newSessionData = await dbGetSession()
 
-    async function initLayer(layer){
-        // future get image  width and heigh with scale factor
-
-        const width = undefined
-        const height = undefined
-
-
-        if(width === undefined || height === undefined){
-            addBackground(100, 100, layer.x, layer.y)
-        }else{
-            addBackground(layer.width, layer.height, layer.x, layer.y)
-        }
-        
-    }
-
-    async function initScene(){
-
-        const gridSize = sceneInfo.grid_size
-        const width = sceneInfo.width
-        const height = sceneInfo.height
-
-        gridBackground.style.backgroundSize = `${gridSize}px ${gridSize}px`;
-
-        gameboardContent.style.width = `${width}px`
-        gameboardContent.style.height = `${height}px`;
-
-        gameboardContent.style.transform = `translate(0px, 0px) scale(1)`;
-
-        const activeLayerIdx = sessionInfo.currentScene.layer;
-        
-        initLayer(sceneInfo.layers[activeLayerIdx])
-    }
-
     async function initGameBoardFunctions(){
+        const maxZoomOut = 0.6 // If its lower grids dissaper
+        const maxZoomIn = 5 // it can be higher
         gameboardContent.addEventListener('mousedown', (event) => {
             if (event.button === 0 && gameboardContent.style.cursor === 'move') { // Middle mouse button
-                isPanning = true;
-                startX = event.clientX - panX;
-                startY = event.clientY - panY;
+                boardEvent.isPanning = true;
+                boardEvent.startX = event.clientX - boardEvent.panX;
+                boardEvent.startY = event.clientY - boardEvent.panY;
             }
             if (event.button === 1 && gameboardContent.style.cursor !== 'move') { // Middle mouse button
-                isPanning = true;
-                startX = event.clientX - panX;
-                startY = event.clientY - panY;
+                boardEvent.isPanning = true;
+                boardEvent.startX = event.clientX - boardEvent.panX;
+                boardEvent.startY = event.clientY - boardEvent.panY;
                 gameboardContent.style.cursor = 'grabbing';
             }
         });
     
         gameboardContent.addEventListener('mouseup', (event) => {
-            isPanning = false;
+            boardEvent.isPanning = false;
             if (event.button === 1 && gameboardContent.style.cursor !== 'move') gameboardContent.style.cursor = 'auto';
         });
     
         gameboardContent.addEventListener('mousemove', (event) => {
-            if (!isPanning) return;
-            panX = event.clientX - startX;
-            panY = event.clientY - startY;
+            if (!boardEvent.isPanning) return;
+            boardEvent.panX = event.clientX - boardEvent.startX;
+            boardEvent.panY = event.clientY - boardEvent.startY;
     
-            gameboardContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            gameboardContent.style.transform = `translate(${boardEvent.panX}px, ${boardEvent.panY}px) scale(${boardEvent.scale})`;
         });
     
         gameboardContent.addEventListener('wheel', (event) => {
             event.preventDefault();
             const scaleAmount = -event.deltaY * 0.001;
-            scale = Math.min(Math.max(uiSettings.max_zoom_out, scale + scaleAmount), uiSettings.max_zoom_in);
-            gameboardContent.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            boardEvent.scale = Math.min(Math.max(maxZoomOut, scale + scaleAmount), maxZoomIn);
+            gameboardContent.style.transform = `translate(${boardEvent.panX}px, ${boardEvent.panY}px) scale(${boardEvent.scale})`;
         });
+
+        gameboardContent.addEventListener('dragStart', (event) => {
+            boardEvent.dragStartX = event.clientX;
+            boardEvent.dragStartY = event.clientY;
+            // Which element is being dragged
+            const element = event.target;
+            if(element.classList.contains("background")){
+
+            }
+        })
     }
     
     if(newSessionData){

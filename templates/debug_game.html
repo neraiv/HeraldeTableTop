@@ -7,22 +7,27 @@
     <link rel="stylesheet" href="/static/styless/shared.css">
     <link rel="stylesheet" href="/static/styless/sheets.css">
     <link rel="stylesheet" href="/static/styless/gameboard.css">
+    <link rel="stylesheet" href="/static/styless/ui.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined">
 </head>
 <body>
-    <div id="user-interface" style="width: 100%; height: 100%; position: relative; top: 0px; left: 0px;">
-        <div id="ui-storage"></div>
-        <div id="ui-chat"></div>
+    <div id="user-interface">
+        <div id="ui-storage" class="menubar"></div>
+        <div id="ui-chat" class="menubar"></div>
+        <div id="ui-bottom-bar" class="menubar"></div>
+        <div id="ui-letside-bar" class="menubar"></div>
+        <div id="ui-top-bar" class="menubar"></div>
     </div>
 
-    <div id="gameboard-content">
-        <div id="grid-background" class="layer"></div>
-        <div id="background-layer" class="layer"></div>
-        <div id="character-layer" class="layer"></div>
-        <div id="fog-layer" class="layer"></div>
-        <div id="drag-overlay" class="drag-circle"></div>
+    <div id="gameboard">
+        <div id="gameboard-content">
+            <div id="grid-background"></div>
+            <div id="background-layer" class="layer passive"></div>
+            <div id="character-layer" class="layer active"></div>
+            <div id="fog-layer" class="layer passive"></div>
+            <div id="drag-overlay" class="drag-circle"></div>
+        </div>
     </div>
-
 
     <script src="/static/javascript/globals.js"></script>
     <script src="/static/javascript/shared_functions.js"></script>

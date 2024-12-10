@@ -11,6 +11,10 @@
     overflow-y: hidden; /* Prevent vertical scrolling */
 }
 
+.ui{
+    pointer-events: auto;
+}
+
 .spacer {
     flex-grow: 1; /* Allow this element to take up all available space */
 }

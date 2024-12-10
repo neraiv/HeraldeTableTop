@@ -82,17 +82,21 @@ const gameboardContent = document.getElementById('gameboard-content');
 const userInterface = document.getElementById('user-interface');
 const gridBackground = document.getElementById('grid-background');
 const backgroundLayer = document.getElementById('background-layer')
+const characterLayer = document.getElementById('character-layer')
 
-const driveImagesBar = document.getElementById('drive-images-bar');
 const dragOverlay = document.getElementById('drag-overlay');
 
 // /* GAMEBOARD VARIABLES */
-let isPanning = false;
-let startX, startY;
-let scale = 1;
-let panX = 0;
-let panY = 0;
-let dragStartX, dragStartY; // Variables to store the drag start position
+const boardEvent = {
+    isPanning : false,
+    startX : 0,
+    startY : 0,
+    scale : 1,
+    panX : 0,
+    panY : 0,
+    dragStartX : 0,
+    dragStartY : 0
+}
 
 
 

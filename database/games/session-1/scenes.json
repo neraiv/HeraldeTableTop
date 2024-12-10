@@ -2,37 +2,41 @@
     "The Depths" : {
         "width" : 2000,
         "height" : 2000,
-        "grid_size" : 100,
+        "grid_size" : 50,
         "layers" : {
             "1": {
                 "img" : "living-depths-1",
                 "type": "dark",
-                "x": -400,
-                "y": -300,
-                "scale": 1,
+                "x": 400,
+                "y": 300,
+                "width": 300,
+                "height": 300,
                 "portals":{
                     "1":{
                         "type": "layer",
                         "to": "2",
                         "x": 300,
                         "y": 200,
-                        "scale": 1   
+                        "width": 50,
+                        "height": 50  
                     }
                 }
             },
             "2": {
                 "img" : "living-depths-2",
                 "type": "dark",
-                "x": -200,
-                "y": -200,
-                "scale": 1,
+                "x": 500,
+                "y": 400,
+                "width": 200,
+                "height": 200,
                 "portals":{
                     "1":{
                         "type": "layer",
                         "to": "1",
                         "x": 300,
                         "y": 200,
-                        "scale": 1   
+                        "width": 100,
+                        "height": 100  
                     }
                 }
             }
