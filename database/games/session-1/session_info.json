@@ -1,27 +1,36 @@
 {
-    "currentScene" : {
-        "name": "The Depths",
-        "layer" : 1
-    },
     "inGameChars" : [
         {
             "name": "Faramir",
             "x": 200,
             "y":100,
-            "team" : "Enemy"
+            "team" : "Enemy",
+            "currentScene" : {
+                "name": "The Depths",
+                "layer" : 1
+            }
         },
         {
             "name": "Sir Gawain",
             "x": 200,
             "y": 200,
-            "team" : "Ally"
+            "team" : "Ally",
+            "currentScene" : {
+                "name": "The Depths",
+                "layer" : 1
+            }
         },
         {
             "name": "mountainless_dwarf",
             "x": 300,
             "y":100,
-            "team" : "Enemy"
+            "team" : "Enemy",
+            "currentScene" : {
+                "name": "The Depths",
+                "layer" : 1
+            }
         }
     ],
+    "turnBased" : true,
     "object_positions" : []
 }

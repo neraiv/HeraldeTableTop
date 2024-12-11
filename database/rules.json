@@ -1,0 +1,7 @@
+{
+    "visible_inventories" : true,
+    "is_player_can_make_items" : {
+        "state" : true,
+        "count" : "unlimited"
+    }
+}

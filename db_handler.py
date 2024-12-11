@@ -16,8 +16,10 @@ class DBHandeler(ChatHandler, ImagesHandeler):
         super().__init__(file_path)
         self.users = {}
         self.last_update_time = None
-        
-        
+
+        self.wait_until_file_is_closed(RULES)
+        with open(RULES, 'r') as file:
+            self.rules = json.load(file)   
 
         
     DEBUG_MODE = True
@@ -51,7 +53,7 @@ class DBHandeler(ChatHandler, ImagesHandeler):
             except IOError:
                 # If the file is being used by another process, IOError will be raised
                 print(f"File {file_path} is in use. Waiting for it to be closed...")
-                time.sleep(1)  # Wait for 1 second before trying again
+                time.sleep(0.1)  # Wait for 0.1 second before trying again
 
     # Function to check and set users offline if their last sync exceeds 5 seconds
     def check_users_sync(self):

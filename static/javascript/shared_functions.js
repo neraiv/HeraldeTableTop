@@ -506,7 +506,15 @@ function createImageButton(fontSize, {icon=null, source=null, custom_padding = 8
     
     if (source) {
         // Use an image source; set width and height to 100% to fill the button
-         button.innerHTML = `<img src="${source}" width="${fontSize-custom_padding}px" height="${fontSize-custom_padding}px" draggable = "false"/>`;
+        const img = document.createElement('div');
+        img.style.width = `${fontSize-custom_padding}px`;
+        img.style.height = `${fontSize-custom_padding}px`;
+        img.style.backgroundImage = source;
+        img.style.backgroundSize = 'cover';
+        img.style.backgroundColor = 'transparent';
+        img.style.backgroundPosition = 'center';
+        img.style.backgroundRepeat = 'no-repeat';
+        button.appendChild(img);
     } else if (icon) {
         // Use emoji or text icon; the font size controls the size
         button.innerHTML = icon;
@@ -910,6 +918,7 @@ function addDraggableRow(parent){
     };
 
     parent.appendChild(draggableRow);
+    return draggableRow
 }
 
 function convertToRoman(num) {

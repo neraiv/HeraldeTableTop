@@ -162,7 +162,6 @@ def getSession_func():
             session_data: dict = getGameFile("session_info.json")
             
             # Get the current scene
-            currentSceneName = session_data["currentScene"]["name"]
             scenes_data = getGameFile("scenes.json")
                         
             if session_data and scenes_data:
@@ -325,16 +324,20 @@ def getChar_func():
         if not key:
             return jsonify({"error": "Key is not provided."}), 400
         
-        user = controlKey(key)[0]
+        userName, info = controlKey(key)
 
-        if user:
+        if userName:
             
             all_chars: dict = getGameFile("chars.json")
-            
-            char = all_chars.get(char_name)
+                                
+            charInfo = all_chars.get(char_name)
 
-            if char:
-                return jsonify({"success": "Character data retrieved.", "char": char}), 200
+            if db.rules["visible_inventories"] == False:
+                if info["character"] != char_name:
+                    charInfo["char"]["inventory"] = None
+
+            if charInfo:
+                return jsonify({"success": "Character data retrieved.", "char": charInfo}), 200
             else:
                 return jsonify({"error": "Character not found."}), 200
         else:

@@ -99,10 +99,10 @@ async function sendMessage(message) {
     return data
 }
 
-async function dbGetChar(char) {
+async function dbGetChar(charName) {
     const params = new URLSearchParams({
         "key": player.userKey,
-        "char": char,
+        "char": charName,
     });
 
     try {

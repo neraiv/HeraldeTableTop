@@ -69,10 +69,24 @@ class ClassSessionInfo {
         this.object_positions = object_positions;
     }
 }
+class ClassGameRules {
+    constructor(
+        visible_inventories,
+        is_player_can_make_items = {
+            "state" : null,
+            "count" : null
+        }
+    ) {
+        this.visible_inventories = visible_inventories;
+        this.is_player_can_make_items = is_player_can_make_items
+    }
+}
 
 let player = new ClassPlayer()
+let ingameChars = {}
+
+let serverRules = new ClassGameRules()
 let serverInfo = null
-let gameElements = null
 let sessionInfo = new ClassSessionInfo()
 let scenes = null
 let sceneInfo = new ClassSceneInfo()

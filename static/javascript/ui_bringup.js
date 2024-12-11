@@ -30,6 +30,11 @@ spellBook.id = "ui-spellbook-button"
 spellBook.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(spellBook);
 
+const spellBook = createImageButton(40, {icon: "add_circle_outline"})
+spellBook.id = "ui-forge-item-button"
+spellBook.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(spellBook);
+
 const accountButton = createImageButton(40, {icon: "account_circle"})
 accountButton.id = "ui-account-button"
 accountButton.style.fontFamily = 'Material Icons Outlined'

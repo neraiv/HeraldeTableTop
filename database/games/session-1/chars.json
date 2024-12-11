@@ -2,7 +2,7 @@
     "mountainless_dwarf": {
         "char": {
             "id": "mountainless_dwarf",
-            "controlledBy": "",
+            "controlledBy": "yilmo",
             "level": 0,
             "name": "Mountenless Dwarf Uluğ Bey",
             "classess": [],
@@ -68,7 +68,7 @@
     "Sir Gawain": {
         "char": {
             "id": "Sir Gawain",
-            "controlledBy": "",
+            "controlledBy": "robotdeha",
             "level": 0,
             "name": "",
             "classess": [],
@@ -142,7 +142,7 @@
     "Faramir": {
         "char": {
             "id": "Faramir",
-            "controlledBy": "",
+            "controlledBy": "yilmo",
             "level": 0,
             "name": "",
             "classess": [],
