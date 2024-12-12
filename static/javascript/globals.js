@@ -5,44 +5,12 @@ const DEBUG_MODE = true;
 class ClassPlayer {
     constructor(
         userKey = null,
-        userName = null
+        userName = null,
+        charId = null
     ) {
         this.userKey = userKey;
         this.userName = userName;
-    }
-}
-
-class ClassPortalInfo {
-    constructor(
-        type,
-        to,
-        x,
-        y,
-        scale,
-    ) {
-        this.type = type;
-        this.to = to;
-        this.x = x;
-        this.y = y;
-        this.scale = scale;
-    }
-}
-
-class ClassLayerInfo {
-    constructor(
-        img,
-        type,
-        x,
-        y,
-        scale,
-        portals
-    ) {
-        this.img = img;
-        this.type = type;
-        this.x = x;
-        this.y = y;
-        this.scale = scale;
-        this.portals = portals;
+        this.charId = charId;
     }
 }
 class ClassSceneInfo {
@@ -81,17 +49,30 @@ class ClassGameRules {
         this.is_player_can_make_items = is_player_can_make_items
     }
 }
+class ClassServerInfo {
+    constructor(
+        server_time,
+        server_status,
+        last_session,
+        chat_idx
+    ) {
+        this.server_time = server_time;
+        this.server_status = server_status;
+        this.last_session = last_session;
+        this.chat_idx = chat_idx;
+    }
+}
 
 let player = new ClassPlayer()
-let ingameChars = {}
-
+let inGameChars = {}
 let serverRules = new ClassGameRules()
-let serverInfo = null
+let serverInfo = new ClassServerInfo()
 let sessionInfo = new ClassSessionInfo()
 let scenes = null
 let sceneInfo = new ClassSceneInfo()
 // UI 
 let chatData = []
+const audioAmbiance = new Audio();
 
 const gameboardContent = document.getElementById('gameboard-content');
 const userInterface = document.getElementById('user-interface');

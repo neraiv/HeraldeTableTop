@@ -30,15 +30,15 @@ spellBook.id = "ui-spellbook-button"
 spellBook.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(spellBook);
 
-const spellBook = createImageButton(40, {icon: "add_circle_outline"})
-spellBook.id = "ui-forge-item-button"
-spellBook.style.fontFamily = 'Material Icons Outlined'
-leftSideBar.appendChild(spellBook);
+const addItemButton = createImageButton(40, {icon: "add_circle_outline"})
+addItemButton.id = "ui-forge-item-button"
+addItemButton.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(addItemButton);
 
-const accountButton = createImageButton(40, {icon: "account_circle"})
-accountButton.id = "ui-account-button"
-accountButton.style.fontFamily = 'Material Icons Outlined'
-leftSideBar.appendChild(accountButton);
+const playerCharSheet = createImageButton(40, {icon: "account_circle"})
+playerCharSheet.id = "ui-account-button"
+playerCharSheet.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(playerCharSheet);
 
 const bottomBar = document.getElementById('ui-bottom-bar');
 bottomBar.classList.add('row');
@@ -177,5 +177,29 @@ topBarLayerName.style.margin = "0px"; // No margin
 topBarSceneInfo.appendChild(topBarLayerName);
 
 
+/*
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////// CARACTHER SHEET //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+*/
+async function displayCharaterSheet(charId) {
+    const char = inGameChars[charId];
 
+    const characterSheet = document.createElement("div");
+    characterSheet.classList.add("character-sheet");
+    characterSheet.id = "character-sheet-" + charId;
+    userInterface.appendChild(characterSheet);
+    
+    const charName = document.createElement("h2");
+    charName.textContent = char.name;
+    charName.style.textAlign = "center";
+    charName.style.fontFamily = "'Cinzel', serif"; // DnD theme font
+    charName.style.fontSize = "20px"; // Larger font size
+    charName.style.margin = "0px"; // No margin
+    charName.style.padding = "5px"; // Padding to keep text off the edges
+    charName.style.borderBottom = "1px solid black";
+    characterSheet.appendChild(charName);
+
+    
+}   
 

@@ -1,4 +1,13 @@
+// Player's Character Sheet
+playerCharSheet.onclick = () => {
+    displayCharaterSheet(player.charId)
+}
+
 // Game Board -----------------------------------------------------------------------
+function getCharScene(char_id){
+    return sessionInfo.charLocations.find(charLocation => charLocation.charId === char_id).currentScene
+}
+
 function gameBoardPan(x = null, y = null, scale = null) {
     x = x ?? boardEvent.panX;
     y = y ?? boardEvent.panY;
@@ -37,6 +46,16 @@ async function addBackground(width, height, x, y, img = null){
 }
 
 // Portal -----------------------------------------------------------------------
+async function portalDisplayName(portalToken){
+    const portalName = portalToken.firstChild
+    portalName.style.display = "block"
+}
+
+async function portalHideName(portalToken){
+    const portalName = portalToken.firstChild
+    portalName.style.display = "none"
+}
+
 async function addPortal(portal, parent){
     const portalToken = document.createElement("div")
     portalToken.classList.add("portal")
@@ -47,6 +66,17 @@ async function addPortal(portal, parent){
     portalToken.style.height = `${portal.height}px`
     portalToken.to = portal.to
     portalToken.type = portal.type
+    parent.appendChild(portalToken)
+
+    const portalName = document.createElement("div")
+    portalName.classList.add("portal-name")
+    if(portal.type == "layer"){ // FUTURE: Check for valid url
+        portalName.textContent = "Layer " + portal.to
+    }else if(portal.type == "scene"){
+        portalName.textContent = portal.to
+    }
+    portalName.style.marginBottom = `${portal.height+5}px`
+    portalToken.appendChild(portalName)
 
     if(portal.type == "layer"){ // FUTURE: Check for valid url
         portalToken.style.backgroundImage = `url("static/images/portal/blue.png")` 
@@ -54,10 +84,18 @@ async function addPortal(portal, parent){
         portalToken.style.backgroundImage = `url("static/images/portal/green.png")` 
     }
 
+    portalToken.addEventListener("mouseenter", async function(){
+        portalDisplayName(portalToken)
+    })
+
+    portalToken.addEventListener("mouseleave", async function(){
+        portalHideName(portalToken)
+    })
+
     portalToken.addEventListener("click", async function(){
         if(portalToken.type == "layer"){
             if(sceneInfo.layers[portalToken.to]){
-                sessionInfo.currentScene.layer = portalToken.to
+                getCharScene(player.charId).layer = portalToken.to
                 initLayer()
             }else{
                 alert("Layer does not exist")
@@ -65,8 +103,8 @@ async function addPortal(portal, parent){
         }else if(portalToken.type == "scene"){
             if(scenes[portalToken.to]){
                 sceneInfo = scenes[portalToken.to]
-                sessionInfo.currentScene.name = portalToken.to
-                sessionInfo.currentScene.layer = 1
+                getCharScene(player.charId).name = portalToken.to
+                getCharScene(player.charId).layer = 1
                 initScene()
             }else{
                 alert("Scene does not exist")
@@ -74,13 +112,13 @@ async function addPortal(portal, parent){
         }
     })
     
-    parent.appendChild(portalToken)
+
 
     return portalToken
 }
 
 // Character -----------------------------------------------------------------------
-async function charDisplayHoverButtons({token = null, char_id = null}) {
+function charDisplayHoverButtons({token = null, char_id = null}) {
     let charToken = token;
     if (char_id) {
         charToken = document.getElementById(char_id);
@@ -96,7 +134,7 @@ async function charDisplayHoverButtons({token = null, char_id = null}) {
     }
 }
 
-async function charHideHoverButtons({token = null, char_id = null}) {
+function charHideHoverButtons({token = null, char_id = null}) {
     let charToken = token;
     if (char_id) {
         charToken = document.getElementById(char_id);
@@ -107,19 +145,35 @@ async function charHideHoverButtons({token = null, char_id = null}) {
             button.style.transitionDelay = '0.5s'; 
             const width = parseInt(charToken.style.width, 10);
             const height = parseInt(charToken.style.height, 10);
-            button.style.left = `${width / 2}px`;
-            button.style.top = `${height/ 2}px`;
-            button.addEventListener('transitionend', () => {
-                button.style.display = 'none'; // Hides the button after the transition
-            }, { once: true }); // Remove the event listener after it's called once
+            const resetX = width / 2 - button.offsetWidth / 2;
+            const resetY = height / 2 - button.offsetHeight / 2;
+            button.style.left = `${resetX}px`;
+            button.style.top = `${resetY}px`;
+
+            // FUTURE: Hide buttons after transition
+            // button.addEventListener('transitionend', () => {
+            //     if(button.style.left === `${resetX}px` && button.style.top === `${resetY}px`){
+            //         button.style.display = 'none'; // Hides the button after the transition
+            //     }   
+            // }, {once: true});
         }
     }
 }
 
+/**
+ * Displays the inventory of a character in a fixed position on the screen.
+ * 
+ * @param {number} charId - The ID of the character whose inventory is to be displayed.
+ * @param {number} x - The x-coordinate for the position of the inventory sheet.
+ * @param {number} y - The y-coordinate for the position of the inventory sheet.
+ * 
+ * @returns {Promise<void>} - A promise that resolves when the inventory is displayed.
+ */
 async function charShowInventory(charId, x, y) {
-    const char = ingameChars[charId];
+    const char = inGameChars[charId];
     if (char) {
         const inventory = char.inventory;
+
         // Create the inventory sheet container
         const inventorySheet = document.createElement('div');
         inventorySheet.classList.add('inventory-sheet');
@@ -154,23 +208,45 @@ async function charShowInventory(charId, x, y) {
         inventoryTable.style.gap = '10px';
         inventoryTable.style.marginTop = '10px';
 
+
+        let selectedItem = null;
+
         const buttonDict = {
-            'Use Item': false,
-            'Move To': true,
+            'Use Item': true,
+            'Send To': true,
             'Description': true,
         };
 
-        const dropdownMenuItems = createDropdownMenu(inventorySheet, buttonDict);
+        const dropdownMenu = createDropdownMenu(buttonDict);
+        dropdownMenu.style.overflow = "unset";
+        inventorySheet.appendChild(dropdownMenu);
 
-        dropdownMenuItems.children[0].onclick = function(){
-            console.log('Use action clicked');
-            dropdownMenuItems[0].style.display = 'none';
+        // Create the dropdown menu for the 'Send To' button
+        const sendToButtons = {}
+        Object.keys(inGameChars).forEach(charId => {
+            sendToButtons[`${inGameChars[charId].name} (${charId})`] = true;
+        });
+        const sendToDropDownMenu = createDropdownMenu(sendToButtons);
+        sendToDropDownMenu.style.left = '105%';
+        sendToDropDownMenu.style.top = '5%';
+        dropdownMenu.appendChild(sendToDropDownMenu);
+        
+        for(let i = 0; i < 3; i++){
+            sendToDropDownMenu.children[i].onclick = function(){
+                console.log('Send To action clicked', selectedItem, sendToDropDownMenu.children[i].textContent);
+            }
+        };
+
+        dropdownMenu.children[0].onclick = function(){
+            console.log('Use action clicked', selectedItem);
         }
-        dropdownMenuItems.children[1].onclick = function(){
-            console.log('Move To action clicked');
+        dropdownMenu.children[1].onclick = function(){
+            console.log('Send To action clicked',  selectedItem);
+            sendToDropDownMenu.style.display = 'flex';
         }
-        dropdownMenuItems.children[2].onclick = function(event){
-            displayItemDescription(selectedItem, event.clientX, event.clientY);
+        dropdownMenu.children[2].onclick = function(event){
+            console.log('Description clicked',  selectedItem);
+            //displayItemDescription(selectedItem, event.clientX, event.clientY);
         }
 
         // Add items to the inventory table
@@ -181,16 +257,11 @@ async function charShowInventory(charId, x, y) {
 
             itemButton.onclick = function (event) {
                 selectedItem = item;
-                dropdownMenuItems[0].style.display = 'block';
-                if(item.itemType === itemTypes.CONSUMABLE){
-                    dropdownMenuItems[1][0].style.display = 'block';
-                }else{
-                    dropdownMenuItems[1][0].style.display = 'none';
-                }
+                dropdownMenu.style.display = 'block';
                 // Calculate position for dropdown menu
                 const rect = inventorySheet.getBoundingClientRect();
-                dropdownMenuItems[0].style.left = `${event.clientX - rect.left}px`;
-                dropdownMenuItems[0].style.top = `${event.clientY - rect.top}px`;
+                dropdownMenu.style.left = `${event.clientX - rect.left}px`;
+                dropdownMenu.style.top = `${event.clientY - rect.top}px`;
             };
             
             inventoryTable.appendChild(itemButton);
@@ -254,6 +325,9 @@ async function addCharacter(char, width, height, x, y, img = null){
     charToken.draggable = true
     characterLayer.appendChild(charToken)
 
+    if(char.controlledBy){
+
+    }
     const playerName = document.createElement("div")
     playerName.classList.add("player-name")
     playerName.textContent = char.controlledBy
@@ -284,7 +358,7 @@ async function addCharacter(char, width, height, x, y, img = null){
     charTokenInventoryButton.classList.add("inventory-button")
     charToken.appendChild(charTokenInventoryButton)
     initButton(charTokenInventoryButton)
-    charToken.onclick = function(event){
+    charTokenInventoryButton.onclick = function(event){
         charShowInventory(char.id, event.clientX, event.clientY)
     }
 
@@ -312,13 +386,29 @@ async function addCharacter(char, width, height, x, y, img = null){
             charHideHoverButtons({token: charToken})
         });
     }
+
+    charToken.addEventListener('dragstart', (event) => {
+        const hoverButtons = charToken.getElementsByClassName("hover-button");
+        for (const button of hoverButtons) {
+            button.style.display = 'none';
+        }
+    });
+
+    charToken.addEventListener('dragend', (event) => {
+        const hoverButtons = charToken.getElementsByClassName("hover-button");
+        for (const button of hoverButtons) {
+            button.style.display = 'flex';
+        }
+    });
+
+    return charToken
 }
 
 async function initLayer(){
     // future get image  width and heigh with scale factor
-    const layer = sceneInfo.layers[sessionInfo.currentScene.layer]
+    const layer = sceneInfo.layers[getCharScene(player.charId).layer]
 
-    topBarLayerName.textContent = "Layer " + sessionInfo.currentScene.layer
+    topBarLayerName.textContent = "Layer " + getCharScene(player.charId).layer
 
     backgroundLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
     characterLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
@@ -333,22 +423,38 @@ async function initLayer(){
         }
     }
 
-    async function addCharFromDb(char){
-        const charInfo =  await dbGetChar(char.name)
-            
+    async function addCharFromDb(charLocation){
+        let charInfo;
+
+        if (!inGameChars[charLocation.charId]){
+            charInfo =  await dbGetChar(charLocation.charId)
+        }
+        
         if(charInfo){
-            ingameChars[charInfo.char.id] = charInfo.char
-            addCharacter(charInfo.char, charInfo.width, charInfo.height, char.x, char.y, "static/images/character/"+charInfo.img)
+            inGameChars[charInfo.char.id] = new Character(charInfo.char)
+            if(charInfo.char.id === player.charId){
+                inGameChars[charInfo.char.id].inventory.addItem(new Item("Potion", itemTypes.CONSUMABLE), 4)
+                inGameChars[charInfo.char.id].inventory.addItem(new Item("Sword", itemTypes.WEAPON), 1)
+            }
+
+            addCharacter(charInfo.char, charInfo.width, charInfo.height, charLocation.x, charLocation.y, "static/images/character/"+charInfo.img)
         }else{
-            console.log("Character not found", char.name, ". Retrying in 1 second")
-            setTimeout(addCharFromDb, 1000, char)
+            console.log("Character not found", charLocation.charId, ". Retrying in 1 second")
+            setTimeout(addCharFromDb, 1000, charLocation)
         }
     }
 
-    if(sessionInfo.inGameChars){
-        for(const char of Object.values(sessionInfo.inGameChars)){
+    if(sessionInfo.charLocations){
+        for(const char of Object.values(sessionInfo.charLocations)){
             addCharFromDb(char)
         }
+    }
+
+    if(layer.ambiance){
+        audioAmbiance.src = new URL("static/images/background/"+layer.ambiance);
+        audioAmbiance.play().catch(error => {
+            console.error("Failed to play ambiance audio:", error);
+        });
     }
     
 }
@@ -368,7 +474,7 @@ async function initScene(){
 
     gameboardContent.style.transform = `translate(0px, 0px) scale(1)`;
 
-    topBarSceneName.textContent = sessionInfo.currentScene.name
+    topBarSceneName.textContent = getCharScene(player.charId).name
     initLayer()
 }
 
@@ -428,27 +534,23 @@ async function initGameBoard() {
     if(newSessionData){
         if(newSessionData.session){
             sessionInfo = newSessionData.session
-            
-            for(let i = 0; i < sessionInfo.inGameChars.length; i++){
-                const charInfo = await dbGetChar(sessionInfo.inGameChars[i].name)
-
-                if(charInfo){
-                    if(!ingameChars[charInfo.char.id]){
-                        ingameChars[charInfo.char.id] = charInfo.char
-                    }                                                                                                                                       
-                }
-            }
+        
             console.log(sessionInfo)
             isOk = true;
         }
 
         if (newSessionData.scenes){
             scenes = newSessionData.scenes
-
-            sceneInfo = scenes[sessionInfo.inGameChars.currentScene.name]
-            console.log(newSessionData.scenes)
-            initScene()
-            initGameBoardFunctions()
+            
+            let playerCharScene = getCharScene(player.charId)
+            if(!playerCharScene){
+                alert("Character not found in the session.")
+            }else{
+                sceneInfo = scenes[playerCharScene.name]
+                console.log(newSessionData.scenes)
+                initScene()
+                initGameBoardFunctions()
+            }
             
         }else if(isOk) isOk = false;
     }
@@ -632,28 +734,7 @@ function startSyncTimer() {
                     chat.last_idx = newServerInfo.chat_idx;
                 }
             }
- 
-            // if(gameElements && gameElements.inGameChars){
-            //     const charDiff = compareWithDb(Object.keys(inGameChars), gameElements.inGameChars);
 
-            //     if (charDiff.updateStatus) {
-            //         isUpdating = true
-            //         if (charDiff.missing.length > 0) {
-            //             for (let char of charDiff.missing) {
-            //                 const charStats = await getChar(char); // Await here works now
-            //                 console.log("New character added: ", char, charStats);
-            //                 inGameChars[char] = charStats; // Add the fetched charStats to the array
-            //             }
-            //         }
-            //         if(charDiff.removed.length > 0) {
-            //             for (let char of charDiff.removed) {
-            //                 console.log("Char removed: ", char);
-            //                 delete inGameChars[char]; // Add the fetched charStats to the array
-            //             }
-            //         }
-                    
-            //     }
-            // }
             isUpdating = false
         }
     }
@@ -664,6 +745,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     player.userKey = urlParams.get("key")
     player.userName = urlParams.get("userName")
+    player.charId = urlParams.get("charId")
 
     let isUpdating = false;
     let initErrorCounter = 0

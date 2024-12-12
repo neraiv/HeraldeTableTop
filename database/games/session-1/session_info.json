@@ -1,7 +1,7 @@
 {
-    "inGameChars" : [
+    "charLocations" : [
         {
-            "name": "Faramir",
+            "charId": "faramir",
             "x": 200,
             "y":100,
             "team" : "Enemy",
@@ -11,7 +11,7 @@
             }
         },
         {
-            "name": "Sir Gawain",
+            "charId": "sir_gawain",
             "x": 200,
             "y": 200,
             "team" : "Ally",
@@ -21,7 +21,7 @@
             }
         },
         {
-            "name": "mountainless_dwarf",
+            "charId": "mountainless_dwarf",
             "x": 300,
             "y":100,
             "team" : "Enemy",

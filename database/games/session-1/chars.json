@@ -65,12 +65,12 @@
         "width" : 50,
         "height" : 50
     },
-    "Sir Gawain": {
+    "sir_gawain": {
         "char": {
-            "id": "Sir Gawain",
+            "id": "sir_gawain",
             "controlledBy": "robotdeha",
             "level": 0,
-            "name": "",
+            "name": "Sir Gawain",
             "classess": [],
             "race": "",
             "dex": 12,
@@ -139,12 +139,12 @@
         "width" : 50,
         "height" : 50
     },
-    "Faramir": {
+    "faramir": {
         "char": {
-            "id": "Faramir",
+            "id": "faramir",
             "controlledBy": "yilmo",
             "level": 0,
-            "name": "",
+            "name": "Faramir",
             "classess": [],
             "race": "",
             "dex": 12,

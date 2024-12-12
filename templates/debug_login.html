@@ -120,6 +120,7 @@
                         let urlParams = new URLSearchParams(window.location.search);
                         urlParams.set("game_id", $('#server-key').val());
                         urlParams.set("userName", $('#username').val())
+                        urlParams.set("charId", response.charId)
                         urlParams.set("key", response.key)
                         window.location.href = "/game?" + urlParams.toString(); 
                     }

@@ -780,24 +780,22 @@ function addToogleHighlight(element, parentElement = null) {
 }
 
 
-function createDropdownMenu(parent, buttonsDict) {
+function createDropdownMenu(buttonsDict) {
     // searc querySelector('.index-0')
     // Create dropdown menu container
     const dropdownMenu = document.createElement('div');
     dropdownMenu.classList.add('dropdown-menu');
     dropdownMenu.classList.add('column')
     dropdownMenu.classList.add('vertical')
-    let index = 0;
+
     Object.entries(buttonsDict).forEach(([key, value]) => {
         const button = document.createElement('div');
         button.textContent = key;
         button.classList.add('dropdown-menu-button');
-        button.classList.add('index-'+index);
         if (value === false) {
             button.style.display = 'none'; // Hide if value is false
         }
         dropdownMenu.appendChild(button);
-        index++;
     });
 
     const closeButton = document.createElement('div');
@@ -808,8 +806,6 @@ function createDropdownMenu(parent, buttonsDict) {
         dropdownMenu.style.display = 'none';
     };
     dropdownMenu.appendChild(closeButton);
-
-    parent.appendChild(dropdownMenu);
 
     return dropdownMenu;
 }

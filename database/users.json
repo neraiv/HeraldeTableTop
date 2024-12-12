@@ -1,36 +1,25 @@
 {
     "robotdeha": {
         "password": "123321avz",
-        "key": "oLurvW6J5HyKhb7thdgX2A",
+        "key": "1J667ZW-ZVOBY9P_u1F2tQ",
         "status": "offline",
-        "type": "dungeon_master",
-        "character": "druid_woman",
-        "last_sync": "2024-12-05 11:10:18 UTC",
-        "game_save_number": 3
+        "type": "adventurer",
+        "character": "faramir",
+        "last_sync": "2024-12-12 08:36:53 UTC"
     },
     "yilmo": {
         "password": "123321avz",
-        "key": "A6MOW-TBDKXdm96BFHpw6g",
+        "key": "Y1KAvJsPCALIveTE1s_TTw",
         "status": "offline",
         "type": "adventurer",
         "character": "mountainless_dwarf",
-        "last_sync": "2024-12-11 10:45:56 UTC",
-        "game_save_number": 3
+        "last_sync": "2024-12-12 11:27:40 UTC"
     },
-    "HEBEL": {
-        "password": "BIRIJUS",
+    "rebella": {
+        "password": "123321avz",
         "key": "",
         "status": "offline",
-        "type": "adventurer",
-        "character": "unknown",
-        "game_save_number": 0
-    },
-    "sdasdas": {
-        "password": "dasdasdas",
-        "key": "",
-        "status": "offline",
-        "type": "adventurer",
-        "character": "unknown",
-        "game_save_number": 0
+        "type": "dungeon_master",
+        "character": "unknown"
     }
 }

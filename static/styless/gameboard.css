@@ -43,6 +43,19 @@
     pointer-events: auto;
     background-size: cover;
     background-position: center;   
+    flex-direction: column-reverse;
+    align-items: center;
+    display: flex;
+}
+
+.portal-name{
+    display: none;
+    background-color: rgba(243, 55, 55, 0.863);
+    color: white;
+    text-align: center;
+    font-size: 12px;
+    padding: 2px;
+    border-radius: 5px;
 }
 
 /* .portal.type-layer{
@@ -81,8 +94,8 @@
     transition: "all 0.3s ease-in-out";
     border: none;
     background-size: cover;
+    z-index: -1;
 }
-
 
 /*
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

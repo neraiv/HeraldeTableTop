@@ -1,5 +1,6 @@
 {
     "The Depths" : {
+        "discovered" : true,
         "width" : 2000,
         "height" : 2000,
         "grid_size" : 50,
@@ -49,6 +50,7 @@
         }
     },
     "The Royal Bank":{
+        "discovered" : true,
         "width" : 2000,
         "height" : 2000,
         "grid_size" : 50,
@@ -63,6 +65,50 @@
                     "1":{
                         "type": "scene",
                         "to": "The Depths",
+                        "x": 300,
+                        "y": 200,
+                        "width": 100,
+                        "height": 100  
+                    }
+                }
+            }
+        }
+    },
+    "Alchemy Shop": {
+        "discovered" : false,
+        "width" : 2000,
+        "height" : 2000,
+        "grid_size" : 50,
+        "layers" : {
+            "1": {
+                "img" : "alchemy-shop-1/light_1.jpg",
+                "x": 400,
+                "y": 300,
+                "width": 1000,
+                "height": 590,
+                "ambiance": "alchemy-shop-1/ambiance.mp3",
+                "portals":{
+                    "1":{
+                        "type": "scene",
+                        "to": "The Royal Bank",
+                        "x": 300,
+                        "y": 200,
+                        "width": 100,
+                        "height": 100  
+                    }
+                }
+            },
+            "2": {
+                "img" : "alchemy-shop-1/light_2.jpg",
+                "x": 500,
+                "y": 400,
+                "width": 200,
+                "height": 200,
+                "ambiance": "alchemy-shop-1/ambiance.mp3",
+                "portals":{
+                    "1":{
+                        "type": "layer",
+                        "to": "1",
                         "x": 300,
                         "y": 200,
                         "width": 100,

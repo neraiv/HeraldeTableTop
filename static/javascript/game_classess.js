@@ -14,10 +14,9 @@ const classTypes = Object.freeze({
 });
 
 const characterTypes = Object.freeze({
-    ALLY: 1,
-    ENEMY: 2,
-    NPC: 3,
-    CONJURED: 4
+    PLAYER : 1,
+    NPC: 2,
+    CONJURED: 3
 });
 
 const itemTypes = Object.freeze({ 
@@ -53,12 +52,11 @@ const rollTypes = Object.freeze({
     PERSPECTION_SAVING_THROW: 2,
     ABILITY_THROW: 3,
 });
+
 const objectTypes = Object.freeze({
     CHARACTER: 1,
-    ENEMY: 2,
-    NPC: 3,
-    OBSTACLE: 4,
-    WALL: 5
+    OBSTACLE: 2,
+    WALL: 3
 });
 
 const spellTypes = Object.freeze({
@@ -240,13 +238,16 @@ class Duration {
 }
 
 class Inventory {
-    constructor() {
-        this.items = []; // Initialize an empty array to store inventory items
-        this.currency = {
+    constructor(
+        items = [],
+        currency = {
             gold: 0,
             silver: 0,
             bronze: 0
-        };
+        },
+    ) {
+        this.items = items; // Initialize an empty array to store inventory items
+        this.currency = currency; // Initialize currency
     }
 
     // Add an item to the inventory
@@ -255,7 +256,7 @@ class Inventory {
         if (existingItem) {
             existingItem.quantity += quantity; // Increase quantity if item exists
         } else {
-            this.items.push({ name: item.name, itemType: item.itemType, quantity }); // Add new item to the inventory
+            this.items.push({ name: item.name, type: item.type, quantity }); // Add new item to the inventory
         }
         console.log(`${item.name} added. Quantity: ${quantity}`);
     }
@@ -382,7 +383,7 @@ class Character {
             1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'], 
             2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountainless Dwarf']
         },
-        inventory = new Inventory(),
+        inventory = null,
         controlling = []
     } = {}) {
         this.id = id;
@@ -402,11 +403,11 @@ class Character {
         this.spellSlots = spellSlots;
         this.availableSpells = availableSpells;
         this.learnedSpells = learnedSpells;
-        this.inventory = inventory;
+        this.inventory = inventory ? new Inventory(inventory.items, inventory.currency) : new Inventory();
         this.controlling = controlling;
     }
     clone() {
-        return new Character(this.id, this.controlledBy, {
+        return new Character(this.id, this.controlledBy,{
             level: this.level,
             name: this.name,
             classess: [...this.classess],
@@ -520,11 +521,10 @@ class Spell{
 }
 
 class Item {
-    constructor(name, itemType, itemSubType, itemTypeSpecificValue, additionalEffects, spells, lore) {
+    constructor(name, type, subType, additionalEffects, spells, lore) {
         this.name = name,
-        this.itemType = itemType,
-        this.itemSubType = itemSubType;
-        this.itemTypeSpecificValue = itemTypeSpecificValue; 
+        this.type = type,
+        this.subType = subType;
         this.additionalEffects = additionalEffects;
         this.spells = spells;
         this.lore = lore;
