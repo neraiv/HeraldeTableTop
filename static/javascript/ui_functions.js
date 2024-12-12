@@ -170,7 +170,7 @@ function charHideHoverButtons({token = null, char_id = null}) {
  * @returns {Promise<void>} - A promise that resolves when the inventory is displayed.
  */
 async function charShowInventory(charId, x, y) {
-    const char = inGameChars[charId];
+    const char = inGameChars[charId].char;
     if (char) {
         const inventory = char.inventory;
 
@@ -224,7 +224,7 @@ async function charShowInventory(charId, x, y) {
         // Create the dropdown menu for the 'Send To' button
         const sendToButtons = {}
         Object.keys(inGameChars).forEach(charId => {
-            sendToButtons[`${inGameChars[charId].name} (${charId})`] = true;
+            sendToButtons[`${inGameChars[charId].char.name} (${charId})`] = true;
         });
         const sendToDropDownMenu = createDropdownMenu(sendToButtons);
         sendToDropDownMenu.style.left = '105%';
@@ -325,15 +325,15 @@ async function addCharacter(char, width, height, x, y, img = null){
     charToken.draggable = true
     characterLayer.appendChild(charToken)
 
-    if(char.controlledBy){
-
-    }
     const playerName = document.createElement("div")
     playerName.classList.add("player-name")
-    playerName.textContent = char.controlledBy
     playerName.style.marginTop = `${height+5}px`
     charToken.appendChild(playerName)
+    
 
+    if(char.controlledBy){
+        playerName.textContent = char.name
+    }
 
     if(img){
         charToken.style.backgroundImage = `url(${img})`
@@ -410,6 +410,8 @@ async function initLayer(){
 
     topBarLayerName.textContent = "Layer " + getCharScene(player.charId).layer
 
+    audioAmbiance.pause()
+
     backgroundLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
     characterLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
 
@@ -424,24 +426,32 @@ async function initLayer(){
     }
 
     async function addCharFromDb(charLocation){
-        let charInfo;
 
         if (!inGameChars[charLocation.charId]){
-            charInfo =  await dbGetChar(charLocation.charId)
+            const charInfo =  await dbGetChar(charLocation.charId)
+
+            if(charInfo){
+                inGameChars[charInfo.char.id] = {
+                    char : new Character(charInfo.char), 
+                    width: charInfo.width, 
+                    height: charInfo.height,
+                    img: charInfo.img
+                }
+            }else{
+                console.log("Character not found", charLocation.charId, ". Retrying in 1 second")
+                return setTimeout(addCharFromDb, 1000, charLocation)
+            }
         }
         
-        if(charInfo){
-            inGameChars[charInfo.char.id] = new Character(charInfo.char)
-            if(charInfo.char.id === player.charId){
-                inGameChars[charInfo.char.id].inventory.addItem(new Item("Potion", itemTypes.CONSUMABLE), 4)
-                inGameChars[charInfo.char.id].inventory.addItem(new Item("Sword", itemTypes.WEAPON), 1)
-            }
+        const charInfo = inGameChars[charLocation.charId]
 
-            addCharacter(charInfo.char, charInfo.width, charInfo.height, charLocation.x, charLocation.y, "static/images/character/"+charInfo.img)
-        }else{
-            console.log("Character not found", charLocation.charId, ". Retrying in 1 second")
-            setTimeout(addCharFromDb, 1000, charLocation)
+        if(charInfo.char.id === player.charId){
+            inGameChars[charInfo.char.id].char.inventory.addItem(new Item("Potion", itemTypes.CONSUMABLE), 4)
+            inGameChars[charInfo.char.id].char.inventory.addItem(new Item("Sword", itemTypes.WEAPON), 1)
         }
+
+        addCharacter(charInfo.char, charInfo.width, charInfo.height, charLocation.x, charLocation.y, "static/images/character/"+charInfo.img)
+
     }
 
     if(sessionInfo.charLocations){
@@ -450,13 +460,26 @@ async function initLayer(){
         }
     }
 
-    if(layer.ambiance){
-        audioAmbiance.src = new URL("static/images/background/"+layer.ambiance);
-        audioAmbiance.play().catch(error => {
-            console.error("Failed to play ambiance audio:", error);
-        });
+    if (layer.ambiance) {
+        audioAmbiance.src = `static/images/background/${layer.ambiance}`;
+        
+        // Function to play ambiance audio
+        const playAmbiance = () => {
+            audioAmbiance.play().catch(error => {
+                console.error("Failed to play ambiance audio:", error, "Source:", audioAmbiance.src);
+            });
+        };
+
+            // Add an event listener to play the audio on the first user interaction
+            const userInteractionHandler = () => {
+                playAmbiance();
+                document.removeEventListener('click', userInteractionHandler);
+                document.removeEventListener('keydown', userInteractionHandler);
+            };
+            document.addEventListener('click', userInteractionHandler);
+            document.addEventListener('keydown', userInteractionHandler);
+        
     }
-    
 }
 
 async function initScene(){

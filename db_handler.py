@@ -172,6 +172,7 @@ class DBHandeler(ChatHandler, ImagesHandeler):
         # Set the status of all users to 'offline'
         for user_id in users_data:
             users_data[user_id]["status"] = "offline"
+            users_data[user_id]["key"] = self.generate_key() # randomize before exit
 
         # Save the updated user data back to the file
         with open(USERS, 'w') as file:

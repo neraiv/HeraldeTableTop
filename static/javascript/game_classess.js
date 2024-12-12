@@ -356,7 +356,9 @@ class Inventory {
 }
 
 class Character {
-    constructor(id, controlledBy = '',{
+    constructor({
+        id, 
+        controlledBy = '',
         level = 0,
         name = "",
         classess = [],

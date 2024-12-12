@@ -110,7 +110,7 @@ def getUrlForImage_func():
 
 def getGameFile(name, from_session = True):
     db.wait_until_file_is_closed(SERVER_INFO)
-    with open(SERVER_INFO, 'r') as file:
+    with open(SERVER_INFO, 'r', encoding="utf-8") as file:
         server_info = json.load(file)
         #FUTURE LAST SESSİON VARMI YOKMU BAKILMASI LAZIM
     last_session = server_info["last_session"]
@@ -121,7 +121,7 @@ def getGameFile(name, from_session = True):
     else:
         path = os.path.join(DB_MAIN_PATH,"database", name)
 
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding="utf-8") as file:
         return json.load(file)
 
 def templeteGetFunc():
@@ -292,7 +292,7 @@ def registerChar_func():
             
             if user.get("character") == "":
                 db.wait_until_file_is_closed(CHARS)
-                with open(CHARS, 'r') as file:
+                with open(CHARS, 'r', encoding='utf-8') as file:
                     all_chars: dict = json.load(file)
                 
                 char = data["char"]
@@ -300,9 +300,9 @@ def registerChar_func():
                 all_chars[char_name] = char
 
                 db.wait_until_file_is_closed(CHARS)
-                with open(CHARS, 'w') as file:
-                    json.dump(all_chars, file)
-                
+                with open(CHARS, 'w', encoding='utf-8') as file:
+                    json.dump(all_chars, file, ensure_ascii=False)
+
                 return jsonify({"success": "Character registered.", "char_name": char_name}), 200
             else:
                 return jsonify({"error": "Character already registered."}), 400
@@ -319,9 +319,9 @@ def registerChar_func():
 def getChar_func():
     try:
         key = request.args.get('key')  # Extract 'key' from query parameters
-        char_name = request.args.get('char')  # Extract 'info' from query parameters
+        charId = request.args.get('char')  # Extract 'info' from query parameters
 
-        if not key:
+        if not key or not charId:
             return jsonify({"error": "Key is not provided."}), 400
         
         userName, info = controlKey(key)
@@ -330,10 +330,10 @@ def getChar_func():
             
             all_chars: dict = getGameFile("chars.json")
                                 
-            charInfo = all_chars.get(char_name)
+            charInfo = all_chars.get(charId)
 
             if db.rules["visible_inventories"] == False:
-                if info["character"] != char_name:
+                if info["character"] != charId:
                     charInfo["char"]["inventory"] = None
 
             if charInfo:
