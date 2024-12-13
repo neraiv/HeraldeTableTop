@@ -2,29 +2,27 @@ const serverUrl = DEBUG_MODE ? "http://localhost:5000/" : godLevelServerDomain ;
 let isUpdating = false; // Flag to prevent multiple updates
 
 
-// async function dbGetUrlForImage(name, location, type) {
-//     const params = new URLSearchParams({
-//         "key": player.userKey,
-//         "name": name,
-//         "location": location,
-//         "type": type
-//     });
+async function dbGetScene(sceneName) {
+    const params = new URLSearchParams({
+        "key": player.userKey,
+        "sceneName": sceneName
+    });
 
-//     try {
-//         const response = await fetch(`${serverUrl}getUrlForImage?${params.toString()}`, {
-//             method: 'GET',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//         });
-//         const data = await response.json();
-//         return data.url;
-//     } catch (err) {
-//         console.error("Error in dbGetUrlForImage: ", err);
-//         return null;
-//     }
-// }
-
+    try {
+        const response = await fetch(`${serverUrl}getScene?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const data = await response.json();
+        return data.scene; // Return the fetched scene data
+    } catch (err) {
+        console.error("Error in getScene: ", err);
+        return null;
+    }
+    
+}
 async function dbGetSession(){
     const params = new URLSearchParams({
         "key": player.userKey

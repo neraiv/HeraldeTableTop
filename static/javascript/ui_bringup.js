@@ -1,3 +1,5 @@
+// Future this whole page will go into html file
+
 const leftSideBar = document.getElementById('ui-letside-bar');
 leftSideBar.classList.add('column');
 leftSideBar.classList.add('vertical')
@@ -35,10 +37,10 @@ addItemButton.id = "ui-forge-item-button"
 addItemButton.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(addItemButton);
 
-const playerCharSheet = createImageButton(40, {icon: "account_circle"})
-playerCharSheet.id = "ui-account-button"
-playerCharSheet.style.fontFamily = 'Material Icons Outlined'
-leftSideBar.appendChild(playerCharSheet);
+const playerCharSheetButton = createImageButton(40, {icon: "account_circle"})
+playerCharSheetButton.id = "ui-account-button"
+playerCharSheetButton.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(playerCharSheetButton);
 
 const bottomBar = document.getElementById('ui-bottom-bar');
 bottomBar.classList.add('row');
@@ -177,29 +179,27 @@ topBarLayerName.style.margin = "0px"; // No margin
 topBarSceneInfo.appendChild(topBarLayerName);
 
 
-/*
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////// CARACTHER SHEET //////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-*/
-async function displayCharaterSheet(charId) {
-    const char = inGameChars[charId];
+const topBarTools = document.createElement("div");
+topBarTools.classList.add("row");
+topBarTools.classList.add("centered");
+topBarTools.style.backgroundColor = "#d3dae2";
+topBarTools.style.borderRadius = "8px";
+topBarTools.style.padding = "5px";
+topBarTools.style.width = "fit-content";
+topBarTools.style.height = "fit-content";
+topBarTools.style.flex = "auto";
+topBarTools.style.gap = "5px";
+topBar.appendChild(topBarTools);
 
-    const characterSheet = document.createElement("div");
-    characterSheet.classList.add("character-sheet");
-    characterSheet.id = "character-sheet-" + charId;
-    userInterface.appendChild(characterSheet);
-    
-    const charName = document.createElement("h2");
-    charName.textContent = char.name;
-    charName.style.textAlign = "center";
-    charName.style.fontFamily = "'Cinzel', serif"; // DnD theme font
-    charName.style.fontSize = "20px"; // Larger font size
-    charName.style.margin = "0px"; // No margin
-    charName.style.padding = "5px"; // Padding to keep text off the edges
-    charName.style.borderBottom = "1px solid black";
-    characterSheet.appendChild(charName);
+const topBarCursorButton = createImageButton(36, {source:  "url(static/images/menu-icons/cursor.png)"})
+topBarTools.appendChild(topBarCursorButton);
 
-    
-}   
+const topBarPanningButton = createImageButton(36, {source: "url(static/images/menu-icons/move.png)"})
+topBarTools.appendChild(topBarPanningButton);
+
+const topBarCenterButton = createImageButton(36, {source:  "url(static/images/menu-icons/center.png)"})
+topBarTools.appendChild(topBarCenterButton);
+
+
+
 

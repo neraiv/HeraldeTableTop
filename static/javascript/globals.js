@@ -3,23 +3,23 @@ const godLevelServerDomain = "https://heraldednd.wuaze.com/"
 const DEBUG_MODE = true;
 
 class ClassPlayer {
-    constructor(
+    constructor({
         userKey = null,
         userName = null,
         charId = null
-    ) {
+    } = {}) {
         this.userKey = userKey;
         this.userName = userName;
         this.charId = charId;
     }
 }
 class ClassSceneInfo {
-    constructor(
+    constructor({
         width,
         height,
         grid_size,
         layers = {}
-    ) {
+    } = {}) {
         this.width = width;
         this.height = height;
         this.grid_size = grid_size;
@@ -27,35 +27,35 @@ class ClassSceneInfo {
     }
 }
 class ClassSessionInfo {
-    constructor(
+    constructor({
         currentScene = {},
         ingGameChars = [],
         object_positions = []
-    ) {
+    } = {}) {
         this.currentScene = currentScene;
         this.ingGameChars = ingGameChars;
         this.object_positions = object_positions;
     }
 }
 class ClassGameRules {
-    constructor(
+    constructor({
         visible_inventories,
         is_player_can_make_items = {
             "state" : null,
             "count" : null
         }
-    ) {
+    } = {}) {
         this.visible_inventories = visible_inventories;
         this.is_player_can_make_items = is_player_can_make_items
     }
 }
 class ClassServerInfo {
-    constructor(
+    constructor({
         server_time,
         server_status,
         last_session,
         chat_idx
-    ) {
+    } = {}) {
         this.server_time = server_time;
         this.server_status = server_status;
         this.last_session = last_session;

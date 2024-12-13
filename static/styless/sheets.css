@@ -102,14 +102,16 @@ h2 {
 
 /* Character Sheet */
 .character-sheet {
-    display: block;
+    display: flex;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     height: 85%;
     width: 85%;
-    background: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: rgba(243, 232, 77, 0.842);
     z-index: 100;
 }
 

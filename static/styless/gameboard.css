@@ -65,6 +65,20 @@
 .portal.type-scene{
 
 } */
+.pouch{
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background-size: cover;
+    background-position: center;
+}
+
+.pouch:hover{
+    cursor: pointer;
+    box-shadow: 0 0 20px 8px gold;
+    background-color: #ffd700b0;
+}
+
 
 .character{
     position: absolute;

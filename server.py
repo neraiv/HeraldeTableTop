@@ -75,29 +75,56 @@ def getChar():
 def registerChar():
     return registerChar_func()
 
-@app.route('/getUrlForImage', methods=['GET'])
-def getUrlForImage():
-    return getUrlForImage_func()
+@app.route('/getScene', methods=['GET'])
+def getScene():
+    return getScene_func()
 
-def getUrlForImage_func():
+def getScene_func():
     try:
         key = request.args.get('key')  # Extract 'key' from query parameters
-        name = request.args.get('name')  # Extract 'name' from query parameters
-        location = request.args.get('location')  # Extract 'location' from query parameters
-        type = request.args.get('type')  # Extract 'type' from query parameters
+        sceneName = request.args.get('sceneName')  # Extract 'scene' from query parameters
 
-        if not key or not name and location and type and not DEBUG_MODE:
+        if not key or not sceneName and not DEBUG_MODE:
             return jsonify({"error": "Key or image name is not provided."}), 400
         
         if not DEBUG_MODE:
-            user = controlKey(key)[0]
+            userName, userInfo = controlKey(key)
 
-        if user or DEBUG_MODE:
-            db_result = db.check_image(location, name, type)
-            if db_result[0]:
-                return jsonify({"success": "Image URL retrieved.", "url": f"static/images/{location}/{name}/{db_result[1]}"}), 200
+        successStatus = False
+
+        if userName or DEBUG_MODE:
+            all_scene_data: dict = getGameFile("scenes.json")
+            requestedScene: dict = all_scene_data.get(sceneName)
+            if requestedScene:
+                require = requestedScene.get("requirements")
+                if require:
+                    # ---------------------- Check requirements ----------------------
+                    # Check if the user has the required item
+                    if require["type"] == "item":
+                        char = getGameFile("chars.json").get(userInfo["character"])
+                        if char:
+                            if require["item"] in char["inventory"] and char["inventory"][require["item"]] >= require["amount"]:
+                                if require["after"] == "remove":
+                                    del requestedScene["requirements"]
+                                successStatus = True
+                            else:
+                                return jsonify({"error": "You don't have the required item.", "required": True}), 404
+                        else:
+                            return jsonify({"error": "Character not found."}), 404
+                else:
+                    # ---------------------- No requirements ----------------------
+                    successStatus = True
+                
+                if successStatus:
+                    if requestedScene["discovered"] == False:
+                        requestedScene["discovered"] = True
+                        all_scene_data[sceneName] = requestedScene
+                        
+                        # Future: Save the updated scene data back to the file
+
+                    return jsonify({"success": "200", "scene": requestedScene}), 200
             else:
-                return jsonify({"error": "Image not found."}), 404
+                return jsonify({"error": "Scene not found."}), 404
         else:
             return jsonify({"error": "User not found or not online."}), 404
         
@@ -165,6 +192,11 @@ def getSession_func():
             scenes_data = getGameFile("scenes.json")
                         
             if session_data and scenes_data:
+
+                for scene in scenes_data:
+                    if scenes_data[scene]["discovered"] == False:
+                        scenes_data[scene] = {"discovered": False} # Hide undiscovered scenes
+
                 return jsonify({"success": "200", "session": session_data, "scenes": scenes_data}), 200
             else:
                 # FUTURE Find what is missing?   
@@ -178,8 +210,6 @@ def getSession_func():
         }), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
 def sendMessage_func():
     try:

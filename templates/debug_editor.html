@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabletop Board</title>
+    <link rel="stylesheet" href="/static/styless/shared.css">
+    <link rel="stylesheet" href="/static/styless/sheets.css">
+    <link rel="stylesheet" href="/static/styless/gameboard.css">
+    <link rel="stylesheet" href="/static/styless/ui.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined">
+</head>
+<body>
+    <div id="user-interface">
+        <div id="ui-storage" class="menubar"></div>
+        <div id="ui-chat" class="menubar"></div>
+        <div id="ui-bottom-bar" class="menubar"></div>
+        <div id="ui-letside-bar" class="menubar"></div>
+        <div id="ui-top-bar" class="menubar"></div>
+    </div>
+
+    <div id="gameboard">
+        <div id="gameboard-content">
+            <div id="grid-background"></div>
+            <div id="background-layer" class="layer passive"></div> 
+            <div id="character-layer" class="layer active"></div>
+            <div id="fog-layer" class="layer passive"></div>
+            <div id="drag-overlay" class="drag-circle"></div>
+        </div>
+    </div>
+
+    <script src="/static/javascript/game_classess.js"></script>
+    <script src="/static/javascript/globals.js"></script>
+    <script src="/static/javascript/shared_functions.js"></script>
+    <script src="/static/javascript/database.js"></script>
+    <script src="/static/javascript/ui_bringup.js"></script>
+    <script src="/static/javascript/ui_functions.js"></script>
+    
+</body>
+</html>

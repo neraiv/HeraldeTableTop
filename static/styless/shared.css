@@ -2,13 +2,11 @@
 .row{
     display: flex; /* Use flexbox layout */
     flex-direction: row; /* Arrange items in a row */
-    overflow-y: hidden; /* Prevent vertical scrolling */
 }
 
 .column {
     display: flex; /* Ensure it's a flex container */
     flex-direction: column; /* This is the default, so you can omit it */
-    overflow-y: hidden; /* Prevent vertical scrolling */
 }
 
 .ui{
@@ -118,6 +116,11 @@
     transition: all 0.3s ease; /* Smooth transition */
 }
 
+.image-button:active{
+    transform: scale(0.95); /* Slightly shrink on click */
+    background-color: #007BFF;
+}
+
 .image-button:hover {
     border-color: #007BFF; /* Border color on hover */
     color: #007BFF; /* Optional: Change text color */
@@ -182,7 +185,6 @@
 .draggable-row {
     width: 100%;
     background-color: rgba(22, 167, 224, 0.993);
-    border: 2px solid rgba(22, 167, 224, 0.993);
     border-radius: 10px;
     cursor: move;
 }

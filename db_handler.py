@@ -126,8 +126,6 @@ class DBHandeler(ChatHandler, ImagesHandeler):
                 json.dump(self.default_server_info, file)
         except Exception as e:
             print(f"Error: {str(e)}")
-
-
     # Function to periodically check user sync status every 5 seconds
     def start_sync_timer(self):
         lastUserSyncTime = time.time()  # Initial time for the first check

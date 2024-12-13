@@ -1,11 +1,99 @@
+
+/*
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////// CARACTHER SHEET //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+*/
+async function displayCharaterSheet(charId) {
+    const char = inGameChars[charId].char;
+
+    const characterSheet = document.createElement("div");
+    characterSheet.classList.add("character-sheet");
+    characterSheet.classList.add("column")
+    characterSheet.classList.add("vertical")
+    characterSheet.style.gap = "10px";
+    characterSheet.id = "character-sheet-" + charId;
+    userInterface.appendChild(characterSheet);
+
+    const topRow = addDraggableRow(characterSheet);
+    topRow.classList.add('row');
+    topRow.classList.add("vertical")
+    topRow.style.justifyContent = "space-between";
+    topRow.style.width = "100%"
+    
+    const charName = document.createElement("h2");
+    charName.textContent = char.name;
+    charName.style.textAlign = "center";
+    charName.style.fontFamily = "'Cinzel', serif"; // DnD theme font
+    charName.style.fontSize = "20px"; // Larger font size
+    charName.style.margin = "0px"; // No margin
+    charName.style.padding = "5px"; // Padding to keep text off the edges
+    charName.style.borderBottom = "1px solid black";
+    charName.style.marginLeft = "5px";
+    topRow.appendChild(charName);
+
+    const closeButton = createImageButton('28', {source: "url(static/images/menu-icons/close.png)", custom_padding: 4});
+    closeButton.style.marginRight = '5px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.onclick = () => {
+        characterSheet.remove();
+    };
+    topRow.appendChild(closeButton);
+    
+    const infoContainer = document.createElement("div");
+    infoContainer.style.display = "block";
+    infoContainer.style.width = "100%";
+    infoContainer.style.height = "100%";
+    infoContainer.style.gap = "10px";
+    infoContainer.style.backgroundColor = "red";
+    infoContainer.style.overflow = "auto";
+    characterSheet.appendChild(infoContainer);
+
+    const charInfo = document.createElement("div");
+    charInfo.classList.add("row");
+    charInfo.style.justifyContent = "space-between";
+    infoContainer.appendChild(charInfo);
+
+    const charStats = document.createElement("div");
+    charStats.classList.add("column");
+    charStats.classList.add("vertical");
+    charStats.style.height = "3000px";
+    charStats.style.width = "100%";
+    charInfo.style.backgroundColor = "black";
+    charInfo.appendChild(charStats);
+
+}   
+
 // Player's Character Sheet
-playerCharSheet.onclick = () => {
+playerCharSheetButton.onclick = () => {
     displayCharaterSheet(player.charId)
+}
+
+function userAskQuestion({type = "int", message = null}) {
+    if (type === "int") {
+        const question = prompt(message + " ", "Please enter a number:");
+        return parseInt(question, 10);
+    }
+    if (type === "string") {
+        return prompt(message + " ", "Please enter a string:");
+    }
+    if (type === "bool") {
+        const question = prompt(message + " ", "Please enter true or false:");
+        return question === "true";
+    }
+    if (type === "float"){
+        const question = prompt(message + " ", "Please enter a number:");
+        return parseFloat(question);
+    }
 }
 
 // Game Board -----------------------------------------------------------------------
 function getCharScene(char_id){
     return sessionInfo.charLocations.find(charLocation => charLocation.charId === char_id).currentScene
+}
+
+function setCharScene(char_id, scene){
+    sessionInfo.charLocations.find(charLocation => charLocation.charId === char_id).currentScene = scene
 }
 
 function gameBoardPan(x = null, y = null, scale = null) {
@@ -160,20 +248,16 @@ function charHideHoverButtons({token = null, char_id = null}) {
     }
 }
 
-/**
- * Displays the inventory of a character in a fixed position on the screen.
- * 
- * @param {number} charId - The ID of the character whose inventory is to be displayed.
- * @param {number} x - The x-coordinate for the position of the inventory sheet.
- * @param {number} y - The y-coordinate for the position of the inventory sheet.
- * 
- * @returns {Promise<void>} - A promise that resolves when the inventory is displayed.
- */
-async function charShowInventory(charId, x, y) {
-    const char = inGameChars[charId].char;
+async function charDisplayInventory({id = null, inventory = null}, x, y) {
+    const char = inGameChars[id].char;
     if (char) {
-        const inventory = char.inventory;
+        isCharInventory = false;
 
+        if(inventory === null){
+            inventory = char.inventory;
+            isCharInventory = true
+        }
+        
         // Create the inventory sheet container
         const inventorySheet = document.createElement('div');
         inventorySheet.classList.add('inventory-sheet');
@@ -208,7 +292,6 @@ async function charShowInventory(charId, x, y) {
         inventoryTable.style.gap = '10px';
         inventoryTable.style.marginTop = '10px';
 
-
         let selectedItem = null;
 
         const buttonDict = {
@@ -223,17 +306,35 @@ async function charShowInventory(charId, x, y) {
 
         // Create the dropdown menu for the 'Send To' button
         const sendToButtons = {}
+        const sendToButtonCharIds = []
         Object.keys(inGameChars).forEach(charId => {
+            if (isCharInventory && charId === id) return;
             sendToButtons[`${inGameChars[charId].char.name} (${charId})`] = true;
+            sendToButtonCharIds.push(charId);
         });
         const sendToDropDownMenu = createDropdownMenu(sendToButtons);
         sendToDropDownMenu.style.left = '105%';
         sendToDropDownMenu.style.top = '5%';
         dropdownMenu.appendChild(sendToDropDownMenu);
         
-        for(let i = 0; i < 3; i++){
+        sendToDropDownMenu.lastChild.onclick = function(){
+            sendToDropDownMenu.style.display = 'none';
+        }
+
+        for(let i = 0; i < Object.keys(inGameChars).length-1; i++){
+            sendToDropDownMenu.who = sendToButtonCharIds[i]
             sendToDropDownMenu.children[i].onclick = function(){
                 console.log('Send To action clicked', selectedItem, sendToDropDownMenu.children[i].textContent);
+                let inputValue = userAskQuestion({type: "int", "Message": "How many?"});
+                if (inputValue) {
+                    if (selectedItem.quantity < inputValue) {
+                        console.log('Not enough items to send')
+                        inputValue = selectedItem.quantity;
+                    }
+                    inGameChars[sendToDropDownMenu.who].char.inventory.addItem(selectedItem, value);
+                    inventory.removeItem(selectedItem.name, inputValue);
+                    console.log('Sent', inputValue, selectedItem.name, 'to', sendToDropDownMenu.children[i].textContent);
+                }
             }
         };
 
@@ -307,6 +408,7 @@ async function charShowInventory(charId, x, y) {
         inventorySheet.appendChild(currencyTab);
     }
 }
+
 function charCalculateHoverButtonLocation(buttonSize, radius, angle){
     const finalX = (radius * 2) * Math.cos((angle * Math.PI) / 180) + radius - buttonSize / 2;
     const finalY = -(radius * 2) * Math.sin((angle * Math.PI) / 180) + radius - buttonSize / 2;
@@ -359,7 +461,7 @@ async function addCharacter(char, width, height, x, y, img = null){
     charToken.appendChild(charTokenInventoryButton)
     initButton(charTokenInventoryButton)
     charTokenInventoryButton.onclick = function(event){
-        charShowInventory(char.id, event.clientX, event.clientY)
+        charDisplayInventory({id :char.id}, event.clientX, event.clientY)
     }
 
     // Spellbook button -----------------------------------------------------------------------
@@ -404,18 +506,61 @@ async function addCharacter(char, width, height, x, y, img = null){
     return charToken
 }
 
+async function addPouch(inventory, x, y){
+    const pouch = document.createElement("div")
+    pouch.classList.add("pouch")
+    pouch.style.left = `${x}px`
+    pouch.style.top = `${y}px`
+    pouch.style.backgroundImage = "url(static/images/general/pouch.png)"
+
+    pouch.inventory = inventory
+
+    pouch.addEventListener("click", function(){
+        charDisplayInventory({id : player.charId, inventory : inventory}, x, y)
+    })
+
+    characterLayer.appendChild(pouch)
+}
+
+function dropInventory(charId) {
+    if(inGameChars[charId]){
+        const charInfo = inGameChars[charId]
+        const charLoaction = sessionInfo.charLocations.find(charLocation => charLocation.charId === charId)
+        addPouch(new Inventory(charInfo.char.inventory), charLoaction.x + charInfo.width / 2 - 12.5, charLoaction.y + charInfo.height / 2 - 12.5) // -12.5 is half of the pouch size
+        charInfo.char.inventory.clear()
+    }else{
+        alert("Character not found")
+    }
+}
+
+function charOnDie(charToken){
+    inGameChars[charToken.id].char.hp = 0
+    charToken.style.filter = "grayscale(100%)" // FUTURE: Add animation
+}
 async function initLayer(){
+    if (sceneInfo.discovered == false){
+        const newSceneData = await dbGetScene(getCharScene(player.charId).name)
+        if(newSceneData){
+            sceneInfo = newSceneData
+            scenes[getCharScene(player.charId).name] = sceneInfo
+            sceneInfo.discovered = true
+        }else{
+            alert("Scene not found")
+        }
+    }
+
+    if(!sceneInfo.layers) return alert("No layers found in the scene")
+
     // future get image  width and heigh with scale factor
-    const layer = sceneInfo.layers[getCharScene(player.charId).layer]
-
-    topBarLayerName.textContent = "Layer " + getCharScene(player.charId).layer
-
-    audioAmbiance.pause()
-
     backgroundLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
     characterLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
+    audioAmbiance.pause()
 
-    //const imgUrl = await dbGetUrlForImage(layer.img, "background", layer.type)
+    const layer = sceneInfo.layers[getCharScene(player.charId).layer]
+
+    if(!layer) return alert("Layer not found in the scene")
+
+    topBarLayerName.textContent = "Layer " + getCharScene(player.charId).layer
 
     const background = await addBackground(layer.width, layer.height, layer.x, layer.y, "static/images/background/"+layer.img)
     
@@ -483,7 +628,6 @@ async function initLayer(){
 }
 
 async function initScene(){
-
     const gridSize = sceneInfo.grid_size
     const width = sceneInfo.width
     const height = sceneInfo.height

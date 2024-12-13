@@ -238,18 +238,27 @@ class Duration {
 }
 
 class Inventory {
-    constructor(
-        items = [],
-        currency = {
+    constructor({
+        items,
+        currency,
+    }) {
+        this.items = items ? items : []; // Initialize an empty array to store inventory items
+        this.currency = currency ? currency : {
             gold: 0,
             silver: 0,
             bronze: 0
-        },
-    ) {
-        this.items = items; // Initialize an empty array to store inventory items
-        this.currency = currency; // Initialize currency
+        }; // Initialize currency
     }
 
+    clear() {
+        this.items = [];
+        this.currency = {
+            gold: 0,
+            silver: 0,
+            bronze: 0
+        };
+    }
+    
     // Add an item to the inventory
     addItem(item, quantity = 1) {
         const existingItem = this.items.find(exItem => exItem.name === item.name);
@@ -363,6 +372,7 @@ class Character {
         name = "",
         classess = [],
         race = "",
+        hp = 100,
         dex = 12,//gameSettings.MIN_STAT_POINT,
         con = 12,//gameSettings.MIN_STAT_POINT,
         int = 8,//gameSettings.MIN_STAT_POINT,

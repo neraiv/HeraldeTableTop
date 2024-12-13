@@ -3,5 +3,7 @@
     "is_player_can_make_items" : {
         "state" : true,
         "count" : "unlimited"
-    }
+    },
+    "fog_type" : "none",
+    "include_all_classic_spells" : true
 }
