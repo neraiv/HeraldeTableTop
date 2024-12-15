@@ -108,27 +108,32 @@ h2 {
     left: 50%;
     transform: translate(-50%, -50%);
     height: 85%;
-    width: 85%;
+    width: 700px;
     padding: 5px;
     border-radius: 5px;
     background-color: rgba(243, 232, 77, 0.842);
     z-index: 100;
 }
-
-.character-create-sheet {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    height: 85%;
-    width: 85%;
-    background: #fff;
-    z-index: 100;
-}
 /* End Of Character Sheet */
 
 /* SPELL CREATE SHEET*/
+#ui-spell-book {
+    display: none;
+    height: 85%;
+    width: 300px;
+    display: flex;
+    background-color: #ddd;
+    flex-direction: column; /* Stack items vertically */
+    align-items: center; /* Center items horizontally */
+    justify-content: center; /* Center items vertically */
+    text-align: center; /* Center text content horizontally */
+    gap: 0.5%; /* Add space between items */
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    transition: left 0.3s ease-in-out; /* Smooth sliding effect */
+    z-index: 10;
+}
+
 .spell-create-sheet {
     display: flex;
     position: absolute;

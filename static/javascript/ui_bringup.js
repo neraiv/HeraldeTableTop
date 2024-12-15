@@ -1,5 +1,4 @@
 // Future this whole page will go into html file
-
 const leftSideBar = document.getElementById('ui-letside-bar');
 leftSideBar.classList.add('column');
 leftSideBar.classList.add('vertical')
@@ -27,10 +26,10 @@ storageButton.id = "ui-storage-button"
 storageButton.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(storageButton);
 
-const spellBook = createImageButton(40, {icon: "menu_book"})
-spellBook.id = "ui-spellbook-button"
-spellBook.style.fontFamily = 'Material Icons Outlined'
-leftSideBar.appendChild(spellBook);
+const spellBookButton = createImageButton(40, {icon: "menu_book"})
+spellBookButton.id = "ui-spellbook-button"
+spellBookButton.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(spellBookButton);
 
 const addItemButton = createImageButton(40, {icon: "add_circle_outline"})
 addItemButton.id = "ui-forge-item-button"
@@ -199,6 +198,57 @@ topBarTools.appendChild(topBarPanningButton);
 
 const topBarCenterButton = createImageButton(36, {source:  "url(static/images/menu-icons/center.png)"})
 topBarTools.appendChild(topBarCenterButton);
+
+/*
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////// TOP BAR //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+*/
+
+const spellBook = document.getElementById("ui-spellbook");
+spellBook.style.width = "1000px";
+spellBook.style.height = "85%";
+spellBook.style.position = "absolute";
+spellBook.style.top = "50%";
+spellBook.style.left = "50%";
+spellBook.style.transform = "translate(-50%, -50%)";
+spellBook.style.backgroundColor = "#d3dae2";
+spellBook.style.borderRadius = "8px";
+spellBook.style.padding = "5px";
+spellBook.style.flexDirection = "column";
+
+
+const spellBookTopBar = addDraggableRow(spellBook)
+spellBookTopBar.style.display = "flex";
+spellBookTopBar.style.flexDirection = "row";
+spellBookTopBar.style.justifyContent = "space-between";
+spellBookTopBar.style.background = "linear-gradient(135deg, #8e44ad, #3498db)"; // Gradient background
+spellBookTopBar.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 0.3)"; // Subtle shadow for depth
+spellBookTopBar.style.color = "#f5f5f5"; // Light text color
+spellBookTopBar.style.borderRadius = "8px"; // Rounded corners
+spellBookTopBar.style.margin = "0px"; // No margin
+
+const spellBookName = document.createElement("h2");
+spellBookName.textContent = "Spell Book";
+spellBookName.style.flex = "auto";
+spellBookName.style.textAlign = "center";
+spellBookName.style.fontFamily = "'Cinzel', serif"; // DnD theme font
+spellBookName.style.fontSize = "20px"; // Larger font size
+spellBookName.style.padding = "5px"; // Padding to keep text off the edges
+spellBookName.style.margin = "0px"; // No margin
+spellBookTopBar.appendChild(spellBookName);
+
+const spellBookCloseButton = createImageButton(40, {icon: "arrow_circle_right"});
+spellBookCloseButton.id = "ui-spellbook-close-button";
+spellBookCloseButton.style.fontFamily = 'Material Icons Outlined';
+spellBookTopBar.appendChild(spellBookCloseButton);
+
+const spellBookContent = document.createElement("div");
+spellBookContent.style.width = "98%";
+spellBookContent.style.height = "max-content";
+spellBookContent.style.flex = "auto";
+spellBook.appendChild(spellBookContent);
+
 
 
 

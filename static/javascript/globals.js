@@ -70,6 +70,7 @@ let serverInfo = new ClassServerInfo()
 let sessionInfo = new ClassSessionInfo()
 let scenes = null
 let sceneInfo = new ClassSceneInfo()
+let spells = null
 // UI 
 let chatData = []
 const audioAmbiance = new Audio();
