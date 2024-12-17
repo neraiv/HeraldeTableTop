@@ -39,14 +39,22 @@ class ClassSessionInfo {
 }
 class ClassGameRules {
     constructor({
-        visible_inventories,
-        is_player_can_make_items = {
-            "state" : null,
-            "count" : null
+        visible_inventories =  true,
+        is_player_can_make_items =  {
+            state :  true,
+            count :  "unlimited"
+        },
+        fog_type =  null,
+        include_all_classic_spells =  true,
+        spells =  {
+            levels :  [1, 2, 3, 4, 5, 6, 7, 8, 9]
         }
     } = {}) {
         this.visible_inventories = visible_inventories;
-        this.is_player_can_make_items = is_player_can_make_items
+        this.is_player_can_make_items = is_player_can_make_items;
+        this.fog_type = fog_type;
+        this.include_all_classic_spells = include_all_classic_spells;
+        this.spells = spells;
     }
 }
 class ClassServerInfo {

@@ -205,6 +205,878 @@ async function displayCharaterSheet(charId) {
 
 }   
 
+function displaySpellCreate(initalSpell = null) {
+    const formColor = 'rgba(255, 255, 255, 0.8)';   
+    const backgroundColor = 'rgba(0, 0, 0, 0.8)';
+
+    // random 4 digit number
+    const id = Math.floor(Math.random() * 9000) + 1000;
+
+    const spellCreateSheet = document.createElement('div');
+    spellCreateSheet.classList.add('spell-create-sheet');
+    spellCreateSheet.classList.add('box-circular-border');
+    spellCreateSheet.classList.add('column');
+    spellCreateSheet.classList.add('vertical');
+    spellCreateSheet.id = id;
+    spellCreateSheet.spell = initalSpell;
+    spellCreateSheet.style.backgroundColor = 'green';
+
+    const topBar = addDraggableRow(spellCreateSheet);
+
+    const spellCreateSheetTitle = document.createElement('h2');
+    spellCreateSheetTitle.textContent = 'Create Spell';
+    spellCreateSheetTitle.style.textAlign = 'center';
+    spellCreateSheetTitle.style.fontFamily = "'Cinzel', serif"; // DnD theme font
+    spellCreateSheetTitle.style.fontSize = '20px'; // Larger font size
+    spellCreateSheetTitle.style.margin = '0';
+    spellCreateSheetTitle.style.padding = '5px';
+    spellCreateSheetTitle.style.borderBottom = '1px solid black';
+    topBar.appendChild(spellCreateSheetTitle);
+
+    addSpacer(topBar);
+
+    const spellSaveButton = createImageButton('28', {source: 'url(static/images/menu-icons/save.png)', custom_padding: 4});
+    spellSaveButton.style.marginRight = '5px';
+    spellSaveButton.style.cursor = 'pointer';
+    spellSaveButton.onclick = () => {
+        const spell = getSpellFromForm();
+        if(spell){
+            saveSpell(spell);
+        }
+    };
+    topBar.appendChild(spellSaveButton);
+
+    const spellCreateSheetCloseButton = createImageButton('28', {source: 'url(static/images/menu-icons/close.png)', custom_padding: 4});
+    spellCreateSheetCloseButton.style.marginRight = '5px';
+    spellCreateSheetCloseButton.style.cursor = 'pointer';
+    spellCreateSheetCloseButton.onclick = () => {
+        spellCreateSheet.remove();
+    };
+    topBar.appendChild(spellCreateSheetCloseButton);
+
+    const spellCreateSheetContent = document.createElement('div');
+    spellCreateSheetContent.style.display = 'block';
+    spellCreateSheetContent.style.width = '98%';
+    spellCreateSheetContent.style.height = '95%';
+    spellCreateSheetContent.style.position = 'relative';
+    spellCreateSheetContent.style.overflowY = 'scroll';
+    spellCreateSheet.appendChild(spellCreateSheetContent);
+    
+    const form = document.createElement('div');
+    form.classList.add('column');
+    form.classList.add('vertical');
+    form.style.width = '98%';
+    form.style.gap = '10px';
+    form.style.padding = '5px';
+    spellCreateSheetContent.appendChild(form);
+
+    let maxSpellLevel = Math.max(...serverRules.spells.levels);
+
+
+    const rowSpellSelect = document.createElement('div');
+    rowSpellSelect.classList.add('row');
+    rowSpellSelect.classList.add('vertical');
+    rowSpellSelect.classList.add('form-group')
+    rowSpellSelect.classList.add('box-circular-border');
+    rowSpellSelect.style.backgroundColor = formColor;
+    rowSpellSelect.style.gap = '10px';
+    
+
+    const selectSpellType = createSelectorInput('Spell Type: ', Object.values(spellTypes), Object.keys(spellTypes), {
+        id: id + '-type'
+    });
+    rowSpellSelect.appendChild(selectSpellType);
+
+    const spellLevel = createSelectorInput('Spell Level: ', serverRules.spells.levels, serverRules.spells.levels, {
+        id: id +'-level'
+    }); 
+    rowSpellSelect.appendChild(spellLevel);
+
+    selectSpellType.querySelector('.input-element').onchange = () => {
+        spellCreateSheet.spell.spellType = selectSpellType.querySelector('.input-element').selectedOptions[0].value;
+        if(spellCreateSheet.spell.spellType == spellTypes.SPELL || spellCreateSheet.spell.spellType == spellTypes.CONJURE){
+            maxSpellLevel = serverRules.spells.levels.at(-1);
+            updateElements();
+        }else if(spellCreateSheet.spell.spellType == spellTypes.CANTRIP){
+            maxSpellLevel = 0;
+            updateElements();
+        }else if(spellCreateSheet.spell.spellType == spellTypes.WEAPON){
+            maxSpellLevel = serverRules.spells.levels.at(-1);
+            updateElements();
+        }
+    }
+
+    spellLevel.querySelector('.input-element').onchange = () => {
+        spellCreateSheet.spell.spellLevel = spellLevel.querySelector('.input-element').selectedOptions[0].value;
+        updateElements();
+    }
+
+    form.appendChild(rowSpellSelect);
+
+    const nameForm = createStringInput('Name: ', {id: id + '-name' });
+    nameForm.classList.add('box-circular-border');
+    nameForm.style.backgroundColor = formColor;
+    form.appendChild(nameForm);
+
+    if(initalSpell == null){
+        spellCreateSheet.spell = new Spell();
+    }else{
+        spellCreateSheet.spell = initalSpell;
+        spellCreateSheetTitle.textContent = "Editing - " + spellCreateSheet.spell.name
+        nameForm.querySelector(".input-element").value = spellCreateSheet.spell.name
+    }
+
+    const formClasses = createSelectorInput('Usable By Class:', Object.values(classTypes), Object.keys(classTypes), {
+        id:  id +'-clasess',
+        multiple: true,
+    });
+
+    formClasses.classList.add('box-circular-border');
+    formClasses.style.height = '150px';
+    formClasses.style.backgroundColor = formColor;
+    form.appendChild(formClasses);
+
+    const formModifierStat = createSelectorInput('Modifier Stat: ', Object.values(statTypes), Object.keys(statTypes),{
+        id:  id +'-modifier-stats',
+        multiple: true,
+    });
+
+    formModifierStat.classList.add('box-circular-border');
+    formModifierStat.style.height = '100px';
+    formModifierStat.style.backgroundColor = formColor;
+    form.appendChild(formModifierStat);
+
+    const baseDamageType = createSelectorInput('Base Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
+        id:  id +'-base-damage-type',
+        multiple: false,
+    });
+    baseDamageType.classList.add('box-circular-border');
+    baseDamageType.style.backgroundColor = formColor;
+    form.appendChild(baseDamageType);
+
+    const baseDamage = createDamageInput("Damage: ")
+    baseDamage.style.display = "none"
+    baseDamageType.appendChild(baseDamage);
+    
+    baseDamageType.querySelector('.input-element').onchange =  (event) => {
+        const value = event.target.value
+        if(value != damageTypes.NONE){
+            baseDamage.style.display = "flex"
+        }else{
+            baseDamage.style.display = "none"
+        }
+    }
+
+    const formDescription = createStringInput('Description: ', {id: 'create-spell-description',isTextArea: true});
+    formDescription.classList.add('box-circular-border');
+    formDescription.style.height = '150px';
+    formDescription.style.backgroundColor = formColor;
+    form.appendChild(formDescription);
+
+    function createDurationForm(label = "Duration", id, avaliableDurationTypes = durationTypes){
+        
+        // extract duration types
+        const displayDurationTypes = Object.keys(avaliableDurationTypes).map(key => avaliableDurationTypes[key]);
+
+        const durationSelector = createSelectorInput(label, Object.values(displayDurationTypes), Object.keys(displayDurationTypes), {
+            id:  id,
+            defaultValue: initalSpell !== null ? [spellCreateSheet.spell.castDuration.type] : null,
+        });
+        durationSelector.classList.add('box-circular-border');
+        durationSelector.style.backgroundColor = formColor;
+    
+        const durationValue = createNumberInput("Value: ", id+'-value', 50, 1, false, false)
+        durationValue.style.display = "none"
+        durationSelector.querySelector('.input-element').onchange =  (event) => {     
+            displayPart(event.target.value)
+        }
+
+        function displayPart(type){
+            if(type == durationTypes.TURN_BASED){
+                durationValue.style.display = "flex"
+            }else{
+                durationValue.style.display = "none"
+            }
+        }
+
+        displayPart(spellCreateSheet.spell.castDuration.type)
+
+        durationValue.querySelector('.input-element').value = spellCreateSheet.spell.castDuration.value //defaultValue
+        durationSelector.appendChild(durationValue);
+        return durationSelector
+    }
+    
+    const spellDuration = createDurationForm("Cast Duration: ",id +'-duration');
+    form.appendChild(spellDuration);
+
+    const spellActionCost = createSelectorInput('Action Cost: ', Object.values(actionTypes), Object.keys(actionTypes),{
+        id: 'create-spell-pattern-cast-type',
+        defaultValue: initalSpell ?  spellCreateSheet.spell.actionCost : null, 
+    })
+    spellActionCost.classList.add('box-circular-border');
+    spellActionCost.style.backgroundColor = formColor;
+    form.appendChild(spellActionCost);
+
+    const selectableSpellLevels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+    const formTargetEffects = document.createElement('div');
+    formTargetEffects.classList.add('column');
+    formTargetEffects.classList.add('vertical');
+    formTargetEffects.classList.add('box-circular-border');
+    formTargetEffects.style.width = '95%';
+    formTargetEffects.style.padding = '5px';
+    formTargetEffects.style.gap = '10px';
+    formTargetEffects.style.backgroundColor = formColor;
+    
+    const formTargetEffectsTitle = document.createElement('label');
+    formTargetEffectsTitle.textContent = 'Target Effects with Spend Mana';
+    formTargetEffectsTitle.style.fontWeight = 'bold';
+
+    const targetEffectsTabbedWindowContainer = createTabbedContainer(selectableSpellLevels.length, selectableSpellLevels);
+    targetEffectsTabbedWindowContainer.style.width = '100%';
+    targetEffectsTabbedWindowContainer.style.backgroundColor = formColor;
+
+    formTargetEffects.appendChild(formTargetEffectsTitle);
+    formTargetEffects.appendChild(targetEffectsTabbedWindowContainer);
+
+    form.appendChild(formTargetEffects);
+
+    for(let i = 0; i < selectableSpellLevels.length; i++){
+        const index = parseInt(selectableSpellLevels[i])
+        const tabContent = getContentContainer(targetEffectsTabbedWindowContainer, selectableSpellLevels[i])
+        tabContent.innerHTML = '';
+        const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
+        const formTargetEffects = createAdditionalEffectListContainer(tabContent.id + '-additional-effect-target-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
+        if(initalSpell && spellCreateSheet.spell.spendManaEffects && spellCreateSheet.spell.spendManaEffects[index] && spellCreateSheet.spell.spendManaEffects[index].target){
+            for(let additionalEffect of spellCreateSheet.spell.spendManaEffects[index].target){
+                const listElement = createAdditionalEffectListElement(additionalEffect)
+                formTargetEffects.elementsList.appendChild(listElement);
+            }
+        }
+        formTargetEffects.buttons[buttonNames[1]].onclick = () =>{
+            const listElement = createAdditionalEffectListElement()
+            formTargetEffects.elementsList.appendChild(listElement);
+        }
+        formTargetEffects.style.height = '150px';
+        tabContent.appendChild(formTargetEffects);
+    }
+
+    const casterEffects = document.createElement('div');
+    casterEffects.classList.add('column');
+    casterEffects.classList.add('vertical');
+    casterEffects.classList.add('box-circular-border');
+    casterEffects.style.width = '95%';
+    casterEffects.style.padding = '5px';
+    casterEffects.style.gap = '10px';
+    casterEffects.style.backgroundColor = formColor;
+    
+    const casterEffectsTitle = document.createElement('label');
+    casterEffectsTitle.textContent = 'Caster Effects with Spend Mana';
+    casterEffectsTitle.style.fontWeight = 'bold';
+
+    const casterEffectsTabbedWindowContainer = createTabbedContainer(selectableSpellLevels.length, selectableSpellLevels);
+    casterEffectsTabbedWindowContainer.style.width = '100%';
+    casterEffectsTabbedWindowContainer.style.backgroundColor = formColor;
+
+    casterEffects.appendChild(casterEffectsTitle);
+    casterEffects.appendChild(casterEffectsTabbedWindowContainer);
+
+    form.appendChild(casterEffects);
+
+    for(let i = 0; i < selectableSpellLevels.length; i++){
+        const index = parseInt(selectableSpellLevels[i])
+        const tabContent = getContentContainer(casterEffectsTabbedWindowContainer, selectableSpellLevels[i])
+        tabContent.innerHTML = '';
+        const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
+        const casterEffects = createAdditionalEffectListContainer(tabContent.id + '-additional-effect-caster-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
+        if(initalSpell && spellCreateSheet.spell.spendManaEffects &&spellCreateSheet.spell.spendManaEffects[index] && spellCreateSheet.spell.spendManaEffects[index].caster){
+            for(let additionalEffect of spellCreateSheet.spell.spendManaEffects[index].caster){
+                const listElement = createAdditionalEffectListElement(additionalEffect)
+                casterEffects.elementsList.appendChild(listElement);
+            }
+        }
+        casterEffects.buttons[buttonNames[1]].onclick = () =>{
+            const listElement = createAdditionalEffectListElement()
+            casterEffects.elementsList.appendChild(listElement);
+        }
+        casterEffects.style.height = '150px';
+        tabContent.appendChild(casterEffects);
+    }
+
+    const spellPatternContainer = document.createElement('div');
+    spellPatternContainer.classList.add('column');
+    spellPatternContainer.classList.add('vertical');
+    spellPatternContainer.classList.add('box-circular-border');
+    spellPatternContainer.style.width = '95%';
+    spellPatternContainer.style.padding = '5px';
+    spellPatternContainer.style.gap = '10px';
+    spellPatternContainer.style.backgroundColor = formColor;
+
+    const spellPatternTitle = document.createElement('label');
+    spellPatternTitle.textContent = 'Spell Pattern';
+    spellPatternTitle.style.fontWeight = 'bold';
+    spellPatternContainer.appendChild(spellPatternTitle);
+
+    const spellPatternSelect = createSelectorInput('Spell Pattern: ', Object.values(spellPatterns), Object.keys(spellPatterns),{
+        id: 'create-spell-pattern-select',
+        defaultValue: initalSpell ? [initalSpell.spellPattern.pattern] : null, 
+    })
+    spellPatternSelect.classList.add('box-circular-border');
+    spellPatternSelect.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellPatternSelect);
+
+    const spellCastArea = createNumberInput("Cast Range:", "create-spell-pattern-cast-area", 9999, 0, false, false, initalSpell ? initalSpell.spellPattern.range : null)
+    spellCastArea.classList.add('box-circular-border');
+    spellCastArea.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellCastArea);
+
+    const spellCastWidth = createNumberInput("Cast Area:", "create-spell-pattern-cast-area", 500, 0, false, false, initalSpell ? initalSpell.spellPattern.area : null)
+    spellCastWidth.classList.add('box-circular-border');
+    spellCastWidth.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellCastWidth);
+
+    const spellCastType = createSelectorInput('Spell Cast Type: ', Object.values(castTypes), Object.keys(castTypes),{
+        id: 'create-spell-pattern-cast-type',
+        defaultValue: initalSpell ? [initalSpell.spellPattern.castType] : null, 
+    })
+    spellCastType.classList.add('box-circular-border');
+    spellCastType.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellCastType);
+
+    const spellCanTarget = createSelectorInput('Can Target: ', Object.values(targetTypes), Object.keys(targetTypes),{
+        id: 'create-spell-pattern-can-target',
+        defaultValue: initalSpell ? initalSpell.spellPattern.canTarget : null, 
+        multiple: true,
+        custom_func: indexedOptionFunctionWithTransperency
+    })
+    spellCanTarget.classList.add('box-circular-border');
+    spellCanTarget.style.backgroundColor = formColor;
+    spellPatternContainer.appendChild(spellCanTarget);
+    form.appendChild(spellPatternContainer)
+
+    const spellCasterRolls = createSelectorInput('Caster Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
+        id: 'create-spell-caster-rolls',
+        defaultValue: initalSpell ? initalSpell.casterRolls : null, 
+        multiple: true,
+    })
+    spellCasterRolls.classList.add('box-circular-border');
+    spellCasterRolls.style.backgroundColor = formColor;
+    form.appendChild(spellCasterRolls)
+
+    const spellTargetRolls = createSelectorInput('Target Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
+        id: 'create-spell-target-rolls',
+        defaultValue: initalSpell ? initalSpell.targetRolls : null, 
+        multiple: true,
+    })
+    spellTargetRolls.classList.add('box-circular-border');
+    spellTargetRolls.style.backgroundColor = formColor;
+    form.appendChild(spellTargetRolls)
+    // --------------------------END ------------------------
+    updateElements();
+    userInterface.appendChild(spellCreateSheet);
+
+    function createAdditionalEffectListContainer(id, titleStr = null, buttonNames = []){
+ 
+        const additionalElementListContainer = document.createElement('div');
+        additionalElementListContainer.classList.add('form-group');
+        additionalElementListContainer.classList.add('column');
+        additionalElementListContainer.classList.add('vertical');
+        additionalElementListContainer.id = id;
+    
+        const title = document.createElement('label');
+        title.textContent = titleStr ? titleStr : 'Create a New';
+    
+        const row = document.createElement('div');
+        row.classList.add('row');
+        row.style.gap = '10px';
+        row.style.width = '98%';
+        row.style.height = '98%';
+    
+        const elementsListColumn = document.createElement('div')
+        elementsListColumn.classList.add('column');
+        elementsListColumn.classList.add('vertical');
+        elementsListColumn.classList.add('box-circular-border');
+        elementsListColumn.style.backgroundColor = 'white';
+        elementsListColumn.style.paddingTop = '3px'
+        elementsListColumn.style.gap = '5px';
+        elementsListColumn.style.overflowY = 'scroll';
+        elementsListColumn.style.width = '70%';
+        elementsListColumn.style.height = '90%';
+    
+        const buttonsList =document.createElement('div')
+        buttonsList.classList.add('column');
+        buttonsList.classList.add('horizantal');
+        buttonsList.style.gap = '5px';
+        buttonsList.style.display = 'flex';
+        buttonsList.style.flexGrow = '1';
+    
+        
+        additionalElementListContainer.buttons = {};
+        additionalElementListContainer.elementsList = elementsListColumn;
+        for(let buttonName of buttonNames) {
+            const button = document.createElement('button')
+            button.textContent = buttonName;
+            button.style.textAlign = 'center';
+            button.style.display = 'flex';
+            additionalElementListContainer.buttons[buttonName] = button;
+            buttonsList.appendChild(button)
+        }
+    
+        row.appendChild(elementsListColumn)
+        row.appendChild(buttonsList)
+        additionalElementListContainer.appendChild(title);
+        additionalElementListContainer.appendChild(row)
+    
+        return additionalElementListContainer;
+    }
+
+    function createAdditionalEffectListElement(additionalEffect, edit_icon = 'edit.png', close_icon = 'close.png'){ 
+        
+        // Future additnal effect create bağlanacak
+        const listElement = document.createElement('div');
+        listElement.classList.add('additiona-effect-container');
+        listElement.classList.add('list-element'); // 30px 
+        listElement.classList.add('box-circular-border');
+        listElement.classList.add('row');
+        listElement.classList.add('vertical');
+
+        listElement.additionalEffect = additionalEffect ? additionalEffect : new AdditionalEffect()
+    
+        const labeledElement = document.createElement('div');
+        labeledElement.classList.add('row');
+        labeledElement.classList.add('centered');
+        labeledElement.style.gap = '5px';
+    
+        const label = document.createElement('label');
+        label.style.textAlign = 'center';
+        label.style.fontSize = '14px';
+        label.style.paddingLeft = '5px';
+        label.textContent = "New Additional Effect";
+        labeledElement.appendChild(label)
+    
+        if(additionalEffect){
+            label.textContent = additionalEffect.name;
+            let effectImageList = new Set();
+            for(const effect of additionalEffect.effects){
+                switch (effect.type) {
+                    case additionalEffectTypes.BUFF:
+                        // Code to run if expression === value1
+                        effectImageList.add("buff_debuff.png")
+                        break;
+                    
+                    case additionalEffectTypes.AURA:
+                        // Code to run if expression === value2
+                        effectImageList.add("aura.png");
+                        break;
+                    
+                    case additionalEffectTypes.CAST:
+                        // Code to run if expression === value3
+                        effectImageList.add("cast.png");
+                        break;
+                }
+            }
+            for(const effectImage of effectImageList){
+                const effectImg = document.createElement('img');
+                effectImg.classList.add('icon');
+                effectImg.style.width = '23px';
+                effectImg.style.height = '23px';
+                effectImg.style.marginRight = '10px';
+                effectImg.src = "static/images/menu-icons/" + effectImage;
+                labeledElement.appendChild(effectImg);
+            }     
+        }
+    
+    
+        const removeButton = createImageButton('26', {source: `url(static/images/menu-icons/${close_icon})`, custom_padding: 3});
+        removeButton.onclick = () => {
+            listElement.remove()
+        }
+    
+    
+        const editButton = createImageButton('26', {source: `url(static/images/menu-icons/${edit_icon})`, custom_padding: 3});
+        editButton.onclick = () => {
+            additionalEffectBuilder(id +'-additional-effect'+ Date.now(), listElement);
+        }
+    
+        listElement.appendChild(labeledElement);
+        addSpacer(listElement);
+        listElement.appendChild(editButton);
+        listElement.appendChild(removeButton);
+    
+        return listElement;
+    }
+
+    function additionalEffectBuilder(id, listElement) {
+
+        const itemId = id;
+        const additionalEffect = listElement.additionalEffect 
+
+        const additionalEffectBuildContainer = document.createElement('div');
+        additionalEffectBuildContainer.style.position = 'absolute';
+        additionalEffectBuildContainer.style.display = 'flex';
+        additionalEffectBuildContainer.style.width = '100%';
+        additionalEffectBuildContainer.style.height = '100%';
+        
+    
+        const additionalEffectBuilderSheet = document.createElement('div');
+        additionalEffectBuilderSheet.style.display = 'flex';
+        additionalEffectBuilderSheet.classList.add('aditional-effect-create-sheet');
+        additionalEffectBuilderSheet.classList.add('box-circular-border');
+        additionalEffectBuilderSheet.classList.add('column');
+        additionalEffectBuilderSheet.classList.add('vertical');
+        additionalEffectBuilderSheet.style.gap = '10px';
+        additionalEffectBuilderSheet.id = itemId;
+        additionalEffectBuilderSheet.style.backgroundColor = backgroundColor
+    
+        const closeButton = createImageButton('28', {source: 'url(static/images/menu-icons/close.png)', custom_padding: 4});
+        closeButton.style.position = 'absolute';
+        closeButton.style.top = '10px';
+        closeButton.style.right = '5px';
+        closeButton.onclick = () => {
+            additionalEffectBuilderSheet.remove();
+        }
+    
+        const title = document.createElement('h2');
+        title.textContent = additionalEffect.name ? "Editing " + additionalEffect.name:'Create Additional Effect';
+        title.style.textAlign = 'center';
+    
+        const column = document.createElement('div');
+        column.classList.add('form-group');
+        column.classList.add('column');
+        column.classList.add('vertical');
+        column.style.display = 'flex';
+        column.style.gap = '10px';
+        column.style.width = '98%';
+        column.style.height = '98%';
+        column.style.overflowY = 'scroll';
+        column.style.overflowX = 'hidden';
+    
+        const additionalEffectName = createStringInput('Name: ', {
+            id: itemId + '-aditional-effect-name',
+            defaultValue: additionalEffect.name
+        });
+
+        additionalEffectName.classList.add('box-circular-border');
+    
+        const triggerActions = createSelectorInput('Triggered With Action:',  Object.values(characterActions), Object.keys(characterActions),{
+            nonSelectableDefault: 'select', 
+            id: itemId +'-aditional-effect-craracter-actions', 
+            multiple: true, 
+            defaultValue: additionalEffect.characterAction});
+        triggerActions.classList.add('box-circular-border');
+        triggerActions.style.minHeight = '100px';
+        triggerActions.style.height = '100px';
+    
+        const descriptionForm = createStringInput('Description: ',{
+            id: itemId +'-aditional-effect-description',
+            defaultValue: additionalEffect.description,
+            isTextArea: true
+        });
+        
+        descriptionForm.classList.add('box-circular-border');
+        descriptionForm.style.minHeight = '100px';
+        descriptionForm.style.height = '100px';
+    
+        const additionalEffectDuration = createDurationForm("Effect Duration: ", itemId+'-duration');
+        
+        function createEffectTab(parent, effect = null){
+            const columntElement = document.createElement("div");
+            columntElement.classList.add('column');
+            columntElement.classList.add('vertical');
+            columntElement.style.overflow = 'hidden';
+            columntElement.style.width = '95%';
+            columntElement.style.height = '95%';
+            columntElement.style.gap = '10px';
+            columntElement.style.padding = '5px';
+            
+            const typeBuilder = document.createElement('div');
+            typeBuilder.classList.add('type-builder');
+            typeBuilder.classList.add('form-group');
+            typeBuilder.classList.add('column');
+            typeBuilder.classList.add('vertical');
+            typeBuilder.style.display = 'flex';
+            typeBuilder.style.flexGrow = '1';
+            typeBuilder.style.gap = '10px';
+            typeBuilder.style.width = '100%';
+            typeBuilder.style.height = '100%';
+    
+            const additionalEffectTypeSelector = createSelectorInput('Additional Effect Type:',  Object.values(additionalEffectTypes), Object.keys(additionalEffectTypes),{
+                nonSelectableDefault: 'select', 
+                id: itemId +'-aditional-effect-type', 
+                defaultValue: effect ? [effect.type] : null
+            });
+
+            additionalEffectTypeSelector.classList.add('box-circular-border');
+            columntElement.appendChild(additionalEffectTypeSelector)
+            columntElement.appendChild(typeBuilder)
+    
+            function conjureEffectCreator(effect){
+                function createCastForm(){
+                    const castForm = document.createElement('form');
+                    castForm.style.display = 'flex';
+                    castForm.classList.add('form-group');
+                    castForm.classList.add('column');
+                    castForm.classList.add('vertical');
+                    castForm.style.gap = '10px';
+                    castForm.style.width = '98%';
+                    castForm.style.height = '98%';
+
+                    const spellSelectContainer = createSpellSelectContainer(itemId, effect ? effect.spellLevel : null, effect ? effect.spellName: null);
+                    castForm.appendChild(spellSelectContainer);
+
+                    const container = document.createElement('div');
+                    container.classList.add('form-group');
+                    container.classList.add('box-circular-border');
+                    container.classList.add('row');
+                    container.style.gap = '10px';
+                    container.style.width = '95%';
+                    
+                    const manaInput = createNumberInput('Mana:', itemId+'-mana-input', effect ? effect.mana : null);
+
+                    const spellDescriptionButton = document.createElement('button');
+                    spellDescriptionButton.textContent = 'Spell Description';
+                    spellDescriptionButton.style.marginLeft = '10px';
+                    
+                    spellDescriptionButton.onclick = function(event) {
+                        event.preventDefault();
+                        displaySpellDescription(null, listSpells[spellSelectContainer.spellLevel][spellSelectContainer.spellName], event.x, event.y);
+                    }
+
+                    const targetListOrdered = createSelectorInput('Target List Order: ', Object.values(targetTypes), Object.keys(targetTypes), {
+                        id: itemId + '-target-list', 
+                        multiple: true,
+                        custom_func: indexedOptionFunctionWithTransperency, 
+                        defaultValue: effect ? effect.targetListInOrder : null}); 
+                    targetListOrdered.classList.add('box-circular-border');
+                    targetListOrdered.style.display = 'flex';
+
+
+                    castForm.onchange = () => {
+                        parent.effect = {
+                            type: additionalEffectTypes.CAST,
+                            mana: parseInt(manaInput.querySelector('.input-element').value),
+                            spellName: spellSelectContainer.spellName, 
+                            spellLevel: spellSelectContainer.spellLevel,
+                            targetList: getOrderedSelectedOptions(targetListOrdered.querySelector('.input-element')),
+                        }
+                    };
+
+                    container.appendChild(manaInput);
+                    container.appendChild(spellDescriptionButton);
+                    castForm.appendChild(container);
+                    castForm.appendChild(targetListOrdered);
+                    return castForm
+                }
+                function createAuraForm() {
+                    const itemId = id + '-aura-form';
+                    const auraForm = document.createElement('form');
+                    auraForm.style.display = 'flex';
+                    auraForm.classList.add('form-group');
+                    auraForm.classList.add('column');
+                    auraForm.classList.add('vertical');
+                    auraForm.style.gap = '10px';
+                    auraForm.style.width = '98%';
+                    auraForm.style.height = '98%';
+                
+                    const effectType = createSelectorInput('Effect Type:',  Object.values(targetTypes), Object.keys(targetTypes), {
+                        id: itemId + '-effect-type',}); 
+                
+                    auraForm.appendChild(effectType);
+                    return auraForm;
+                }
+
+                function createBuffForm() {
+                    const itemId = id + '-buff-form';
+                    const buffForm = document.createElement('form');
+                    buffForm.style.display = 'flex';
+                    buffForm.classList.add('form-group');
+                    buffForm.classList.add('column');
+                    buffForm.classList.add('vertical');
+                    buffForm.style.gap = '10px';
+        
+                    const effectTypeSelector = createSelectorInput('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes), {nonSelectableDefault: 'select', 
+                        nonSelectableDefault: 'select',
+                        id: itemId +'-effect-type'
+                    });
+                    buffForm.appendChild(effectTypeSelector);
+
+                    const inputForm = document.createElement('div');
+                    inputForm.classList.add('vertical');
+                    inputForm.classList.add('column');
+                    inputForm.style.display = 'flex';
+                    inputForm.style.width = '100%';
+                    inputForm.style.height = '100%';
+                    inputForm.style.gap = '10px';
+                    buffForm.appendChild(inputForm);
+
+                    effectTypeSelector.onchange = function(event){
+                        inputForm.innerHTML = '';
+                        const value = event.target.value
+                        if(value == effectTypes.ATTACK_DAMAGE_BONUS || value == effectTypes.HEAL || value == effectTypes.TAKE_DAMAGE || value == effectTypes.VISION_RANGE_BONUS
+                            || value == effectTypes.DEFENSE
+                        ){
+                            const inputElement = createDamageInput("Value: ", itemId)
+                            inputForm.appendChild(inputElement);
+                        }else if(value == effectTypes.DICE_CHANGE){
+                            const numberInput = createDiceInput("Value: ", itemId)
+                            inputForm.appendChild(numberInput);
+                        }else if(value == effectTypes.PATTERN_CHANGE){
+                            const patternInput = createSelectorInput("New Pattern: ", Object.values(spellPatterns), Object.keys(spellPatterns), {
+                                id: itemId
+                            })
+                            inputForm.appendChild(patternInput);
+                        }else if(value == effectTypes.ATTACK_RANGE || value == effectTypes.ATTACK_RADIUS_BONUS || value == effectTypes.ATTACK_RANGE_BONUS){
+                            const inputElement = createNumberInput('Value:', itemId, effect.range)
+                            inputForm.appendChild(inputElement);
+                        }
+                    }
+
+                    return buffForm
+                }
+
+                if(effect.type == additionalEffectTypes.CAST){
+                    const form = createCastForm()
+                    typeBuilder.appendChild(form)
+                } else if(effect.type == additionalEffectTypes.AURA){
+                    const form = createAuraForm();
+                    typeBuilder.appendChild(form)
+                } else if(effect.type == additionalEffectTypes.BUFF){                    
+                    const form = createBuffForm();
+                    typeBuilder.appendChild(form)
+                }
+
+                additionalEffectTypeSelector.querySelector('.input-element').value = effect.type
+            }
+            
+            if(effect){
+                conjureEffectCreator(effect)
+            }
+
+            additionalEffectTypeSelector.onchange = function(event){
+                typeBuilder.innerHTML = '';
+                conjureEffectCreator(event.target.value)
+            }
+            parent.appendChild(columntElement);
+        }
+
+        const tabbedEffectCreator = createTabbedContainer(0, null, itemId +'-aditional-effect-effect-create-tab', true, 'Effect');
+        tabbedEffectCreator.classList.add('box-circular-border');
+        tabbedEffectCreator.style.width = '98%';
+        tabbedEffectCreator.style.backgroundColor = formColor;
+        tabbedEffectCreator.style.flexGrow = '1';
+
+        tabbedEffectCreator.addTabButton.textContent = "Add Effect";
+        tabbedEffectCreator.addTabButton.addEventListener('click', function() {
+            const lastContainer = getContentContainer(tabbedEffectCreator);
+            lastContainer.innerHTML = "";
+            createEffectTab(lastContainer)  
+        });
+    
+        if(additionalEffect.effects.length > 0){
+            for(let effect of additionalEffect.effects){
+                addNewTab(tabbedEffectCreator, null, 'Effect')
+                const lastContainer = getContentContainer(tabbedEffectCreator);
+                lastContainer.innerHTML = "";
+                createEffectTab(lastContainer, effect)  
+            }
+        }
+        
+        const saveButton = document.createElement('button');
+        saveButton.textContent = 'Save';
+        saveButton.onclick = () => {
+            listElement.additionalEffect.name = additionalEffectName.querySelector('.input-element').value;
+            listElement.additionalEffect.characterAction = getSelectedOptionsWithCheckmark(triggerActions.querySelector('.input-element'));
+            listElement.additionalEffect.description = descriptionForm.querySelector('.input-element').value;    
+            listElement.additionalEffect.duration = durationForm.querySelector('.input-element').value;
+            for (let i = 1; i <= tabbedEffectCreator.length; i++) {
+                const tabContent = getContentContainer(tabbedEffectCreator, i);
+    
+                const typeBuilder = tabContent.querySelector('.type-builder'); 
+    
+                console.log(typeBuilder.effect)
+                if(typeBuilder.effect.type == additionalEffectTypes.CAST){
+                    listElement.additionalEffect.effects.push(new Cast(typeBuilder.effect.spellName, typeBuilder.effect.spellLevel, 
+                                                                typeBuilder.effect.mana, typeBuilder.effect.targetList))
+                }else if(typeBuilder.effect.type == additionalEffectTypes.AURA){
+                    listElement.additionalEffect.effects.push(new Aura(typeBuilder.effect.area, typeBuilder.effect.value, typeBuilder.effect.targetList, typeBuilder.effect.canSpread))
+                }else if(typeBuilder.effect.type == additionalEffectTypes.BUFF){
+                    listElement.additionalEffect.effects.push(new Cast(typeBuilder.effect.spellName, typeBuilder.effect.spellLevel, 
+                        typeBuilder.effect.mana, typeBuilder.effect.targetList))
+                }
+            }
+            const listElement = createAdditionalEffectListElement(listElement.additionalEffect);
+            listElement.parentElement.appendChild(listElement);
+            listElement.remove();
+        };
+    
+        addDraggableRow(additionalEffectBuilderSheet);
+        additionalEffectBuilderSheet.appendChild(title);
+        column.appendChild(additionalEffectName);
+        column.appendChild(triggerActions);
+        column.appendChild(descriptionForm);
+        column.appendChild(additionalEffectDuration);
+        column.appendChild(tabbedEffectCreator);
+        additionalEffectBuilderSheet.appendChild(column);
+        additionalEffectBuilderSheet.appendChild(closeButton);
+        additionalEffectBuilderSheet.appendChild(saveButton);
+        additionalEffectBuildContainer.appendChild(additionalEffectBuilderSheet)
+    
+        userInterface.appendChild(additionalEffectBuilderSheet)
+    }
+
+    function updateElements(){
+        let displayedLevels = serverRules.spells.levels;
+
+        // Filter out any selectableSpellLevels not in serverRules.spells.levels
+
+        // // Filter out any selectableSpellLevels lower than initialSpell.spellLvl
+        displayedLevels = displayedLevels.filter(level => (parseInt(level) <= parseInt(maxSpellLevel)));
+
+        serverRules.spells.levels.forEach(level => {
+            if(displayedLevels.includes(level)){
+                changeVisibiltyOfTab(targetEffectsTabbedWindowContainer, level, true)
+                changeVisibiltyOfTab(casterEffectsTabbedWindowContainer, level, true)
+            }else{
+                changeVisibiltyOfTab(targetEffectsTabbedWindowContainer, level, false)
+                changeVisibiltyOfTab(casterEffectsTabbedWindowContainer, level, false)
+            }
+        })
+        activateTab(targetEffectsTabbedWindowContainer, displayedLevels[0])
+        activateTab(casterEffectsTabbedWindowContainer, displayedLevels[0])
+    }
+}
+
+function createSpellCard(spell) {
+    // Create the spell card container
+    const spellCard = document.createElement('div');
+    spellCard.classList.add('spell-card');
+    spellCard.style.display = 'flex';
+    spellCard.style.flexDirection = 'column';
+    spellCard.style.gap = '5px';
+    spellCard.style.padding = '10px';
+    spellCard.style.border = '1px solid black';
+    spellCard.style.borderRadius = '8px';
+    spellCard.style.backgroundColor = '#f0f0f0';
+    spellCard.style.overflow = 'auto';
+    spellCard.style.width = '100%';
+
+    // Create the spell card header
+    const spellCardHeader = document.createElement('div');
+    spellCardHeader.classList.add('spell-card-header');
+    spellCardHeader.style.display = 'flex';
+    spellCardHeader.style.justifyContent = 'space-between';
+    spellCardHeader.style.alignItems = 'center';
+    spellCard.appendChild(spellCardHeader);
+    
+    // Create the spell card name
+    const spellCardName = document.createElement('h3');
+    spellCardName.textContent = spell.name;
+    spellCardName.style.margin = '0';
+    spellCardName.style.fontFamily = "'Cinzel', serif"; // DnD theme font
+    spellCardName.style.fontSize = '16px'; // Larger font size
+    spellCardHeader.appendChild(spellCardName);
+}
+
 spellBookButton.onclick = () => {
     const spellBook = document.getElementById("ui-spellbook");
     if (spellBook.style.display === "none") {
@@ -212,6 +1084,10 @@ spellBookButton.onclick = () => {
     } else {
         spellBook.style.display = "none";
     }
+}
+
+createSpellButton.onclick = () => {
+    displaySpellCreate()
 }
 
 // Player's Character Sheet
@@ -975,8 +1851,8 @@ function startSyncTimer() {
     async function update() {
         cnt++;
         if(isUpdating === false){
-            serverInfo = await getGameFile("server_info.json", false)
-            await getGameFile("game_elements.json")
+            serverInfo = await getGameFile("server_info")
+            await getGameFile("game_elements")
         }
     }
     setInterval(update, 1000); // Update every second
@@ -985,7 +1861,7 @@ function startSyncTimer() {
 async function  initDatabase(initStates){
     try {
         // Fetch server info
-        const newServerInfo = await getGameFile("server_info.json", false);
+        const newServerInfo = await getGameFile("server_info", false);
 
         // Ensure server info is valid
         if (!newServerInfo || newServerInfo.server_status !== "online") {
@@ -1015,7 +1891,7 @@ async function  initDatabase(initStates){
         } 
         if(initStates.isRulesOk == false){
             // Fetch game elements
-            const rules = await getGameFile("rules.json");
+            const rules = await getGameFile("rules");
 
             // Ensure game elements are valid
             if (rules) {
@@ -1041,10 +1917,45 @@ async function  initDatabase(initStates){
 }
 
 async function loadSpells(){
-    const spellData = await getGameFile("spells.json")
+    const spellData = await getGameFile("spells")
     if(spellData){
         // check spell data correctness
         spells = spellData
+        
+        for(const spellLevel of Object.keys(spells)){
+            const spellContainer = document.createElement('div');
+            spellContainer.classList.add('spell-container');
+        
+            const spellHeader = document.createElement('h3');
+            spellHeader.classList.add('spell-header');
+            spellHeader.textContent = `Level ${spellLevel}`;
+            spellContainer.appendChild(spellHeader);
+        
+            const spellContent = document.createElement('div');
+            spellContent.classList.add('spell-content');
+            spellContent.style.display = 'none'; // Initially hidden
+        
+            for (const spellName of Object.keys(spells[spellLevel])) {
+                const spell = spells[spellLevel][spellName];
+                const spellInfo = document.createElement('div');
+                spellInfo.classList.add('spell-info');
+                spellInfo.innerHTML = `
+                    <h4>${spell.name}</h4>
+                    <p>${spell.description}</p>
+                    ${spell.damage ? `<p>Damage: ${spell.damage}</p>` : ''}
+                    ${spell.heal ? `<p>Heal: ${spell.heal}</p>` : ''}
+                    ${spell.additionals ? `<p>Additional: ${spell.additionals.join(', ')}</p>` : ''}
+                `;
+                spellContent.appendChild(spellInfo);
+            }
+        
+            spellContainer.appendChild(spellContent);
+            contentYourSpells.appendChild(spellContainer);
+        
+            spellHeader.addEventListener('click', () => {
+                spellContent.style.display = spellContent.style.display === 'none' ? 'block' : 'none';
+            });
+        }
     }else{
         return loadSpells()
     }
@@ -1056,7 +1967,7 @@ function startSyncTimer() {
     async function update() {
         cnt++;
         if(isUpdating === false){
-            const newServerInfo = await getGameFile("server_info.json", false)
+            const newServerInfo = await getGameFile("server_info")
             if(newServerInfo){
                 if(newServerInfo.chat_idx !== chat.last_idx){
                     const diff = parseInt(newServerInfo.chat_idx, 10) - parseInt(chat.last_idx, 10) - 1 ;

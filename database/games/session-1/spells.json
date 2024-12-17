@@ -6,7 +6,18 @@
         "No Spell": "No Spell"
     },
     "2": {
-        "No Spell": "No Spell"
+        "Fire" : {
+            "name": "Fire",
+            "description": "A fireball that deals 1d6 damage to a single target.",
+            "damage": "1d6",
+            "additionals" : ["Attack Damage increase"]
+        },
+        "Heal" : {
+            "name": "Heal",
+            "description": "Heals a single target for 1d6 health.",
+            "heal": "1d6",
+            "additionals" : ["Heal increase"]
+        }
     },
     "3": {
         "No Spell": "No Spell"

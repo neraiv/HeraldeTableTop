@@ -966,7 +966,7 @@ function createTabbedContainer(tabCount, tabNames = null, id = null, isGrowable 
     tabMainName = tabMainName != null ? tabMainName : 'Tab';
     const tabbedWindowContainer = document.createElement('div');
     tabbedWindowContainer.length = tabCount;
-    tabbedWindowContainer.className = id ? `${id}-tabbed-window` : 'default-tabbed-window'; // Optional class for styling
+    tabbedWindowContainer.classList.add("tabbed-window")
 
     const tabContainer = document.createElement('div');
     tabContainer.classList.add('tab-container');
@@ -974,9 +974,7 @@ function createTabbedContainer(tabCount, tabNames = null, id = null, isGrowable 
 
 
     const contentContainer = document.createElement('div');
-    contentContainer.className = id ? `${id}-tab-content-container` : 'default-tab-content-container';
     contentContainer.classList.add('tab-content-container'); // Added a class for the content container
-
     // Append the tab and content containers to the tabbed window container
     tabbedWindowContainer.appendChild(tabContainer);
     tabbedWindowContainer.appendChild(contentContainer);

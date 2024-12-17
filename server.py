@@ -20,20 +20,6 @@ atexit.register(db.on_exit)
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Define the on_exit function
-def controlKey(key) -> tuple[str, dict]:
-    db.wait_until_file_is_closed(USERS)
-    with open(USERS, 'r') as file:
-        users_data: dict = json.load(file)
-    
-    char = {}
-    # Check if the provided key exists for an online user
-    for username in users_data.keys():
-        user = users_data[username]
-        if user['key'] == key and user['status'] == 'online':
-            return username, user
-    return None, None
-
 @app.route('/')  # Renamed this route
 def home():
     return render_template('debug_login.html')  # Render the HTML file
@@ -88,12 +74,12 @@ def getScene_func():
             return jsonify({"error": "Key or image name is not provided."}), 400
         
         if not DEBUG_MODE:
-            userName, userInfo = controlKey(key)
+            userName, userInfo = db.controlKey(key)
 
         successStatus = False
 
         if userName or DEBUG_MODE:
-            all_scene_data: dict = getGameFile("scenes.json")
+            all_scene_data: dict = db.scenes
             requestedScene: dict = all_scene_data.get(sceneName)
             if requestedScene:
                 require = requestedScene.get("requirements")
@@ -101,7 +87,7 @@ def getScene_func():
                     # ---------------------- Check requirements ----------------------
                     # Check if the user has the required item
                     if require["type"] == "item":
-                        char = getGameFile("chars.json").get(userInfo["character"])
+                        char = db.chars.get(userInfo["character"])
                         if char:
                             if require["item"] in char["inventory"] and char["inventory"][require["item"]] >= require["amount"]:
                                 if require["after"] == "remove":
@@ -135,22 +121,6 @@ def getScene_func():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def getGameFile(name, from_session = True):
-    db.wait_until_file_is_closed(SERVER_INFO)
-    with open(SERVER_INFO, 'r', encoding="utf-8") as file:
-        server_info = json.load(file)
-        #FUTURE LAST SESSİON VARMI YOKMU BAKILMASI LAZIM
-    last_session = server_info["last_session"]
-
-    path = ""
-    if from_session:
-        path = os.path.join(GAMES_PATH, last_session, name)
-    else:
-        path = os.path.join(DB_MAIN_PATH,"database", name)
-
-    with open(path, 'r', encoding="utf-8") as file:
-        return json.load(file)
-
 def templeteGetFunc():
     try:
         key = request.args.get('key')  # Extract 'key' from query parameters
@@ -159,7 +129,7 @@ def templeteGetFunc():
             return jsonify({"error": "Key is not provided."}), 400
         
         if not DEBUG_MODE:
-            user = controlKey(key)[0]
+            user = db.controlKey(key)[0]
 
         if user or DEBUG_MODE:
             # Here
@@ -183,13 +153,13 @@ def getSession_func():
             return jsonify({"error": "Key is not provided."}), 400
         
         if not DEBUG_MODE:
-            user = controlKey(key)[0]
+            user = db.controlKey(key)[0]
 
         if user or DEBUG_MODE:
-            session_data: dict = getGameFile("session_info.json")
+            session_data: dict = db.session_info
             
             # Get the current scene
-            scenes_data = getGameFile("scenes.json")
+            scenes_data = db.scenes
                         
             if session_data and scenes_data:
 
@@ -224,7 +194,7 @@ def sendMessage_func():
             return jsonify({"error": "Key is not provided."}), 400
         
         if not DEBUG_MODE:
-            username = controlKey(key)[0]
+            username = db.controlKey(key)[0]
 
         if username or DEBUG_MODE:
             try:
@@ -253,7 +223,7 @@ def getChat_func():
         print(len, idx , request.args.get('len'), request.args.get('idx'))
             
         if not DEBUG_MODE:
-            user = controlKey(key)[0]
+            user = db.controlKey(key)[0]
 
         if user or DEBUG_MODE:
             chat_data = db.getMessages(idx, len)
@@ -276,25 +246,22 @@ def getGameInfo_func():
     try:
         key = request.args.get('key')  # Extract 'key' from query parameters
         info = request.args.get('info')  # Extract 'info' from query parameters
-        state = request.args.get('state') # Extract 'state' from query
 
-        if not key or not info or not state and not DEBUG_MODE:
+        if not key or not info:
             return jsonify({"error": "Missing data"}), 400
-        
-        if state  == "true":
-            state = True
-        elif state == "false":
-            state = False
 
         if not DEBUG_MODE:
-            user = controlKey(key)[0]
+            user = db.controlKey(key)[0]
 
         if user or DEBUG_MODE:
-            db_data = getGameFile(info, state)
+            
+            db_data = db.getDbData(info)
+            
             if db_data:
                 return jsonify({"success": "Successfully got game info file.", "data": db_data}) 
             else:
                 return jsonify({"error": "Game info not found."}), 404
+            
         else:
             return jsonify({"error": "User not found or not online."}), 404
         
@@ -316,14 +283,13 @@ def registerChar_func():
         if not key:
             return jsonify({"error": "Key is not provided."}), 400
         
-        user = controlKey(key)[1]
+        user = db.controlKey(key)[1]
 
         if user:
             
             if user.get("character") == "":
-                db.wait_until_file_is_closed(CHARS)
-                with open(CHARS, 'r', encoding='utf-8') as file:
-                    all_chars: dict = json.load(file)
+
+                all_chars: dict = db.chars
                 
                 char = data["char"]
                 char_name = char["name"]
@@ -354,11 +320,11 @@ def getChar_func():
         if not key or not charId:
             return jsonify({"error": "Key is not provided."}), 400
         
-        userName, info = controlKey(key)
+        userName, info = db.controlKey(key)
 
         if userName:
             
-            all_chars: dict = getGameFile("chars.json")
+            all_chars: dict = db.chars
                                 
             charInfo = all_chars.get(charId)
 
@@ -385,7 +351,7 @@ def openGamePage(key):
         if not key:
             return jsonify({"error": "Key or username not provided."}), 400
         
-        user = controlKey(key)[1]
+        user = db.controlKey(key)[1]
         
         if user:
             if user['type'] == "dungeon_master":
@@ -410,18 +376,9 @@ def login_func():
             return jsonify({"error": "Invalid JSON data."}), 400
         username = data.get('username')
         password = data.get('password')
-
-        # Load the user data from the file
-        if os.path.exists(USERS):
-            db.wait_until_file_is_closed(USERS)
-            with open(USERS, 'r') as file:     
-                users_data: dict = json.load(file)
-
-        if users_data == {}:
-            return jsonify({"error": "No user data found on server."}), 404
-        
+  
         # Check if the user exists and matches password if provided
-        user = users_data.get(username)
+        user = db.users.get(username)
         if user and (user["password"] == password):
             if user["status"] == "offline":       
                 # Update last_sync to current time
@@ -432,7 +389,7 @@ def login_func():
                 # Save updated last_sync and status back to the file
                 db.wait_until_file_is_closed(USERS)
                 with open(USERS, 'w') as file:
-                    json.dump(users_data, file, indent=4)
+                    json.dump(db.users, file, indent=4)
 
                 return jsonify({"success": "Successfully logged in as " + user["type"], "key": user["key"], "charId": user["character"]}), 200
             else:

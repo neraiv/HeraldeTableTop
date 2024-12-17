@@ -206,6 +206,7 @@ topBarTools.appendChild(topBarCenterButton);
 */
 
 const spellBook = document.getElementById("ui-spellbook");
+spellBook.style.display = "flex";
 spellBook.style.width = "1000px";
 spellBook.style.height = "85%";
 spellBook.style.position = "absolute";
@@ -216,17 +217,31 @@ spellBook.style.backgroundColor = "#d3dae2";
 spellBook.style.borderRadius = "8px";
 spellBook.style.padding = "5px";
 spellBook.style.flexDirection = "column";
+spellBook.style.alignItems = "center";
+spellBook.style.gap = "5px";
 
 
 const spellBookTopBar = addDraggableRow(spellBook)
-spellBookTopBar.style.display = "flex";
-spellBookTopBar.style.flexDirection = "row";
 spellBookTopBar.style.justifyContent = "space-between";
-spellBookTopBar.style.background = "linear-gradient(135deg, #8e44ad, #3498db)"; // Gradient background
-spellBookTopBar.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 0.3)"; // Subtle shadow for depth
-spellBookTopBar.style.color = "#f5f5f5"; // Light text color
-spellBookTopBar.style.borderRadius = "8px"; // Rounded corners
-spellBookTopBar.style.margin = "0px"; // No margin
+
+
+const createSpellButton = document.createElement("button");
+createSpellButton.textContent = "Conjure A Spell";
+createSpellButton.style.position = "absolute"; 
+createSpellButton.style.fontFamily = "'Cinzel', serif"; // DnD theme font
+createSpellButton.style.fontSize = "16px"; // Larger font size
+createSpellButton.style.padding = "5px"; // Padding to keep text off the edges
+createSpellButton.style.margin = "0px"; // No margin
+createSpellButton.style.cursor = "pointer"; // Pointer cursor
+createSpellButton.style.marginLeft = "5px"; // No outline
+createSpellButton.style.border = "none"; // No border
+createSpellButton.style.borderRadius = "8px"; // Rounded corners
+// shiny grenn background
+createSpellButton.style.background = "linear-gradient(135deg, #2ecc71, #27ae60)"; // Gradient background
+createSpellButton.style.color = "#f5f5f5"; // Light text color
+createSpellButton.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 0.3)"; // Subtle shadow for depth
+spellBookTopBar.appendChild(createSpellButton);
+
 
 const spellBookName = document.createElement("h2");
 spellBookName.textContent = "Spell Book";
@@ -243,11 +258,19 @@ spellBookCloseButton.id = "ui-spellbook-close-button";
 spellBookCloseButton.style.fontFamily = 'Material Icons Outlined';
 spellBookTopBar.appendChild(spellBookCloseButton);
 
-const spellBookContent = document.createElement("div");
-spellBookContent.style.width = "98%";
-spellBookContent.style.height = "max-content";
-spellBookContent.style.flex = "auto";
-spellBook.appendChild(spellBookContent);
+
+const spellBookTabs = createTabbedContainer(2, ["Your Spells", "All Spells"], "ui-spellbook-tabbed-container", false)
+spellBookTabs.style.width = "100%";
+spellBookTabs.style.height = "100%";
+spellBook.appendChild(spellBookTabs);
+
+const contentYourSpells = getContentContainer(spellBookTabs, "Your Spells")
+contentYourSpells.innerHTML = ""
+contentYourSpells.style.flexDirection = "column";
+
+const contentAllSpells = getContentContainer(spellBookTabs, "All Spells")
+contentAllSpells.innerHTML = ""
+
 
 
 

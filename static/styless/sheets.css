@@ -134,6 +134,27 @@ h2 {
     z-index: 10;
 }
 
+.spell-container {
+    margin-bottom: 10px;
+}
+
+.spell-header {
+    background-color: orange;
+    cursor: pointer;
+    padding: 10px;
+    margin: 0;
+}
+
+.spell-content {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.spell-info {
+    margin-bottom: 10px;
+}
+
 .spell-create-sheet {
     display: flex;
     position: absolute;

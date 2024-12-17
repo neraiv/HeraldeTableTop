@@ -117,11 +117,10 @@ async function dbGetChar(charName) {
         throw err; // Throw the error to handle it in the caller
     }
 }
-async function getGameFile(file, isFromSession = true) {
+async function getGameFile(file) {
     const params = new URLSearchParams({
         "key": player.userKey,
         "info": file,
-        "state": isFromSession
     });
 
     try {
