@@ -294,6 +294,80 @@ function createStringInput(label,{
     return formGroup;
 }
 
+function createBooleanInput(label, id, defaultValue = false) {
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group');
+    formGroup.classList.add('row');
+    
+    const labelElement = document.createElement('label');
+    labelElement.setAttribute('for', id);
+    labelElement.classList.add('label-element');
+    labelElement.textContent = label;
+    labelElement.style.alignContent = 'center';
+    labelElement.style.textAlign = 'center';
+
+    const inputElement = document.createElement('input');
+    inputElement.type = 'checkbox';
+    inputElement.classList.add('input-element');
+    inputElement.id = id;
+    inputElement.checked = defaultValue;
+
+    formGroup.appendChild(labelElement);
+    addSpacer(formGroup);
+    formGroup.appendChild(inputElement);
+
+    return formGroup;
+}
+
+/**
+ * Creates a duration input form group element.
+ *
+ * @param {string} [label="Duration"] - The label for the duration input.
+ * @param {string} id - The ID for the duration input elements.
+ * @param {Object} [options] - Optional parameters.
+ * @param {Duration} [options.initalDuration=new Duration(durationTypes.TURN_BASED, 0)] - The initial duration value.
+ * @param {Object} [options.avaliableDurationTypes=durationTypes] - The available duration types.
+ * @returns {HTMLDivElement} The form group element containing the duration input.
+ */
+function createDurationInput(label = "Duration", id, {
+    initalDuration = new Duration(durationTypes.TURN_BASED, 0),
+    avaliableDurationTypes = durationTypes} = {}) {
+    
+    const displayDurationTypes = Object.keys(avaliableDurationTypes).map(key => avaliableDurationTypes[key]);
+
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group')
+    formGroup.classList.add('row')
+    formGroup.classList.add('centered');
+    formGroup.value = initalDuration;
+
+    const durationSelector = createSelectorInput(label, Object.values(displayDurationTypes), Object.keys(displayDurationTypes), {
+        id:  id,
+        defaultValue: [initalDuration.type],
+    });
+    formGroup.appendChild(durationSelector);
+
+    const durationValue = createNumberInput("Value: ", id+'-value', 50, 1, false, false)
+    durationValue.style.display = "none"
+    formGroup.appendChild(durationValue);
+
+    durationValue.querySelector('.input-element').value = initalDuration.value 
+
+    durationSelector.querySelector('.input-element').onchange =  (event) => {     
+        displayPart(event.target.value)
+    }
+
+    function displayPart(type){
+        if(type == durationTypes.TURN_BASED){
+            durationValue.style.display = "flex"
+        }else{
+            durationValue.style.display = "none"
+        }
+    }
+
+    displayPart(initalDuration.type)
+    return formGroup
+}
 
 function createSelectorInput(label, valueList, textList, 
     {
@@ -374,10 +448,10 @@ function getSelectedOptionsWithCheckmark(selectElement) {
     return selectedValues;
 }
 
-function indexedOptionFunctionWithTransperency(event) {
+function indexedOptionFunctionWithTransparency(event) {
     const option = event.target;
     const select = option.parentElement;
-    
+
     if (!select.dataset.index) select.dataset.index = 0;
 
     const index = parseInt(select.dataset.index);
@@ -385,7 +459,7 @@ function indexedOptionFunctionWithTransperency(event) {
     // Check if the option is already indexed (if it has a number after a hyphen)
     if (!/\-\s\d+$/.test(option.textContent)) {
         const arr = option.textContent.split('-');
-        
+
         if (arr.length > 1) {
             arr[1] = index + 1;
         } else {
@@ -401,6 +475,31 @@ function indexedOptionFunctionWithTransperency(event) {
         const green = 160 + (index * 15);  // Gradually increasing toward skin tone
         const blue = 122 + (index * 10);   // Gradually increasing toward skin tone
         option.style.backgroundColor = `rgba(${red}, ${green}, ${blue}, ${transparency})`;
+    } else {
+        // Remove the index and recalculate other indexed elements
+        option.textContent = option.textContent.split('-')[0].trim();
+        option.style.backgroundColor = "unset";
+        select.dataset.index = index - 1;
+
+        // Recalculate indices for other options
+        const options = Array.from(select.options);
+        let currentIndex = 1;
+        options.forEach(opt => {
+            if (opt !== option && /\-\s\d+$/.test(opt.textContent)) {
+                const arr = opt.textContent.split('-');
+                arr[1] = currentIndex;
+                opt.textContent = arr.join('- ');
+
+                // Apply gradient background based on new index
+                const transparency = 0.6;
+                const red = 255;
+                const green = 160 + (currentIndex * 15);
+                const blue = 122 + (currentIndex * 10);
+                opt.style.backgroundColor = `rgba(${red}, ${green}, ${blue}, ${transparency})`;
+
+                currentIndex++;
+            }
+        });
     }
 }
 
@@ -462,13 +561,13 @@ function createSpellSelectContainer(id, initalLevel = null, initialSpellName = n
     spellSelectContainer.classList.add('vertical');
 
     let selectedSpellLevelList = 1;
-    const spellLevelSelector = createSelectorInput('Spell Level:', gameSettings.includedSpellLevels, gameSettings.includedSpellLevels, {
+    const spellLevelSelector = createSelectorInput('Spell Level:', serverRules.spells.levels, serverRules.spells.levels, {
         nonSelectableDefault: 'select', 
         id: itemId + '-spell-level',
         defaultValue: initalLevel ? [initalLevel] : null});
 
     spellLevelSelector.classList.add('spell-level-selector')
-    const spellSelect = createSelectorInput('Spell:', Object.keys(databaseListSpells[selectedSpellLevelList]), databaseListSpells[selectedSpellLevelList], {
+    const spellSelect = createSelectorInput('Spell:', Object.keys(listSpells[selectedSpellLevelList]), listSpells[selectedSpellLevelList], {
         nonSelectableDefault: 'select', 
         id: itemId + '-spell-level',
         defaultValue: initialSpellName ? [initialSpellName] : null});
@@ -477,7 +576,7 @@ function createSpellSelectContainer(id, initalLevel = null, initialSpellName = n
     spellLevelSelector.querySelector('.input-element').onchange = function(event){
         selectedSpellLevelList = event.target.value;
         spellSelectContainer.spellLevel = spellLevelSelector.querySelector('.input-element').selectedOptions[0].value;
-        updateSelector(databaseListSpells[selectedSpellLevelList], databaseListSpells[selectedSpellLevelList],spellSelect.querySelector('.input-element'), null, 'select');
+        updateSelector(listSpells[selectedSpellLevelList], listSpells[selectedSpellLevelList],spellSelect.querySelector('.input-element'), null, 'select');
     }
 
     spellSelect.querySelector('.input-element').onchange = () => {
@@ -1122,6 +1221,17 @@ function addNewTab(tabbedWindowContainer, name, tabMainName= 'Tab') {
     // Append new content to content container
     contentContainer.appendChild(newTabContent);
     tabContainer.parentElement.length = newTabIndex;
+
+    // Dispatch custom event
+    const event = new CustomEvent('onNewTabAdded', {
+        detail: {
+            tabName: newTabName,
+            tabIndex: newTabIndex,
+        },
+    });
+
+    tabbedWindowContainer.dispatchEvent(event);
+
     // Optionally, activate the new tab after creation
     openTab({ currentTarget: newTabButton }, `tab${newTabIndex}`, contentContainer);
 }

@@ -443,13 +443,12 @@ class Character {
 }
 
 class SpellPattern  {
-    constructor(
+    constructor({
         pattern = spellPatterns.CIRCULAR,
         range = 300,
         area = 100,
         castType = castTypes.ON_LOCATION,
-        canTarget = [targetTypes.ENEMY]
-    ) {
+        canTarget = [targetTypes.ENEMY]} = {}) {
         this.pattern = pattern; // SpellPattern enum
         this.range = range;
         this.area = area;
@@ -459,7 +458,7 @@ class SpellPattern  {
 }
 
 class BuffDebuff {
-    constructor(effectType, value, duration = null) {
+    constructor({effectType, value, duration = null} = {}) {
         this.type = additionalEffectTypes.BUFF;
         this.effectType = effectType;
         this.value = value;
@@ -468,9 +467,10 @@ class BuffDebuff {
 }
 
 class Aura {
-    constructor(area, value, targetList = [targetTypes.ALLY], canSpread = false) {
+    constructor({area, effectType, value, targetList = [targetTypes.ALLY], canSpread = false} = {}) {
         this.type = additionalEffectTypes.AURA;
         this.area = area;
+        this.effectType = effectType;
         this.value = value
         this.targetList = targetList;  // Array of TargetType enum 0: ALLY, 1: ENEMY
         this.canSpread = canSpread
@@ -479,7 +479,7 @@ class Aura {
 
 
 class Cast {
-    constructor(spellName, spellLevel, mana, targetListInOrder) {
+    constructor({spellName, spellLevel, mana, targetListInOrder} = {}) {
         this.type = additionalEffectTypes.CAST;
         this.spellName = spellName;  // Spell object
         this.spellLevel = spellLevel;

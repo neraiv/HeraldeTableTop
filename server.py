@@ -393,7 +393,7 @@ def login_func():
 
                 return jsonify({"success": "Successfully logged in as " + user["type"], "key": user["key"], "charId": user["character"]}), 200
             else:
-                return jsonify({"error": "User is already logged in."}), 404
+                return jsonify({"error": "User is already logged in."}), 200
         else:
             return jsonify({"error": "Invalid user_id or password."}), 400
             

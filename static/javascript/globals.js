@@ -78,7 +78,8 @@ let serverInfo = new ClassServerInfo()
 let sessionInfo = new ClassSessionInfo()
 let scenes = null
 let sceneInfo = new ClassSceneInfo()
-let spells = null
+let listSpells = null
+let listSpellNames = null
 // UI 
 let chatData = []
 const audioAmbiance = new Audio();
@@ -105,23 +106,13 @@ const boardEvent = {
 
 
 
+
 // let objectsPositions = new Map(); // Store original positions for each image
 // let inGameChars = new Map();
 // let listEnemies = [];
 // let listAllies = [];
 // let listNPC = [];
-// let listSpells = {
-//     0: {"No Spell": "No Spell"},
-//     1: {"No Spell": "No Spell"},
-//     2: {"No Spell": "No Spell"},
-//     3: {"No Spell": "No Spell"},
-//     4: {"No Spell": "No Spell"},
-//     5: {"No Spell": "No Spell"},
-//     6: {"No Spell": "No Spell"},
-//     7: {"No Spell": "No Spell"},
-//     8: {"No Spell": "No Spell"},
-//     9: {"No Spell": "No Spell"}
-// };
+
 
 // // Database related
 
