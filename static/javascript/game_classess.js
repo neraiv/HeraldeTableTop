@@ -231,7 +231,7 @@ const damageTypes = Object.freeze({
 });
 
 class Duration {
-    constructor(type = durationTypes.INSTANT, value= 1){
+    constructor({type = durationTypes.INSTANT, value= 1}){
         this.type = type;
         this.value = value;
     }

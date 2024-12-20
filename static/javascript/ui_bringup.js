@@ -270,9 +270,3 @@ contentYourSpells.style.flexDirection = "column";
 
 const contentAllSpells = getContentContainer(spellBookTabs, "All Spells")
 contentAllSpells.innerHTML = ""
-
-
-
-
-
-

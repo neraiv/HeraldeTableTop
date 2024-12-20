@@ -280,58 +280,61 @@ function displaySpellCreate(initalSpell = null) {
     rowSpellSelect.classList.add('box-circular-border');
     rowSpellSelect.style.backgroundColor = formColor;
     rowSpellSelect.style.gap = '10px';
-    
+    form.appendChild(rowSpellSelect);
 
-    const selectSpellType = createSelectorInput('Spell Type: ', Object.values(spellTypes), Object.keys(spellTypes), {
+    const selectSpellType = createInputSelector('Spell Type: ', Object.values(spellTypes), Object.keys(spellTypes), {
         id: id + '-type'
     });
     rowSpellSelect.appendChild(selectSpellType);
 
-    const spellLevel = createSelectorInput('Spell Level: ', serverRules.spells.levels, serverRules.spells.levels, {
+    const spellLevel = createInputSelector('Spell Level: ', serverRules.spells.levels, serverRules.spells.levels, {
         id: id +'-level'
     }); 
     rowSpellSelect.appendChild(spellLevel);
 
     function getSpellChanges(){
         const spell = new Spell();
-        spell.name = nameForm.querySelector('.input-element').value;
-        spell.description = formDescription.querySelector('.input-element').value;
-        spell.availableClasses = formClasses.querySelector('.input-element').selectedOptions;
-        spell.modifierStat = formModifierStat.querySelector('.input-element').selectedOptions;
-        spell.baseDamageType = baseDamageType.querySelector('.input-element').selectedOptions[0].value;
-        spell.baseDamage = baseDamage.value;
-        spell.duration = spellDuration.value;
-        spell.actionCost = spellActionCost.querySelector('.input-element').selectedOptions[0].value;
+        spell.name = formName.inputElement.value;
+        spell.availableClasses = selectorGetOptionsWithCheckmark(formClasses.inputElement);
+        spell.modifierStats = selectorGetOptionsWithCheckmark(formModifierStat.inputElement);
+        spell.baseDamageType = baseDamageType.inputElement.selectedOptions[0].value;
+        spell.baseDamage = getDamageValue(formBaseDamage.inputElement);
+        spell.description = formDescription.inputElement.value;
+        spell.castDuration = getDurationValue(formSpellCastDuration.inputElement);
+        spell.actionCost = formActionCost.inputElement.selectedOptions[0].value;
         spell.spendManaEffects = {};
         for(let i = 0; i < selectableSpellLevels.length; i++){
             const index = parseInt(selectableSpellLevels[i])
-            spell.spendManaEffects[index] = {
-                target: [],
-                caster: []
-            }
+            let target = [];
+            let caster = [];
+
             const targetEffectList = casterEffectsTabbedWindowContainer.querySelector('.additional-effect-list-container');
             const casterEffectList = targetEffectsTabbedWindowContainer.querySelector('.additional-effect-list-container');
+            
             for(let targetEffect of targetEffectList.elementsList.children){
-                spell.spendManaEffects[index].target.push(new AdditionalEffect(targetEffect.additionalEffect))
+                target.push(new AdditionalEffect(targetEffect.additionalEffect))
             }
             for(let casterEffect of casterEffectList.elementsList.children){
-                spell.spendManaEffects[index].caster.push(new AdditionalEffect(casterEffect.additionalEffect))
+                caster.push(new AdditionalEffect(casterEffect.additionalEffect))
+            }
+            if(target.length > 0 || caster.length > 0){
+                spell.spendManaEffects[index] = {target, caster}
             }
         }
         spell.spellPattern = new SpellPattern({
-            pattern: spellPatternSelect.querySelector('.input-element').selectedOptions[0].value,
-            range: spellCastArea.querySelector('.input-element').value,
-            area: spellCastWidth.querySelector('.input-element').value,
-            castType: spellCastType.querySelector('.input-element').selectedOptions[0].value,
-            canTarget: spellCanTarget.querySelector('.input-element').selectedOptions,
+            pattern: spellPatternSelect.inputElement.selectedOptions[0].value,
+            range: spellCastArea.inputElement.value,
+            area: spellCastWidth.inputElement.value,
+            castType: spellCastType.inputElement.selectedOptions[0].value,
+            canTarget: getOrderedSelectedOptions(spellCanTarget.inputElement),
         })
-        spell.casterRolls = spellCasterRolls.querySelector('.input-element').selectedOptions;
-        spell.targetRolls = spellTargetRolls.querySelector('.input-element').selectedOptions;
+        spell.casterRolls = selectorGetOptionsWithCheckmark(spellCasterRolls.inputElement);
+        spell.targetRolls = selectorGetOptionsWithCheckmark(spellTargetRolls.inputElement);
         return spell;
     }
 
-    selectSpellType.querySelector('.input-element').onchange = () => {
-        spellCreateSheet.spell.spellType = selectSpellType.querySelector('.input-element').selectedOptions[0].value;
+    selectSpellType.inputElement.onchange = () => {
+        spellCreateSheet.spell.spellType = selectSpellType.inputElement.selectedOptions[0].value;
         if(spellCreateSheet.spell.spellType == spellTypes.SPELL || spellCreateSheet.spell.spellType == spellTypes.CONJURE){
             maxSpellLevel = serverRules.spells.levels.at(-1);
             updateElements();
@@ -344,29 +347,29 @@ function displaySpellCreate(initalSpell = null) {
         }
     }
 
-    spellLevel.querySelector('.input-element').onchange = () => {
-        spellCreateSheet.spell.spellLevel = spellLevel.querySelector('.input-element').selectedOptions[0].value;
+    spellLevel.inputElement.onchange = () => {
+        spellCreateSheet.spell.spellLevel = spellLevel.inputElement.selectedOptions[0].value;
         updateElements();
     }
+    
 
-    form.appendChild(rowSpellSelect);
-
-    const nameForm = createStringInput('Name: ', {id: id + '-name' });
-    nameForm.classList.add('box-circular-border');
-    nameForm.style.backgroundColor = formColor;
-    form.appendChild(nameForm);
+    const formName = createInputString('Name: ', id + '-name' );
+    formName.classList.add('box-circular-border');
+    formName.style.backgroundColor = formColor;
+    form.appendChild(formName);
 
     if(initalSpell == null){
         spellCreateSheet.spell = new Spell();
     }else{
         spellCreateSheet.spell = initalSpell;
         spellCreateSheetTitle.textContent = "Editing - " + spellCreateSheet.spell.name
-        nameForm.querySelector(".input-element").value = spellCreateSheet.spell.name
+        formName.querySelector(".input-element").value = spellCreateSheet.spell.name
     }
 
-    const formClasses = createSelectorInput('Usable By Class:', Object.values(classTypes), Object.keys(classTypes), {
+    const formClasses = createInputSelector('Usable By Class:', Object.values(classTypes), Object.keys(classTypes), {
         id:  id +'-clasess',
         multiple: true,
+        custom_func: selectorChekmarkOptionFunction
     });
 
     formClasses.classList.add('box-circular-border');
@@ -374,7 +377,7 @@ function displaySpellCreate(initalSpell = null) {
     formClasses.style.backgroundColor = formColor;
     form.appendChild(formClasses);
 
-    const formModifierStat = createSelectorInput('Modifier Stat: ', Object.values(statTypes), Object.keys(statTypes),{
+    const formModifierStat = createInputSelector('Modifier Stat: ', Object.values(statTypes), Object.keys(statTypes),{
         id:  id +'-modifier-stats',
         multiple: true,
     });
@@ -384,7 +387,7 @@ function displaySpellCreate(initalSpell = null) {
     formModifierStat.style.backgroundColor = formColor;
     form.appendChild(formModifierStat);
 
-    const baseDamageType = createSelectorInput('Base Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
+    const baseDamageType = createInputSelector('Base Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
         id:  id +'-base-damage-type',
         multiple: false,
     });
@@ -392,37 +395,37 @@ function displaySpellCreate(initalSpell = null) {
     baseDamageType.style.backgroundColor = formColor;
     form.appendChild(baseDamageType);
 
-    const baseDamage = createDamageInput("Damage: ")
-    baseDamage.style.display = "none"
-    baseDamage.classList.add('box-circular-border');
-    baseDamage.style.backgroundColor = formColor;
-    form.appendChild(baseDamage);
+    const formBaseDamage = createInputDamage("Damage: ", id+ '-base-damage')
+    formBaseDamage.style.display = "none"
+    formBaseDamage.classList.add('box-circular-border');
+    formBaseDamage.style.backgroundColor = formColor;
+    form.appendChild(formBaseDamage);
     
-    baseDamageType.querySelector('.input-element').onchange =  (event) => {
+    baseDamageType.inputElement.onchange =  (event) => {
         const value = event.target.value
         if(value != damageTypes.NONE){
-            baseDamage.style.display = "flex"
+            formBaseDamage.style.display = "flex"
         }else{
-            baseDamage.style.display = "none"
+            formBaseDamage.style.display = "none"
         }
     }
 
-    const formDescription = createStringInput('Description: ', {id: 'create-spell-description',isTextArea: true});
+    const formDescription = createInputString('Description: ', {id: 'create-spell-description',isTextArea: true});
     formDescription.classList.add('box-circular-border');
     formDescription.style.height = '150px';
     formDescription.style.backgroundColor = formColor;
     form.appendChild(formDescription);
  
-    const spellDuration = createDurationInput("Cast Duration: ",id +'-duration');
-    form.appendChild(spellDuration);
+    const formSpellCastDuration = createInputDuration("Cast Duration: ",id +'-duration');
+    form.appendChild(formSpellCastDuration);
 
-    const spellActionCost = createSelectorInput('Action Cost: ', Object.values(actionTypes), Object.keys(actionTypes),{
+    const formActionCost = createInputSelector('Action Cost: ', Object.values(actionTypes), Object.keys(actionTypes),{
         id: 'create-spell-pattern-cast-type',
         defaultValue: initalSpell ?  spellCreateSheet.spell.actionCost : null, 
     })
-    spellActionCost.classList.add('box-circular-border');
-    spellActionCost.style.backgroundColor = formColor;
-    form.appendChild(spellActionCost);
+    formActionCost.classList.add('box-circular-border');
+    formActionCost.style.backgroundColor = formColor;
+    form.appendChild(formActionCost);
 
     const selectableSpellLevels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
@@ -524,7 +527,7 @@ function displaySpellCreate(initalSpell = null) {
     spellPatternTitle.style.fontWeight = 'bold';
     spellPatternContainer.appendChild(spellPatternTitle);
 
-    const spellPatternSelect = createSelectorInput('Spell Pattern: ', Object.values(spellPatterns), Object.keys(spellPatterns),{
+    const spellPatternSelect = createInputSelector('Spell Pattern: ', Object.values(spellPatterns), Object.keys(spellPatterns),{
         id: 'create-spell-pattern-select',
         defaultValue: initalSpell ? [initalSpell.spellPattern.pattern] : null, 
     })
@@ -532,17 +535,17 @@ function displaySpellCreate(initalSpell = null) {
     spellPatternSelect.style.backgroundColor = formColor;
     spellPatternContainer.appendChild(spellPatternSelect);
 
-    const spellCastArea = createNumberInput("Cast Range:", "create-spell-pattern-cast-area", 9999, 0, false, false, initalSpell ? initalSpell.spellPattern.range : null)
+    const spellCastArea = createInputNumber("Cast Range:", "create-spell-pattern-cast-area", 9999, 0, false, false, initalSpell ? initalSpell.spellPattern.range : null)
     spellCastArea.classList.add('box-circular-border');
     spellCastArea.style.backgroundColor = formColor;
     spellPatternContainer.appendChild(spellCastArea);
 
-    const spellCastWidth = createNumberInput("Cast Area:", "create-spell-pattern-cast-area", 500, 0, false, false, initalSpell ? initalSpell.spellPattern.area : null)
+    const spellCastWidth = createInputNumber("Cast Area:", "create-spell-pattern-cast-area", 500, 0, false, false, initalSpell ? initalSpell.spellPattern.area : null)
     spellCastWidth.classList.add('box-circular-border');
     spellCastWidth.style.backgroundColor = formColor;
     spellPatternContainer.appendChild(spellCastWidth);
 
-    const spellCastType = createSelectorInput('Spell Cast Type: ', Object.values(castTypes), Object.keys(castTypes),{
+    const spellCastType = createInputSelector('Spell Cast Type: ', Object.values(castTypes), Object.keys(castTypes),{
         id: 'create-spell-pattern-cast-type',
         defaultValue: initalSpell ? [initalSpell.spellPattern.castType] : null, 
     })
@@ -550,18 +553,18 @@ function displaySpellCreate(initalSpell = null) {
     spellCastType.style.backgroundColor = formColor;
     spellPatternContainer.appendChild(spellCastType);
 
-    const spellCanTarget = createSelectorInput('Can Target: ', Object.values(targetTypes), Object.keys(targetTypes),{
+    const spellCanTarget = createInputSelector('Can Target: ', Object.values(targetTypes), Object.keys(targetTypes),{
         id: 'create-spell-pattern-can-target',
         defaultValue: initalSpell ? initalSpell.spellPattern.canTarget : null, 
         multiple: true,
-        custom_func: indexedOptionFunctionWithTransparency
+        custom_func: selectorIndexedOptionFunctionWithTransparency
     })
     spellCanTarget.classList.add('box-circular-border');
     spellCanTarget.style.backgroundColor = formColor;
     spellPatternContainer.appendChild(spellCanTarget);
     form.appendChild(spellPatternContainer)
 
-    const spellCasterRolls = createSelectorInput('Caster Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
+    const spellCasterRolls = createInputSelector('Caster Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
         id: 'create-spell-caster-rolls',
         defaultValue: initalSpell ? initalSpell.casterRolls : null, 
         multiple: true,
@@ -570,7 +573,7 @@ function displaySpellCreate(initalSpell = null) {
     spellCasterRolls.style.backgroundColor = formColor;
     form.appendChild(spellCasterRolls)
 
-    const spellTargetRolls = createSelectorInput('Target Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
+    const spellTargetRolls = createInputSelector('Target Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
         id: 'create-spell-target-rolls',
         defaultValue: initalSpell ? initalSpell.targetRolls : null, 
         multiple: true,
@@ -709,9 +712,6 @@ function displaySpellCreate(initalSpell = null) {
         removeButton.onclick = () => {
             listElement.remove()
         }
-        
- 
-        additionalEffectBuilder(Date.now(), listElement); // TEST REMOVE
 
         return listElement;
     }
@@ -719,7 +719,6 @@ function displaySpellCreate(initalSpell = null) {
     function additionalEffectBuilder(id, listElement) {
 
         const itemId = id;
-        const additionalEffect = listElement.additionalEffect 
 
         const additionalEffectBuildSheet = document.createElement('div');
         additionalEffectBuildSheet.style.display = 'flex';
@@ -739,7 +738,7 @@ function displaySpellCreate(initalSpell = null) {
         topBar.style.width = "100%"
 
         const additionalEffectBuildTitle = document.createElement('h2');
-        additionalEffectBuildTitle.textContent = additionalEffect.name ? "Editing " + additionalEffect.name:'Create Additional Effect';
+        additionalEffectBuildTitle.textContent = listElement.additionalEffect.name ? "Editing " + listElement.additionalEffect.name : 'Create Additional Effect';
         additionalEffectBuildTitle.style.textAlign = 'center';
         topBar.appendChild(additionalEffectBuildTitle);
 
@@ -749,6 +748,13 @@ function displaySpellCreate(initalSpell = null) {
         additionalEffectSaveButton.style.marginRight = '5px';
         additionalEffectSaveButton.style.cursor = 'pointer';
         topBar.appendChild(additionalEffectSaveButton);
+        additionalEffectSaveButton.onclick = () => {
+            const additionalEffect = getEffectChanges();
+            if(additionalEffect){
+                console.log(additionalEffect);
+                listElement.additionalEffect = additionalEffect;
+            }
+        }
 
         const additionalEffectCloseButton = createImageButton('28', {source: 'url(static/images/menu-icons/close.png)', custom_padding: 4});
         additionalEffectCloseButton.style.marginRight = '5px';
@@ -768,23 +774,22 @@ function displaySpellCreate(initalSpell = null) {
         additionalEffectBuilderForm.style.gap = '5px';
         additionalEffectBuildSheet.appendChild(additionalEffectBuilderForm);
         
-        const nameForm = createStringInput('Name: ', {id: itemId + '-name' });
+        const nameForm = createInputString('Name: ', itemId + '-name');
         nameForm.classList.add('box-circular-border');
         nameForm.style.backgroundColor = formColor;
         additionalEffectBuilderForm.appendChild(nameForm);
-
-        const formDescription = createStringInput('Description: ', {id: itemId + '-description', isTextArea: true});
+        const formDescription = createInputString('Description: ', itemId + '-description', {isTextArea: true});
         formDescription.classList.add('box-circular-border');
         formDescription.style.height = '150px';
         formDescription.style.backgroundColor = formColor;
         additionalEffectBuilderForm.appendChild(formDescription);
         
-
-        const triggerActions = createSelectorInput('Triggered With Action:',  Object.values(characterActions), Object.keys(characterActions),{
+        const triggerActions = createInputSelector('Triggered With Action:',  Object.values(characterActions), Object.keys(characterActions),{
             nonSelectableDefault: 'select', 
             id: itemId +'-aditional-effect-craracter-actions', 
             multiple: true, 
-            defaultValue: additionalEffect.characterAction});
+            defaultValue: listElement.characterAction
+        });
         triggerActions.classList.add('box-circular-border');
         triggerActions.style.minHeight = '100px';
         triggerActions.style.height = '100px';
@@ -811,8 +816,9 @@ function displaySpellCreate(initalSpell = null) {
         effectsTabWindow.style.backgroundColor = formColor;
         effectsContainer.appendChild(effectsTabWindow);
         
-        function createEffectContainer(effect = null){
-
+        function createEffectContainer(id, effect = null){
+            const itemId = id;
+            
             const effectContainerSheet = document.createElement('div');
             effectContainerSheet.classList.add('effect-container');
             effectContainerSheet.classList.add('box-circular-border');
@@ -821,7 +827,7 @@ function displaySpellCreate(initalSpell = null) {
             effectContainerSheet.style.width = '95%';
             effectContainerSheet.style.padding = '5px';
 
-            const effectTypeSelector = createSelectorInput('Additional Effect Type:',  Object.values(additionalEffectTypes), Object.keys(additionalEffectTypes),{
+            const effectTypeSelector = createInputSelector('Additional Effect Type:',  Object.values(additionalEffectTypes), Object.keys(additionalEffectTypes),{
                 nonSelectableDefault: 'select', 
                 id: itemId +'-aditional-effect-type', 
                 defaultValue: effect ? [effect.type] : null
@@ -829,7 +835,7 @@ function displaySpellCreate(initalSpell = null) {
             effectTypeSelector.classList.add('box-circular-border');
             effectTypeSelector.style.backgroundColor = formColor;
             effectContainerSheet.appendChild(effectTypeSelector);
-
+            
             const effectPropertiesContainer = document.createElement('div');
             effectPropertiesContainer.classList.add('column');
             effectPropertiesContainer.classList.add('vertical');
@@ -840,9 +846,9 @@ function displaySpellCreate(initalSpell = null) {
             effectContainerSheet.appendChild(effectPropertiesContainer);
 
             effectTypeSelector.onchange = function(event){
-                effectContainerSheet.innerHTML = '';
+                effectPropertiesContainer.innerHTML = '';
                 const effectContainer = conjureEffectCreator(event.target.value)
-                effectContainerSheet.appendChild(effectContainer)
+                effectPropertiesContainer.appendChild(effectContainer)
             }
 
             function conjureEffectCreator(type){
@@ -856,7 +862,7 @@ function displaySpellCreate(initalSpell = null) {
                 effectContainer.style.backgroundColor = formColor;
 
                 if(type == additionalEffectTypes.BUFF){
-                    const effectTypeSelector = createSelectorInput('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes),{
+                    const effectTypeSelector = createInputSelector('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes),{
                         nonSelectableDefault: 'select',
                         id: itemId +'-aditional-effect-buff-type',
                         defaultValue: effect ? [effect.effectType] : null
@@ -865,19 +871,26 @@ function displaySpellCreate(initalSpell = null) {
                     effectTypeSelector.style.backgroundColor = formColor;
                     effectContainer.appendChild(effectTypeSelector);
 
-                    const effectValue = createNumberInput("Value: ", itemId + '-aditional-effect-buff-value', 50, 1, false, false, effect ? effect.value : null)
+                    const effectValue = createInputNumber("Value: ", itemId + '-aditional-effect-buff-value', 50, 1, false, false, effect ? effect.value : null)
                     effectContainer.appendChild(effectValue);
 
-                    const effectDuration = createDurationInput("Duration: ", itemId + '-aditional-effect-buff-duration')
+                    const effectDuration = createInputDuration("Duration: ", itemId + '-aditional-effect-buff-duration')
                     effectContainer.appendChild(effectDuration);
+
+                    effectContainer.inputElement = {
+                        type: effectTypeSelector,
+                        value: effectValue,
+                        duration: effectDuration
+                    }
+
                 }else if(type == additionalEffectTypes.AURA){
-                    const effectArea = createNumberInput("Area: ", itemId + '-aditional-effect-aura-area', 500, 0, false, false, effect ? effect.area : null)
+                    const effectArea = createInputNumber("Area: ", itemId + '-aditional-effect-aura-area', 500, 0, false, false, effect ? effect.area : null)
                     effectContainer.appendChild(effectArea);
 
-                    const effectDuration = createDurationInput("Duration: ", itemId + '-aditional-effect-aura-duration')
+                    const effectDuration = createInputDuration("Duration: ", itemId + '-aditional-effect-aura-duration')
                     effectContainer.appendChild(effectDuration);
 
-                    const effectTypeSelector = createSelectorInput('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes),{
+                    const effectTypeSelector = createInputSelector('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes),{
                         nonSelectableDefault: 'select',
                         id: itemId +'-aditional-effect-aura-type',
                         defaultValue: effect ? [effect.auraType] : null
@@ -886,10 +899,10 @@ function displaySpellCreate(initalSpell = null) {
                     effectTypeSelector.style.backgroundColor = formColor;
                     effectContainer.appendChild(effectTypeSelector);
 
-                    const effectValue = createNumberInput("Value: ", itemId + '-aditional-effect-aura-value', 50, 1, false, false, effect ? effect.value : null)   
+                    const effectValue = createInputNumber("Value: ", itemId + '-aditional-effect-aura-value', 50, 1, false, false, effect ? effect.value : null)   
                     effectContainer.appendChild(effectValue);
 
-                    const effectTargetSelector = createSelectorInput('Target Type:',  Object.values(targetTypes), Object.keys(targetTypes),{
+                    const effectTargetSelector = createInputSelector('Target Type:',  Object.values(targetTypes), Object.keys(targetTypes),{
                         nonSelectableDefault: 'select',
                         id: itemId +'-aditional-effect-aura-target',
                         defaultValue: effect ? [effect.target] : null
@@ -898,45 +911,109 @@ function displaySpellCreate(initalSpell = null) {
                     effectTargetSelector.style.backgroundColor = formColor;
                     effectContainer.appendChild(effectTargetSelector);
 
-                    const effectCanSpread = createBooleanInput("Can Spread: ", itemId + '-aditional-effect-aura-spread', effect ? effect.canSpread : null)
+                    const effectCanSpread = createInputBoolean("Can Spread: ", itemId + '-aditional-effect-aura-spread', effect ? effect.canSpread : null)
                     effectContainer.appendChild(effectCanSpread);
+
+                    effectContainer.inputElement = {
+                        area: effectArea,
+                        duration: effectDuration,
+                        type: effectTypeSelector,
+                        value: effectValue,
+                        target: effectTargetSelector,
+                        canSpread: effectCanSpread
+                    }
                     
                 }else if(type == additionalEffectTypes.CAST){
-                    const effectSpellSelect = createSpellSelectContainer(itemId + '-aditional-effect-cast-spell-name', Math.min(...serverRules.spells.levels), null)
+                    const effectSpellSelect = createInputSpellSelect(itemId + '-aditional-effect-cast-spell-name', Math.min(...serverRules.spells.levels), null)
                     effectContainer.appendChild(effectSpellSelect);
                     
-                    const effectTargetList = createSelectorInput('Target List:',  Object.values(targetTypes), Object.keys(targetTypes),{
+                    const effectTargetList = createInputSelector('Target List:',  Object.values(targetTypes), Object.keys(targetTypes),{
                         nonSelectableDefault: 'select',
                         id: itemId +'-aditional-effect-cast-target-list',
                         multiple: true,
                         defaultValue: effect ? effect.targetList : null,
-                        custom_func : indexedOptionFunctionWithTransparency
+                        custom_func : selectorIndexedOptionFunctionWithTransparency
                     });
                     effectTargetList.classList.add('box-circular-border');
                     effectTargetList.style.backgroundColor = formColor;
-                    effectContainer.appendChild(effectTargetList);       
+                    effectContainer.appendChild(effectTargetList);  
+                    
+                    effectContainer.inputElement = {
+                        spell: effectSpellSelect,
+                        targetList: effectTargetList
+                    }
                 }
 
                 return effectContainer
             }
 
+            effectContainerSheet.inputElement = {
+                effectType: effectTypeSelector,
+                effectProperties: effectPropertiesContainer
+            }
+
             return effectContainerSheet
         }
 
+
+        listElement.additionalEffect.effects.forEach((effect, index) => {
+            const contentContainer = createEffectContainer(Date.now(), effect)
+            const newTabContent =  addNewTab(effectsTabWindow, `Effect ${index + 1}`)
+            contentContainer.innerHTML = ""
+            contentContainer.appendChild(newTabContent)
+        });
+        
         effectsTabWindow.addEventListener('onNewTabAdded', (e) => {
             const contentContainer = getContentContainer(effectsTabWindow, e.detail.tabId);
-            const effect = createEffectContainer(Date.now());
+            const effectContainer = createEffectContainer(Date.now(), null);
             contentContainer.innerHTML = ""
-            contentContainer.appendChild(effect)
+            contentContainer.appendChild(effectContainer)
         });
-    
+
+        function getEffectChanges(){
+            const contentAddtiionalEffect = new AdditionalEffect();
+            contentAddtiionalEffect.name = nameForm.inputElement.value;
+            contentAddtiionalEffect.description = formDescription.inputElement.value;
+            contentAddtiionalEffect.characterAction = getOrderedSelectedOptions(triggerActions.inputElement);
+            contentAddtiionalEffect.effects = [];
+            for(let i = 0; i < effectsTabWindow.tabList.length; i++){
+                const tabContent = getContentContainer(effectsTabWindow, effectsTabWindow.tabList[i]);
+                const effectType = tabContent.inputElement.effectType.inputElement.selectedOptions[0].value;
+                let effectProperties = {}
+                let contenteEffect = null;
+                if(effectType == additionalEffectTypes.BUFF){
+                    effectProperties = {
+                        type: tabContent.inputElement.effectProperties.inputElement.type.inputElement.selectedOptions[0].value,
+                        value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
+                        duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value
+                    }
+                    contenteEffect = new BuffDebuff(effectProperties)
+                }else if(effectType == additionalEffectTypes.AURA){
+                    effectProperties = {
+                        area: tabContent.inputElement.effectProperties.inputElement.area.inputElement.value,
+                        duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value,
+                        auraType: tabContent.inputElement.effectProperties.inputElement.type.inputElement.selectedOptions[0].value,
+                        value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
+                        target: tabContent.inputElement.effectProperties.inputElement.target.inputElement.selectedOptions[0].value,
+                        canSpread: tabContent.inputElement.effectProperties.inputElement.canSpread.inputElement.checked
+                    }
+                    contenteEffect = new Aura(effectProperties)
+                }else if(effectType == additionalEffectTypes.CAST){
+                    effectProperties = {
+                        spell: tabContent.inputElement.effectProperties.inputElement.spell.inputElement.selectedOptions[0].value,
+                        targetList: getOrderedSelectedOptions(tabContent.inputElement.effectProperties.inputElement.targetList.inputElement)
+                    }
+                    contenteEffect = new Cast(effectProperties)
+                }
+                      
+                contentAddtiionalEffect.effects.push(contenteEffect)
+            }
+            return contentAddtiionalEffect;
+        }
     }
 
-    function updateElements(){
+    function updateElements(){ //Future seviye görünümleri değiştirielcek
         let displayedLevels = serverRules.spells.levels;
-
-        // Filter out any selectableSpellLevels not in serverRules.spells.levels
-
         // // Filter out any selectableSpellLevels lower than initialSpell.spellLvl
         displayedLevels = displayedLevels.filter(level => (parseInt(level) <= parseInt(maxSpellLevel)));
 

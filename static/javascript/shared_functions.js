@@ -39,132 +39,22 @@ function compareWithDb(arr1, arr2) {
     return result;
 }
 
-function createDiceInput(label = "", id = ""){
-    const formGroup = document.createElement('div');
-    formGroup.classList.add('form-group');
-    formGroup.classList.add('row');
-    formGroup.classList.add('vertical');
-    formGroup.style.minHeight = '25px';
-    formGroup.style.height = '25px';
-    formGroup.style.display = 'flex';
-    formGroup.style.gap = '10px';
-    formGroup.style.width = '100%';
-    formGroup.style.height = '25px';
-    formGroup.value = "0d0"
-
-    const labelElement = document.createElement('label');
-    labelElement.setAttribute('for', label);
-    labelElement.classList.add('label-element');
-    labelElement.textContent = label;
-    formGroup.appendChild(labelElement);
-
-    const inputElementDiceRollTimes = document.createElement('input');
-    inputElementDiceRollTimes.type = 'number';
-    inputElementDiceRollTimes.id = id;
-    inputElementDiceRollTimes.value = 0;
-    inputElementDiceRollTimes.style.height = "25px";
-    inputElementDiceRollTimes.style.marginRight = "2px"
-    formGroup.appendChild(inputElementDiceRollTimes);
-
-    const labelD = document.createElement('label');
-
-    labelD.textContent = 'd';
-    formGroup.appendChild(labelD);
-
-    const inputElementDice = document.createElement('input');
-    inputElementDice.type = 'number';
-    inputElementDice.id = id;
-    inputElementDice.value = 0;
-    inputElementDice.style.height = "25px";
-    inputElementDice.style.marginLeft = "2px"
-    formGroup.appendChild(inputElementDice);
-
-    inputElementDiceRollTimes.addEventListener('input', event => {
-        formGroup.value = event.target.value +'d'+ inputElementDice.value;
-    })
-
-    inputElementDice.addEventListener('input', event => {
-        formGroup.value = inputElementDiceRollTimes.value + 'd' + event.target.value;
-    })
-    return formGroup
-}
-function createDamageInput(label, id = ""){
-    const formGroup = document.createElement('div');
-    formGroup.classList.add('form-group');
-    formGroup.classList.add('row');
-    formGroup.classList.add('vertical');
-    formGroup.style.minHeight = '50px';
-    formGroup.style.height = '50px';
-    formGroup.value = ""
-
-    const formColumn = document.createElement('div');
-    formColumn.classList.add('column');
-    formGroup.appendChild(formColumn)
-
-    const damageRow = document.createElement('div');
-    damageRow.classList.add('row');
-    damageRow.classList.add('centered');
-    formColumn.appendChild(damageRow)
-
-    const numberInput = createNumberInput(label, id + "-input", 9999, -9999, false, true, 0);
-    numberInput.style.display = 'none';
-    damageRow.appendChild(numberInput);
-    
-    const diceInput = createDiceInput(label, id + '-dice-input');
-    damageRow.appendChild(diceInput)
-
-    //Check box
-    const checkboxRow = document.createElement('div'); // Create a container
-    checkboxRow.classList.add('row');
-    checkboxRow.classList.add('vertical');
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = id; // Assuming `id` is defined elsewhere
-    checkbox.style.width = '15px';
-    checkbox.style.height = '15px';
-    checkboxRow.appendChild(checkbox); // Add the checkbox to the container
-
-    const checkboxLabel = document.createElement('label');
-    checkboxLabel.htmlFor = id+"-checkbox"; // Associate label with the checkbox
-    checkboxLabel.textContent = "Raw"; // Set the label text
-    checkboxRow.appendChild(checkboxLabel); // Add the label to the container
-    formColumn.appendChild(checkboxRow)
-
-    checkbox.addEventListener('change', event => {
-        if (checkbox.checked) {
-            numberInput.style.display = 'flex';
-            diceInput.style.display = 'none';
-            formGroup.value = numberInput.querySelector('.input-element').value
-        } else {
-            numberInput.style.display = 'none';
-            diceInput.style.display = 'flex';
-            formGroup.value = diceInput.value;
-        }
-    });
-
-    numberInput.querySelector('.input-element').addEventListener('input', event => {
-        formGroup.value = event.target.value;
-    })
-
-    numberInput.querySelector('.input-element').addEventListener('change', event => {
-        formGroup.value = event.target.value;
-    })
-
-    diceInput.addEventListener('change', event => {
-        formGroup.value = diceInput.value;
-    })
-
-    return formGroup
+function keepValueInBetween(value, max, min){
+    return Math.min(Math.max(parseFloat(value), min), max)
 }
 
-function createNumberInput(label, id, maxValue=99, minValue=1, isReadOnly = false, addIncrementButtons = true, defaultValue = null) {
+
+function createInputNumber(label, id, {maxValue=99, minValue=1, isReadOnly = false, addIncrementButtons = true, defaultValue = null}) {
+    if(defaultValue){
+        defaultValue = keepValueInBetween(defaultValue);
+    }else {
+        defaultValue = minValue;
+    }
+
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
     formGroup.classList.add('vertical');
-    formGroup.style.minHeight = '30px';
-    formGroup.style.height = '30px';
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', label);
@@ -176,26 +66,9 @@ function createNumberInput(label, id, maxValue=99, minValue=1, isReadOnly = fals
     inputElement.classList.add('input-element');
     inputElement.id = id;
     inputElement.name = label;
-    inputElement.value = minValue;
-
-    function keepValueInBetween(value){
-        const val = parseFloat(value);
-        if(val < minValue){
-            return minValue;
-        }else if(val > maxValue){
-            return maxValue;
-        }else{
-            return val
-        }
-    }
-
-    if(defaultValue){
-        inputElement.value = keepValueInBetween(defaultValue);
-    }
-
-    if (isReadOnly) {
-        inputElement.readOnly = true;
-    }
+    inputElement.value = defaultValue; 
+    inputElement.readOnly = isReadOnly;
+    
 
     inputElement.onchange = () =>{
         keepValueInBetween(inputElement.value )
@@ -204,6 +77,8 @@ function createNumberInput(label, id, maxValue=99, minValue=1, isReadOnly = fals
     formGroup.appendChild(labelElement);
     addSpacer(formGroup);
     formGroup.appendChild(inputElement);
+
+    formGroup.inputElement = inputElement;
 
     if(addIncrementButtons){
         const controls = document.createElement('div');
@@ -234,17 +109,14 @@ function createNumberInput(label, id, maxValue=99, minValue=1, isReadOnly = fals
     return formGroup
 }
 
-function createStringInput(label,{
-    id = '', 
-    defaultValue = null, 
+function createInputString(label, id, {
+    defaultValue = "", 
     isReadOnly = false,
     isTextArea = false,
     maxRows = 10 // Maximum rows for a textarea (if isTextArea is true)
 } = {}) {
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group', 'row', 'centered');
-    formGroup.style.minHeight = '30px';
-    formGroup.style.height = '30px';
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', id); // Associate label with input via id
@@ -280,21 +152,23 @@ function createStringInput(label,{
     inputElement.name = id; // Optionally set the name attribute as well
 
     // Convert the default value to a string, preventing [object Object]
-    inputElement.value = defaultValue !== null ? String(defaultValue) : "";
+    inputElement.value = defaultValue
 
-    if (isReadOnly) {
-        inputElement.readOnly = true;
-    }
+
+    inputElement.readOnly = isReadOnly;
+    
 
     // Append the label and input to the form group
     formGroup.appendChild(labelElement);
     addSpacer(formGroup); // Assuming addSpacer is a utility function you've defined
     formGroup.appendChild(inputElement);
 
+    formGroup.inputElement = inputElement;
+
     return formGroup;
 }
 
-function createBooleanInput(label, id, defaultValue = false) {
+function createInputBoolean(label, id, defaultValue = false) {
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
@@ -316,38 +190,180 @@ function createBooleanInput(label, id, defaultValue = false) {
     addSpacer(formGroup);
     formGroup.appendChild(inputElement);
 
+    formGroup.inputElement = inputElement;
+
     return formGroup;
 }
 
-/**
- * Creates a duration input form group element.
- *
- * @param {string} [label="Duration"] - The label for the duration input.
- * @param {string} id - The ID for the duration input elements.
- * @param {Object} [options] - Optional parameters.
- * @param {Duration} [options.initalDuration=new Duration(durationTypes.TURN_BASED, 0)] - The initial duration value.
- * @param {Object} [options.avaliableDurationTypes=durationTypes] - The available duration types.
- * @returns {HTMLDivElement} The form group element containing the duration input.
- */
-function createDurationInput(label = "Duration", id, {
+function createInputDice(label, id){
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group');
+    formGroup.classList.add('row');
+    formGroup.classList.add('vertical');
+    formGroup.style.gap = '10px';
+
+
+    const labelElement = document.createElement('label');
+    labelElement.setAttribute('for', id);
+    labelElement.classList.add('label-element');
+    labelElement.textContent = label;
+    formGroup.appendChild(labelElement);
+
+    const inputElementDiceRollTimes = document.createElement('input');
+    inputElementDiceRollTimes.type = 'number';
+    inputElementDiceRollTimes.id = id;
+    inputElementDiceRollTimes.value = 0;
+    inputElementDiceRollTimes.style.height = "25px";
+    inputElementDiceRollTimes.style.marginRight = "2px"
+    formGroup.appendChild(inputElementDiceRollTimes);
+
+    const labelD = document.createElement('label');
+
+    labelD.textContent = 'd';
+    formGroup.appendChild(labelD);
+
+    const inputElementDice = document.createElement('input');
+    inputElementDice.type = 'number';
+    inputElementDice.id = id;
+    inputElementDice.value = 0;
+    inputElementDice.style.height = "25px";
+    inputElementDice.style.marginLeft = "2px"
+    formGroup.appendChild(inputElementDice);
+
+    formGroup.inputElement = {
+        dice: inputElementDice, 
+        roll: inputElementDiceRollTimes
+    };
+
+    return formGroup
+}
+
+function getDiceValue(diceInputElement){
+    return diceInputElement.roll.value + "d" +diceInputElement.dice.value;
+}
+
+function setDiceValue(diceInputElement, value){
+    const values = value.split("d");
+
+    if(values.length != 2){
+        console.log("Invalid dice value. Dive value should be in the format 'roll' + 'd' + 'dice' (Example: 2d6)")
+        return
+    }
+
+    diceInputElement.roll.value = values[0];
+    diceInputElement.dice.value = values[1];
+}
+
+function createInputDamage(label, id){
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group');
+    formGroup.classList.add('row');
+    formGroup.classList.add('vertical');
+    formGroup.style.minHeight = '50px';
+
+    const formColumn = document.createElement('div');
+    formColumn.classList.add('column');
+    formGroup.appendChild(formColumn)
+
+    const damageRow = document.createElement('div');
+    damageRow.classList.add('row');
+    damageRow.classList.add('centered');
+    formColumn.appendChild(damageRow)
+
+    const numberInput = createInputNumber(label, id + "-number-input", {
+        maxValue: 9999, 
+        minValue: -9999, 
+        addIncrementButtons : true, 
+        defaultValue: 0
+    });
+    numberInput.style.backgroundColor = 'transparent';
+    numberInput.style.width = "100%"
+    numberInput.style.display = 'none';
+    damageRow.appendChild(numberInput);
+    
+    const diceInput = createInputDice(label, id + '-dice-input');
+    diceInput.style.backgroundColor = 'transparent';
+    diceInput.style.width = "100%"
+    damageRow.appendChild(diceInput)
+
+    //Check box
+    const checkboxRow = document.createElement('div'); // Create a container
+    checkboxRow.classList.add('row');
+    checkboxRow.classList.add('vertical');
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = id; // Assuming `id` is defined elsewhere
+    checkbox.style.width = '15px';
+    checkbox.style.height = '15px';
+    checkboxRow.appendChild(checkbox); // Add the checkbox to the container
+
+    const checkboxLabel = document.createElement('label');
+    checkboxLabel.htmlFor = id+"-checkbox"; // Associate label with the checkbox
+    checkboxLabel.textContent = "Raw"; // Set the label text
+    checkboxRow.appendChild(checkboxLabel); // Add the label to the container
+    formColumn.appendChild(checkboxRow)
+
+    checkbox.addEventListener('change', event => {
+        if (checkbox.checked) {
+            numberInput.style.display = 'flex';
+            diceInput.style.display = 'none';
+            formGroup.value = numberInput.querySelector('.input-element').value
+        } else {
+            numberInput.style.display = 'none';
+            diceInput.style.display = 'flex';
+            formGroup.value = diceInput.value;
+        }
+    });
+
+    formGroup.inputElement = {
+        number: numberInput.inputElement,
+        dice: diceInput.inputElement,
+        isNumberInput: checkbox
+    }
+
+    return formGroup
+}
+
+function getDamageValue(damageInputElement){
+    if(damageInputElement.isNumberInput.checked){
+        return damageInputElement.number.value;
+    }else{
+        return getDiceValue(damageInputElement.dice);
+    }
+}
+
+function setDamageValue(damageInputElement, value){
+    if(isNaN(value)){
+        setDiceValue(damageInputElement.dice, value);
+        damageInputElement.isNumberInput.checked = false;
+
+    }else{
+        damageInputElement.number.value = value;
+        damageInputElement.isNumberInput.checked = true;
+    }
+}
+
+function createInputDuration(label = "Duration", id, {
     initalDuration = new Duration(durationTypes.TURN_BASED, 0),
     avaliableDurationTypes = durationTypes} = {}) {
     
-    const displayDurationTypes = Object.keys(avaliableDurationTypes).map(key => avaliableDurationTypes[key]);
-
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group')
     formGroup.classList.add('row')
     formGroup.classList.add('centered');
-    formGroup.value = initalDuration;
 
-    const durationSelector = createSelectorInput(label, Object.values(displayDurationTypes), Object.keys(displayDurationTypes), {
+    const durationSelector = createInputSelector(label, Object.values(avaliableDurationTypes), Object.keys(avaliableDurationTypes), {
         id:  id,
         defaultValue: [initalDuration.type],
     });
+    durationSelector.style.backgroundColor = 'transparent';
+    durationSelector.style.width = "100%"
     formGroup.appendChild(durationSelector);
 
-    const durationValue = createNumberInput("Value: ", id+'-value', 50, 1, false, false)
+    const durationValue = createInputNumber("Value: ", id+'-value', 50, 1, false, false)
+    durationValue.style.backgroundColor = 'transparent';
+    durationValue.style.width = "100%"
     durationValue.style.display = "none"
     formGroup.appendChild(durationValue);
 
@@ -366,10 +382,25 @@ function createDurationInput(label = "Duration", id, {
     }
 
     displayPart(initalDuration.type)
+
+    formGroup.inputElement = {
+        type: durationSelector.inputElement,
+        value: durationValue.inputElement
+    }
+
     return formGroup
 }
 
-function createSelectorInput(label, valueList, textList, 
+function getDurationValue(durationInputElement){
+    return new Duration(durationInputElement.type.value, durationInputElement.value.value)
+}
+
+function setDurationValue(durationInputElement, value){
+    durationInputElement.type.value = value.type;
+    durationInputElement.value.value = value.value;
+}
+
+function createInputSelector(label, valueList, textList, 
     {
     nonSelectableDefault,
     id,
@@ -395,7 +426,7 @@ function createSelectorInput(label, valueList, textList,
     const inputElement = createSelector(id, valueList, textList, {
         defaultValue: nonSelectableDefault, 
         disable_filter: disable_filter, 
-        onclick_func: multiple ? (custom_func ? custom_func: chekmarkOptionFunction) : null}
+        onclick_func: multiple ? (custom_func ? custom_func: selectorChekmarkOptionFunction) : null}
     );
 
     inputElement.style.height = '98%';
@@ -418,10 +449,12 @@ function createSelectorInput(label, valueList, textList,
         }
     }
 
+    formGroup.inputElement = inputElement;
+
     return formGroup;
 }
 
-function chekmarkOptionFunction(event) {  
+function selectorChekmarkOptionFunction(event) {  
     const option = event.target;
 
     // Add tick emoji if selected
@@ -434,7 +467,7 @@ function chekmarkOptionFunction(event) {
         
 }
 
-function getSelectedOptionsWithCheckmark(selectElement) {
+function selectorGetOptionsWithCheckmark(selectElement) {
     const selectedValues = [];
     
     // Loop through the options of the select element
@@ -448,7 +481,7 @@ function getSelectedOptionsWithCheckmark(selectElement) {
     return selectedValues;
 }
 
-function indexedOptionFunctionWithTransparency(event) {
+function selectorIndexedOptionFunctionWithTransparency(event) {
     const option = event.target;
     const select = option.parentElement;
 
@@ -482,28 +515,21 @@ function indexedOptionFunctionWithTransparency(event) {
         select.dataset.index = index - 1;
 
         // Recalculate indices for other options
+        const orderedValues = getOrderedSelectedOptions(select);
+
         const options = Array.from(select.options);
         let currentIndex = 1;
-        options.forEach(opt => {
-            if (opt !== option && /\-\s\d+$/.test(opt.textContent)) {
-                const arr = opt.textContent.split('-');
-                arr[1] = currentIndex;
-                opt.textContent = arr.join('- ');
-
-                // Apply gradient background based on new index
-                const transparency = 0.6;
-                const red = 255;
-                const green = 160 + (currentIndex * 15);
-                const blue = 122 + (currentIndex * 10);
-                opt.style.backgroundColor = `rgba(${red}, ${green}, ${blue}, ${transparency})`;
-
+        orderedValues.forEach(value => {
+            const opt = options.find(opt => opt.value === value);
+            if (opt) {
+                opt.textContent = `${opt.textContent.split('-')[0].trim()} - ${currentIndex}`;
                 currentIndex++;
             }
         });
     }
 }
 
-function indexedOptionFunction(event) {
+function selecterIndexedOptionFunction(event) {
     const option = event.target;
     const select = option.parentElement;
     
@@ -523,6 +549,23 @@ function indexedOptionFunction(event) {
 
         option.textContent = arr.join('- ');
         select.dataset.index = index + 1;
+    }else{
+        // Remove the index and recalculate other indexed elements
+        option.textContent = option.textContent.split('-')[0].trim();
+        select.dataset.index = index - 1;
+
+        // Recalculate indices for other options
+        const orderedValues = getOrderedSelectedOptions(select);
+
+        const options = Array.from(select.options);
+        let currentIndex = 1;
+        orderedValues.forEach(value => {
+            const opt = options.find(opt => opt.value === value);
+            if (opt) {
+                opt.textContent = `${opt.textContent.split('-')[0].trim()} - ${currentIndex}`;
+                currentIndex++;
+            }
+        });
     }
 }
 
@@ -551,45 +594,60 @@ function getOrderedSelectedOptions(selectElement) {
     return orderedValues;
 }
 
-function createSpellSelectContainer(id, initalLevel = null, initialSpellName = null){
+function createInputSpellSelect(id, {initalLevel: level = null, initialSpellName = null, availableSpells = null}) {
     const itemId = id + '-spell-select-container';
     const spellSelectContainer = document.createElement('div');
     spellSelectContainer.id = itemId;
     spellSelectContainer.classList.add('form-group');
-    spellSelectContainer.classList.add('box-circular-border');
     spellSelectContainer.classList.add('row');
     spellSelectContainer.classList.add('vertical');
 
     let selectedSpellLevelList = 1;
-    const spellLevelSelector = createSelectorInput('Spell Level:', serverRules.spells.levels, serverRules.spells.levels, {
+    const spellLevelSelector = createInputSelector('Spell Level:', serverRules.spells.levels, serverRules.spells.levels, {
         nonSelectableDefault: 'select', 
         id: itemId + '-spell-level',
-        defaultValue: initalLevel ? [initalLevel] : null});
+        defaultValue: level ? [level] : null});
+    spellLevelSelector.style.width = "100%";
+    spellLevelSelector.style.backgroundColor = 'transparent';
 
-    spellLevelSelector.classList.add('spell-level-selector')
-    const spellSelect = createSelectorInput('Spell:', Object.keys(listSpells[selectedSpellLevelList]), listSpells[selectedSpellLevelList], {
+    const spellNameSelect = createInputSelector('Spell:', Object.keys(availableSpells[selectedSpellLevelList]), availableSpells[selectedSpellLevelList], {
         nonSelectableDefault: 'select', 
         id: itemId + '-spell-level',
         defaultValue: initialSpellName ? [initialSpellName] : null});
-    spellSelect.classList.add('spell-name-selector')
+    spellNameSelect.style.width = "100%";
+    spellNameSelect.style.backgroundColor = 'transparent';
 
-    spellLevelSelector.querySelector('.input-element').onchange = function(event){
+    spellLevelSelector.inputElement.onchange = function(event){
         selectedSpellLevelList = event.target.value;
-        spellSelectContainer.spellLevel = spellLevelSelector.querySelector('.input-element').selectedOptions[0].value;
-        updateSelector(listSpells[selectedSpellLevelList], listSpells[selectedSpellLevelList],spellSelect.querySelector('.input-element'), null, 'select');
+        spellSelectContainer.spellLevel = spellLevelSelector.inputElement.selectedOptions[0].value;
+        updateSelector(availableSpells[selectedSpellLevelList], availableSpells[selectedSpellLevelList],spellNameSelect.inputElement, null, 'select');
     }
 
-    spellSelect.querySelector('.input-element').onchange = () => {
-        spellSelectContainer.spellName = spellSelect.querySelector('.input-element').selectedOptions[0].value;
+    spellNameSelect.inputElement.onchange = () => {
+        spellSelectContainer.spellName = spellNameSelect.inputElement.selectedOptions[0].value;
     }
 
-    spellSelectContainer.spellLevel = 0
-    spellSelectContainer.spellName = null
+    spellSelectContainer.inputElement = {
+        level: spellLevelSelector.inputElement,
+        name: spellNameSelect.inputElement
+    }
 
     spellSelectContainer.appendChild(spellLevelSelector);
-    spellSelectContainer.appendChild(spellSelect);
+    spellSelectContainer.appendChild(spellNameSelect);
 
     return spellSelectContainer;
+}
+
+function getSpellSelectValue(spellSelectContainer){
+    return {
+        level: spellSelectContainer.inputElement.level.value,
+        name: spellSelectContainer.inputElement.name.value
+    }
+}
+
+function setSpellSelectValue(spellSelectContainer, value){
+    spellSelectContainer.inputElement.level.value = value.level;
+    spellSelectContainer.inputElement.name.value = value.name;
 }
 
 function createImageButton(fontSize, {icon=null, source=null, custom_padding = 8}) {
@@ -1234,6 +1292,8 @@ function addNewTab(tabbedWindowContainer, name, tabMainName= 'Tab') {
 
     // Optionally, activate the new tab after creation
     openTab({ currentTarget: newTabButton }, `tab${newTabIndex}`, contentContainer);
+
+    return newTabContent;
 }
 
 function changeVisibiltyOfTab(tabbedWindowContainer, identifier, state) {
