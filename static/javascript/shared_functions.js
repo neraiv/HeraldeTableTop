@@ -39,10 +39,89 @@ function compareWithDb(arr1, arr2) {
     return result;
 }
 
+
+function userAskQuestion(title, question, {
+    buttons = ['Ok'], 
+    callback = null, 
+    input = false, 
+    inputPlaceholder = null, 
+    inputType = 'text',
+    blocking = false
+} = {}) {
+    return new Promise((resolve) => {
+        // Create the overlay if blocking is true
+        let overlay;
+        if (blocking) {
+            overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            overlay.style.zIndex = '9998';
+            document.body.appendChild(overlay);
+        }
+
+        // Create the container
+        const container = document.createElement('div');
+        container.className = 'ask-question-container';
+        container.classList.add('box-circular-border')
+        container.style.zIndex = '9999'; // Ensure it is above the overlay
+
+        const topRow = addDraggableRow(container);
+        container.appendChild(topRow);
+
+        // Create the title
+        const titleElement = document.createElement('h2');
+        titleElement.textContent = title;
+        topRow.appendChild(titleElement);
+
+        // Create the question
+        const questionElement = document.createElement('p');
+        questionElement.textContent = question;
+        container.appendChild(questionElement);
+
+        // Create the input if needed
+        let inputElement;
+        if (input) {
+            inputElement = document.createElement('textarea');
+            inputElement.placeholder = inputPlaceholder;
+            inputElement.type = inputType;
+            container.appendChild(inputElement);
+        }
+
+        // Create the buttons
+        buttons.forEach(buttonText => {
+            const button = document.createElement('button');
+            button.textContent = buttonText;
+            button.onclick = () => {
+                if (callback) {
+                    callback(buttonText);
+                }
+                document.body.removeChild(container);
+                if (overlay) {
+                    document.body.removeChild(overlay);
+                }
+                resolve({ elem: container, value: input ? inputElement.value : null });
+            };
+            container.appendChild(button);
+        });
+
+        // Append the container to the body
+        document.body.appendChild(container);
+
+        // If not blocking, resolve immediately
+        if (!blocking) {
+            resolve({ elem: container, value: null });
+        }
+    });
+}
+
+
 function keepValueInBetween(value, max, min){
     return Math.min(Math.max(parseFloat(value), min), max)
 }
-
 
 function createInputNumber(label, id, {maxValue=99, minValue=1, isReadOnly = false, addIncrementButtons = true, defaultValue = null}) {
     if(defaultValue){
@@ -1356,3 +1435,6 @@ function activateTab(tabbedWindowContainer, identifier) {
         return null;
     }
 }
+
+
+

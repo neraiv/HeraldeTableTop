@@ -246,58 +246,12 @@ function displaySpellCreate(initalSpell = null) {
     };
     topBar.appendChild(spellSaveButton);
 
-    const spellCreateSheetCloseButton = createImageButton('28', {source: 'url(static/images/menu-icons/close.png)', custom_padding: 4});
-    spellCreateSheetCloseButton.style.marginRight = '5px';
-    spellCreateSheetCloseButton.style.cursor = 'pointer';
-    spellCreateSheetCloseButton.onclick = () => {
-        spellCreateSheet.remove();
-    };
-    topBar.appendChild(spellCreateSheetCloseButton);
-
-    const spellCreateSheetContent = document.createElement('div');
-    spellCreateSheetContent.style.display = 'block';
-    spellCreateSheetContent.style.width = '98%';
-    spellCreateSheetContent.style.height = '95%';
-    spellCreateSheetContent.style.position = 'relative';
-    spellCreateSheetContent.style.overflowY = 'scroll';
-    spellCreateSheet.appendChild(spellCreateSheetContent);
-    
-    const form = document.createElement('div');
-    form.classList.add('column');
-    form.classList.add('vertical');
-    form.style.width = '98%';
-    form.style.gap = '10px';
-    form.style.padding = '5px';
-    spellCreateSheetContent.appendChild(form);
-
-    let maxSpellLevel = Math.max(...serverRules.spells.levels);
-
-
-    const rowSpellSelect = document.createElement('div');
-    rowSpellSelect.classList.add('row');
-    rowSpellSelect.classList.add('vertical');
-    rowSpellSelect.classList.add('form-group')
-    rowSpellSelect.classList.add('box-circular-border');
-    rowSpellSelect.style.backgroundColor = formColor;
-    rowSpellSelect.style.gap = '10px';
-    form.appendChild(rowSpellSelect);
-
-    const selectSpellType = createInputSelector('Spell Type: ', Object.values(spellTypes), Object.keys(spellTypes), {
-        id: id + '-type'
-    });
-    rowSpellSelect.appendChild(selectSpellType);
-
-    const spellLevel = createInputSelector('Spell Level: ', serverRules.spells.levels, serverRules.spells.levels, {
-        id: id +'-level'
-    }); 
-    rowSpellSelect.appendChild(spellLevel);
-
     function getSpellChanges(){
         const spell = new Spell();
         spell.name = formName.inputElement.value;
         spell.availableClasses = selectorGetOptionsWithCheckmark(formClasses.inputElement);
         spell.modifierStats = selectorGetOptionsWithCheckmark(formModifierStat.inputElement);
-        spell.baseDamageType = baseDamageType.inputElement.selectedOptions[0].value;
+        spell.baseDamageType = formBaseDamageType.inputElement.selectedOptions[0].value;
         spell.baseDamage = getDamageValue(formBaseDamage.inputElement);
         spell.description = formDescription.inputElement.value;
         spell.castDuration = getDurationValue(formSpellCastDuration.inputElement);
@@ -333,25 +287,70 @@ function displaySpellCreate(initalSpell = null) {
         return spell;
     }
 
-    selectSpellType.inputElement.onchange = () => {
-        spellCreateSheet.spell.spellType = selectSpellType.inputElement.selectedOptions[0].value;
-        if(spellCreateSheet.spell.spellType == spellTypes.SPELL || spellCreateSheet.spell.spellType == spellTypes.CONJURE){
-            maxSpellLevel = serverRules.spells.levels.at(-1);
-            updateElements();
-        }else if(spellCreateSheet.spell.spellType == spellTypes.CANTRIP){
-            maxSpellLevel = 0;
-            updateElements();
-        }else if(spellCreateSheet.spell.spellType == spellTypes.WEAPON){
-            maxSpellLevel = serverRules.spells.levels.at(-1);
-            updateElements();
-        }
-    }
+    const spellCreateSheetCloseButton = createImageButton('28', {source: 'url(static/images/menu-icons/close.png)', custom_padding: 4});
+    spellCreateSheetCloseButton.style.marginRight = '5px';
+    spellCreateSheetCloseButton.style.cursor = 'pointer';
+    spellCreateSheetCloseButton.onclick = () => {
+        spellCreateSheet.remove();
+    };
+    topBar.appendChild(spellCreateSheetCloseButton);
 
-    spellLevel.inputElement.onchange = () => {
-        spellCreateSheet.spell.spellLevel = spellLevel.inputElement.selectedOptions[0].value;
-        updateElements();
-    }
+    const spellCreateSheetContent = document.createElement('div');
+    spellCreateSheetContent.style.display = 'block';
+    spellCreateSheetContent.style.width = '98%';
+    spellCreateSheetContent.style.height = '95%';
+    spellCreateSheetContent.style.position = 'relative';
+    spellCreateSheetContent.style.overflowY = 'scroll';
+    spellCreateSheet.appendChild(spellCreateSheetContent);
     
+    const form = document.createElement('div');
+    form.classList.add('column');
+    form.classList.add('vertical');
+    form.style.width = '98%';
+    form.style.gap = '10px';
+    form.style.padding = '5px';
+    spellCreateSheetContent.appendChild(form);
+
+    let maxSpellLevel = Math.max(...serverRules.spells.levels);
+
+    const rowSpellSelect = document.createElement('div');
+    rowSpellSelect.classList.add('row');
+    rowSpellSelect.classList.add('vertical');
+    rowSpellSelect.classList.add('form-group')
+    rowSpellSelect.classList.add('box-circular-border');
+    rowSpellSelect.style.backgroundColor = formColor;
+    rowSpellSelect.style.gap = '10px';
+    form.appendChild(rowSpellSelect);
+
+    const selectSpellType = createInputSelector('Spell Type: ', Object.values(spellTypes), Object.keys(spellTypes), {
+        id: id + '-type'
+    });
+    selectSpellType.style.backgroundColor = "transparent";
+    rowSpellSelect.appendChild(selectSpellType);
+
+    const selectSpellLevel = createInputSelector('Spell Level: ', serverRules.spells.levels, serverRules.spells.levels, {
+        id: id +'-level'
+    }); 
+    selectSpellLevel.style.backgroundColor = "transparent";
+    rowSpellSelect.appendChild(selectSpellLevel);
+
+    const spellTypeConfirmation = createImageButton(40, {icon: "check_circle_outline"});
+    spellTypeConfirmation.id = "ui-spellbook-close-button";
+    spellTypeConfirmation.style.fontFamily = 'Material Icons Outlined';
+    spellTypeConfirmation.style.backgroundColor = "green"
+    rowSpellSelect.appendChild(spellTypeConfirmation);
+
+    spellTypeConfirmation.onclick = () => {
+        userAskQuestion("Careful?", "Are you sure you want to change the spell type and level?",{
+            buttons: ['Yes', 'No'],
+            callback: (buttonText) => {
+                if(buttonText === 'Yes'){
+                    updateElements();
+                }
+            }}
+        )
+
+    }
 
     const formName = createInputString('Name: ', id + '-name' );
     formName.classList.add('box-circular-border');
@@ -387,13 +386,13 @@ function displaySpellCreate(initalSpell = null) {
     formModifierStat.style.backgroundColor = formColor;
     form.appendChild(formModifierStat);
 
-    const baseDamageType = createInputSelector('Base Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
+    const formBaseDamageType = createInputSelector('Base Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
         id:  id +'-base-damage-type',
         multiple: false,
     });
-    baseDamageType.classList.add('box-circular-border');
-    baseDamageType.style.backgroundColor = formColor;
-    form.appendChild(baseDamageType);
+    formBaseDamageType.classList.add('box-circular-border');
+    formBaseDamageType.style.backgroundColor = formColor;
+    form.appendChild(formBaseDamageType);
 
     const formBaseDamage = createInputDamage("Damage: ", id+ '-base-damage')
     formBaseDamage.style.display = "none"
@@ -401,7 +400,7 @@ function displaySpellCreate(initalSpell = null) {
     formBaseDamage.style.backgroundColor = formColor;
     form.appendChild(formBaseDamage);
     
-    baseDamageType.inputElement.onchange =  (event) => {
+    formBaseDamageType.inputElement.onchange =  (event) => {
         const value = event.target.value
         if(value != damageTypes.NONE){
             formBaseDamage.style.display = "flex"
@@ -513,19 +512,19 @@ function displaySpellCreate(initalSpell = null) {
         tabContent.appendChild(casterEffects);
     }
 
-    const spellPatternContainer = document.createElement('div');
-    spellPatternContainer.classList.add('column');
-    spellPatternContainer.classList.add('vertical');
-    spellPatternContainer.classList.add('box-circular-border');
-    spellPatternContainer.style.width = '95%';
-    spellPatternContainer.style.padding = '5px';
-    spellPatternContainer.style.gap = '10px';
-    spellPatternContainer.style.backgroundColor = formColor;
+    const formCastPatternContainer = document.createElement('div');
+    formCastPatternContainer.classList.add('column');
+    formCastPatternContainer.classList.add('vertical');
+    formCastPatternContainer.classList.add('box-circular-border');
+    formCastPatternContainer.style.width = '95%';
+    formCastPatternContainer.style.padding = '5px';
+    formCastPatternContainer.style.gap = '10px';
+    formCastPatternContainer.style.backgroundColor = formColor;
 
     const spellPatternTitle = document.createElement('label');
     spellPatternTitle.textContent = 'Spell Pattern';
     spellPatternTitle.style.fontWeight = 'bold';
-    spellPatternContainer.appendChild(spellPatternTitle);
+    formCastPatternContainer.appendChild(spellPatternTitle);
 
     const spellPatternSelect = createInputSelector('Spell Pattern: ', Object.values(spellPatterns), Object.keys(spellPatterns),{
         id: 'create-spell-pattern-select',
@@ -533,17 +532,17 @@ function displaySpellCreate(initalSpell = null) {
     })
     spellPatternSelect.classList.add('box-circular-border');
     spellPatternSelect.style.backgroundColor = formColor;
-    spellPatternContainer.appendChild(spellPatternSelect);
+    formCastPatternContainer.appendChild(spellPatternSelect);
 
     const spellCastArea = createInputNumber("Cast Range:", "create-spell-pattern-cast-area", 9999, 0, false, false, initalSpell ? initalSpell.spellPattern.range : null)
     spellCastArea.classList.add('box-circular-border');
     spellCastArea.style.backgroundColor = formColor;
-    spellPatternContainer.appendChild(spellCastArea);
+    formCastPatternContainer.appendChild(spellCastArea);
 
     const spellCastWidth = createInputNumber("Cast Area:", "create-spell-pattern-cast-area", 500, 0, false, false, initalSpell ? initalSpell.spellPattern.area : null)
     spellCastWidth.classList.add('box-circular-border');
     spellCastWidth.style.backgroundColor = formColor;
-    spellPatternContainer.appendChild(spellCastWidth);
+    formCastPatternContainer.appendChild(spellCastWidth);
 
     const spellCastType = createInputSelector('Spell Cast Type: ', Object.values(castTypes), Object.keys(castTypes),{
         id: 'create-spell-pattern-cast-type',
@@ -551,7 +550,7 @@ function displaySpellCreate(initalSpell = null) {
     })
     spellCastType.classList.add('box-circular-border');
     spellCastType.style.backgroundColor = formColor;
-    spellPatternContainer.appendChild(spellCastType);
+    formCastPatternContainer.appendChild(spellCastType);
 
     const spellCanTarget = createInputSelector('Can Target: ', Object.values(targetTypes), Object.keys(targetTypes),{
         id: 'create-spell-pattern-can-target',
@@ -561,8 +560,8 @@ function displaySpellCreate(initalSpell = null) {
     })
     spellCanTarget.classList.add('box-circular-border');
     spellCanTarget.style.backgroundColor = formColor;
-    spellPatternContainer.appendChild(spellCanTarget);
-    form.appendChild(spellPatternContainer)
+    formCastPatternContainer.appendChild(spellCanTarget);
+    form.appendChild(formCastPatternContainer)
 
     const spellCasterRolls = createInputSelector('Caster Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
         id: 'create-spell-caster-rolls',
@@ -1013,7 +1012,29 @@ function displaySpellCreate(initalSpell = null) {
     }
 
     function updateElements(){ //Future seviye görünümleri değiştirielcek
-        let displayedLevels = serverRules.spells.levels;
+        const spellType = selectSpellType.inputElement.selectedOptions[0].value;
+        const spellLevel = parseInt(selectSpellLevel.inputElement.selectedOptions[0].value);
+        
+        // Spell Type Related
+        if(spellType == spellTypes.CONJURE){
+            formCastPatternContainer.style.display = 'none';
+            formBaseDamageType.style.display = 'none';
+            formBaseDamage.style.display = 'none';
+            formModifierStat.style.display = 'none';
+        }else{
+            formCastPatternContainer.style.display = 'flex';
+            formBaseDamageType.style.display = 'flex';
+            formBaseDamage.style.display = 'flex';
+            formModifierStat.style.display = 'flex';
+        }
+
+        // Spell Level Related
+        let displayedLevels = []
+
+        for(let i = spellLevel; i < Math.max(...serverRules.spells.levels); i++){
+            displayedLevels.push(i.toString())
+        }
+
         // // Filter out any selectableSpellLevels lower than initialSpell.spellLvl
         displayedLevels = displayedLevels.filter(level => (parseInt(level) <= parseInt(maxSpellLevel)));
 
@@ -1080,23 +1101,6 @@ playerCharSheetButton.onclick = () => {
     displayCharaterSheet(player.charId)
 }
 
-function userAskQuestion({type = "int", message = null}) {
-    if (type === "int") {
-        const question = prompt(message + " ", "Please enter a number:");
-        return parseInt(question, 10);
-    }
-    if (type === "string") {
-        return prompt(message + " ", "Please enter a string:");
-    }
-    if (type === "bool") {
-        const question = prompt(message + " ", "Please enter true or false:");
-        return question === "true";
-    }
-    if (type === "float"){
-        const question = prompt(message + " ", "Please enter a number:");
-        return parseFloat(question);
-    }
-}
 
 // Game Board -----------------------------------------------------------------------
 function getCharScene(char_id){
@@ -1259,6 +1263,10 @@ function charHideHoverButtons({token = null, char_id = null}) {
     }
 }
 
+async function inventoryMove(params) {
+    
+}
+
 async function charDisplayInventory({id = null, inventory = null}, x, y) {
     const char = inGameChars[id].char;
     if (char) {
@@ -1335,21 +1343,61 @@ async function charDisplayInventory({id = null, inventory = null}, x, y) {
         sendToDropDownMenu.lastChild.onclick = function(){
             sendToDropDownMenu.style.display = 'none';
         }
+        function inventoryUpdateItem(selectedItem){
+            const effectedItem = Array.from(inventoryTable.children).find(item => item.textContent.includes(selectedItem.name));
+            const newQuantity = inventory.getQuantity(selectedItem.name);
+            if (newQuantity === 0) {
+                effectedItem.remove();
+                sendToDropDownMenu.style.display = 'none';
+                dropdownMenu.style.display = 'none';
+            } else {
+                effectedItem.textContent = `${selectedItem.name} x${newQuantity}`;
+            }
+        }
 
         for(let i = 0; i < Object.keys(inGameChars).length-1; i++){
             sendToDropDownMenu.who = sendToButtonCharIds[i]
             sendToDropDownMenu.children[i].onclick = function(){
                 console.log('Send To action clicked', selectedItem, sendToDropDownMenu.children[i].textContent);
-                let inputValue = userAskQuestion({type: "int", "Message": "How many?"});
-                if (inputValue) {
-                    if (selectedItem.quantity < inputValue) {
-                        console.log('Not enough items to send')
-                        inputValue = selectedItem.quantity;
+                userAskQuestion(
+                    'How many?', 
+                    'How many items would you like to send?', 
+                    {
+                        buttons: ['Ok'],
+                        input: true,
+                        inputPlaceholder: 'Enter value...',
+                        inputType: 'number',
+                        blocking: true
                     }
-                    inGameChars[sendToDropDownMenu.who].char.inventory.addItem(selectedItem, value);
-                    inventory.removeItem(selectedItem.name, inputValue);
-                    console.log('Sent', inputValue, selectedItem.name, 'to', sendToDropDownMenu.children[i].textContent);
-                }
+                ).then(result => {
+                    let inputValue = parseInt(result.value);
+                    if (inputValue) {
+                        if (selectedItem.quantity < inputValue) {
+                            userAskQuestion('Not enough items!', "Not enough items to send, click Ok to send all or cancel to don't send anything.", 
+                                {buttons: ['Ok','Cancel'], 
+                                    callback: (buttonText) => {
+                                        if (buttonText == 'Ok') {
+                                            inputValue = selectedItem.quantity;
+                                        }else{
+                                            inputValue = 0;
+                                        }
+
+                                        if (inputValue > 0) {
+                                            inGameChars[sendToDropDownMenu.who].char.inventory.addItem(selectedItem, inputValue);
+                                            inventory.removeItem(selectedItem.name, inputValue);
+                                            console.log('Sent', inputValue, selectedItem.name, 'to', sendToDropDownMenu.children[i].textContent);
+                                            inventoryUpdateItem(selectedItem);
+                                        }
+                                    },
+                                blocking: true});
+                        }else{
+                            inGameChars[sendToDropDownMenu.who].char.inventory.addItem(selectedItem, inputValue);
+                            inventory.removeItem(selectedItem.name, inputValue);
+                            console.log('Sent', inputValue, selectedItem.name, 'to', sendToDropDownMenu.children[i].textContent);
+                            inventoryUpdateItem(selectedItem);
+                        }
+                    }
+                });
             }
         };
 
@@ -2008,3 +2056,5 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }, 500)
 })
+
+

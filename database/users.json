@@ -1,23 +1,23 @@
 {
     "robotdeha": {
         "password": "123321avz",
-        "key": "rUxA4tM_Y-Kk8g7y5_Gynw",
+        "key": "Cy9pz_mTlgtg0EnUXxLK7g",
         "status": "offline",
         "type": "adventurer",
         "character": "faramir",
-        "last_sync": "2024-12-19 13:16:01 UTC"
+        "last_sync": "2024-12-27 08:21:11 UTC"
     },
     "yilmo": {
         "password": "123321avz",
-        "key": "SwSd_y_CQs8Xt4c2r-HY2g",
+        "key": "gHAkzfoeCsXTTPfFVtVFHQ",
         "status": "offline",
         "type": "adventurer",
         "character": "mountainless_dwarf",
-        "last_sync": "2024-12-20 09:34:00 UTC"
+        "last_sync": "2024-12-27 08:19:20 UTC"
     },
     "rebella": {
         "password": "123321avz",
-        "key": "JhxK00YF-OAM7mXKwMShcQ",
+        "key": "92dObcSLTbMIrzZKFadvaA",
         "status": "offline",
         "type": "dungeon_master",
         "character": "unknown"

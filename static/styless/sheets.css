@@ -121,7 +121,6 @@ h2 {
     display: none;
     height: 85%;
     width: 300px;
-    display: flex;
     background-color: #ddd;
     flex-direction: column; /* Stack items vertically */
     align-items: center; /* Center items horizontally */
