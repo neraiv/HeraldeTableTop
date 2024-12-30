@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS  # Import the CORS package
+from flask_socketio import SocketIO, send, emit
 import json
 import os
 import atexit
@@ -18,12 +19,33 @@ sync_thread.start()
 
 atexit.register(db.on_exit)
 app = Flask(__name__)
+app.secret_key = "48c80162841c766a3bee0d888fdaeacb4e6f1792710d34e0"
 CORS(app)  # Enable CORS for all routes
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route('/')  # Renamed this route
 def home():
     return render_template('debug_login.html')  # Render the HTML file
 
+@socketio.on('message')
+def handle_message(msg :dict):
+    print(f'Received message: {msg}')
+    send(f'You said: {msg}', broadcast=True)
+    
+@socketio.on('custom_event')
+def handle_custom_event(input: dict):
+    key = input.get('key')
+    type = input.get('type')
+    data: dict = input.get('data')
+    
+    if key and type and data:
+        if(type == "inv_itm"):
+            response = db.check_item_transaction(data)
+    else:
+        response = "Invalid input data."
+        
+    emit('response_event', {'response': f'{response}'}, broadcast=True)
+    
 @app.route('/debug')  # Renamed this route
 def debug():
     return render_template('debug_game.html')  # Render the HTML file
@@ -405,4 +427,4 @@ def login_func():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, debug=True)  # Run the app in debug mode

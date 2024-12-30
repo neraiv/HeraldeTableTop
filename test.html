@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Example</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Flask WebSocket Example</h1>
+    <input id="message" type="text" placeholder="Type a message">
+    <button onclick="sendMessage()">Send</button>
+    <ul id="messages"></ul>
+
+    <script>
+        const socket = io("http://127.0.0.1:5000");
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('message', (msg) => {
+            const li = document.createElement('li');
+            li.textContent = msg;
+            document.getElementById('messages').appendChild(li);
+        });
+
+        function sendMessage() {
+            const body = {
+                key: "2d4UgMvnw88DuNUI_lTovw", // Assuming `player.userKey` is defined elsewhere
+                message: document.getElementById('message').value
+            };
+            socket.send(body);
+        }
+    </script>
+</body>
+</html>

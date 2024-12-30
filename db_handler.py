@@ -6,8 +6,9 @@ from import_db_files import *  # Ensure this has the USERS path or constants
 import secrets
 from chat_handeler import ChatHandler
 from images_handler import ImagesHandeler
+from permission_handeler import PermissonHandeler
 
-class DBHandeler(ChatHandler, ImagesHandeler):
+class DBHandeler(ChatHandler, ImagesHandeler, PermissonHandeler):
     def __init__(self, file_path):
         """
         Initialize the DBHandeler with the path to the CSV file.

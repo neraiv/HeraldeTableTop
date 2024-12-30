@@ -1,7 +1,32 @@
 const serverUrl = DEBUG_MODE ? "http://localhost:5000/" : godLevelServerDomain ;
 let isUpdating = false; // Flag to prevent multiple updates
 
+const socket = io(serverUrl);
 
+socket.on('connect', () => {
+    console.log('Connected to server');
+});
+
+socket.on('message', (data) => {
+    console.log('Message from server:', data);
+    if (data.type === "update") {
+        if (isUpdating) {
+            console.log("Already updating, skipping");
+            return;
+        }
+        isUpdating = true;
+        updateGame();
+    }
+});
+
+async function dbSocketSendAction(action) {
+    const body = {
+        key: player.userKey, 
+        type: "action",
+        data: action
+    };
+    socket.send(body);
+}
 async function dbGetScene(sceneName) {
     const params = new URLSearchParams({
         "key": player.userKey,

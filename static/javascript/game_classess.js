@@ -288,20 +288,6 @@ class Inventory {
         }
     }
 
-    // List all items in the inventory
-    listItems() {
-        if (this.items.length === 0) {
-            console.log("Inventory is empty.");
-            return;
-        }
-
-        console.log("Inventory:");
-        this.items.forEach(item => {
-            console.log(`- ${item.name}: ${item.quantity}`);
-        });
-        console.log(`Currency: ${this.currency.gold} Gold, ${this.currency.silver} Silver, ${this.currency.bronze} Bronze`);
-    }
-
     // Get the quantity of a specific item
     getQuantity(itemName) {
         const item = this.items.find(item => item.name === itemName);
