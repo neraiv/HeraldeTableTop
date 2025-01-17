@@ -3,7 +3,7 @@
 # HeraldeTableTop Game 🎲  
 A **multiplayer role-playing game (RPG)** where you create and join exciting adventures!
 
-## How Does It Work? 🤔  
+## How Does It Work? 🤔 (The Plan)
 
 1. **Start Your Server**  
     Run the following command to start your server:  
