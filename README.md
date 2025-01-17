@@ -1,3 +1,5 @@
+# v0.2.1 Not Playable (Yet).
+
 # HeraldeTableTop Game 🎲  
 A **multiplayer role-playing game (RPG)** where you create and join exciting adventures!
 
