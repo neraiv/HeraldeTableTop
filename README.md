@@ -1,4 +1,4 @@
-# v0.2.1 Not Playable (Yet).
+# v0.0.1 Not Playable (Yet). Dev branch is latest
 
 # HeraldeTableTop Game 🎲  
 A **multiplayer role-playing game (RPG)** where you create and join exciting adventures!
