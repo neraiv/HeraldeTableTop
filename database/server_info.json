@@ -1,6 +1,5 @@
 {
-    "server_time": "2024-12-31 07:59:41 UTC",
-    "server_status": "online",
-    "last_session": "session-1",
-    "chat_idx": 320
+    "time": "2024-12-31 07:59:41 UTC",
+    "status": "online",
+    "active_session": "session-1"
 }

@@ -1,0 +1,17 @@
+{
+    "sari": {
+        "name": "Sari",
+        "age": 24,
+        "char": "default",
+        "can" :{
+            "company": true,
+            "die": true
+        },
+        "Alchemy Shop": {
+            "seen": "True",
+            "quests" : {
+                "id": "sari-01"
+            }
+        }
+    }
+}

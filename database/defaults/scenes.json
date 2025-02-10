@@ -1,0 +1,137 @@
+{
+    "The Depths" : {
+        "discovered" : true,
+        "width" : 2000,
+        "height" : 2000,
+        "grid_size" : 50,
+        "layers" : {
+            "1": {
+                "img" : "living-depths-1/dark.jpg",
+                "x": 400,
+                "y": 300,
+                "width": 1000,
+                "height": 590,
+                "portals":{
+                    "1":{
+                        "type": "layer",
+                        "to": "2",
+                        "x": 300,
+                        "y": 200,
+                        "width": 50,
+                        "height": 50  
+                    },
+                    "2":{
+                        "type": "scene",
+                        "to": "The Royal Bank",
+                        "x": 150,
+                        "y": 0,
+                        "width": 50,
+                        "height": 50  
+                    }
+                }
+            },
+            "2": {
+                "img" : "living-depths-2/dark.jpg",
+                "x": 500,
+                "y": 400,
+                "width": 200,
+                "height": 200,
+                "portals":{
+                    "1":{
+                        "type": "layer",
+                        "to": "1",
+                        "x": 300,
+                        "y": 200,
+                        "width": 100,
+                        "height": 100  
+                    }
+                }
+            }
+        }
+    },
+    "The Royal Bank":{
+        "discovered" : true,
+        "width" : 2000,
+        "height" : 2000,
+        "grid_size" : 50,
+        "layers" : {
+            "1": {
+                "img" : "royal-bank-1/light.jpg",
+                "x": 400,
+                "y": 300,
+                "width": 1000,
+                "height": 590,
+                "portals":{
+                    "1":{
+                        "type": "scene",
+                        "to": "The Depths",
+                        "x": 950,
+                        "y": 200,
+                        "width": 100,
+                        "height": 100  
+                    },
+                    "2":{
+                        "type": "scene",
+                        "to": "Alchemy Shop",
+                        "x": 150,
+                        "y": 0,
+                        "width": 50,
+                        "height": 50  
+                    }
+                }
+            }
+        }
+    },
+    "Alchemy Shop": {
+        "discovered" : false,
+        "width" : 2000,
+        "height" : 2000,
+        "grid_size" : 50,
+        "layers" : {
+            "1": {
+                "img" : "alchemy-shop-1/light_1.jpg",
+                "x": 400,
+                "y": 300,
+                "width": 1000,
+                "height": 590,
+                "ambiance": "alchemy-shop-1/ambiance.mp3",
+                "portals":{
+                    "1":{
+                        "type": "scene",
+                        "to": "The Royal Bank",
+                        "x": 300,
+                        "y": 200,
+                        "width": 100,
+                        "height": 100  
+                    },
+                    "2":{
+                        "type": "layer",
+                        "to": "2",
+                        "x": 150,
+                        "y": 0,
+                        "width": 50,
+                        "height": 50
+                    }
+                }
+            },
+            "2": {
+                "img" : "alchemy-shop-1/light_2.jpg",
+                "x": 500,
+                "y": 400,
+                "width": 200,
+                "height": 200,
+                "ambiance": "alchemy-shop-1/ambiance.mp3",
+                "portals":{
+                    "1":{
+                        "type": "layer",
+                        "to": "1",
+                        "x": 300,
+                        "y": 200,
+                        "width": 100,
+                        "height": 100  
+                    }
+                }
+            }
+        }
+    }
+}

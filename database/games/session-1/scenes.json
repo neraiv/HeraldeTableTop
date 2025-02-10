@@ -11,23 +11,47 @@
                 "y": 300,
                 "width": 1000,
                 "height": 590,
-                "portals":{
-                    "1":{
-                        "type": "layer",
-                        "to": "2",
-                        "x": 300,
-                        "y": 200,
-                        "width": 50,
-                        "height": 50  
+                "movableAreas": [{
+                    "x": 0,
+                    "y": 0,
+                    "width": -1,
+                    "height": -1
+                }],
+                "locations" :{
+                    "portals":{
+                        "1":{
+                            "type": "layer",
+                            "to": "2",
+                            "x": 300,
+                            "y": 200,
+                            "width": 50,
+                            "height": 50  
+                        },
+                        "2":{
+                            "type": "scene",
+                            "to": "The Royal Bank",
+                            "x": 150,
+                            "y": 0,
+                            "width": 50,
+                            "height": 50  
+                        }
                     },
-                    "2":{
-                        "type": "scene",
-                        "to": "The Royal Bank",
-                        "x": 150,
-                        "y": 0,
-                        "width": 50,
-                        "height": 50  
-                    }
+                    "chars" : {
+                        "faramir":{
+                            "x": 150,
+                            "y": 100
+                        },
+                        "mountainless_dwarf" : {
+                            "x": 100,
+                            "y": 150
+                        },
+                        "sir_gawain" : {
+                            "x": 50,
+                            "y": 50
+                        }
+                    },
+                    "npcs" : {},
+                    "objects": {}
                 }
             },
             "2": {
@@ -36,15 +60,26 @@
                 "y": 400,
                 "width": 200,
                 "height": 200,
-                "portals":{
-                    "1":{
-                        "type": "layer",
-                        "to": "1",
-                        "x": 300,
-                        "y": 200,
-                        "width": 100,
-                        "height": 100  
-                    }
+                "movableAreas": [{
+                    "x": 0,
+                    "y": 0,
+                    "width": -1,
+                    "height": -1
+                }],
+                "locations" : {                
+                    "portals":{
+                        "1":{
+                            "type": "layer",
+                            "to": "1",
+                            "x": 300,
+                            "y": 200,
+                            "width": 100,
+                            "height": 100  
+                        }
+                    },
+                    "chars" : {},
+                    "npcs" : {},
+                    "objects": {}
                 }
             }
         }
@@ -61,23 +96,34 @@
                 "y": 300,
                 "width": 1000,
                 "height": 590,
-                "portals":{
-                    "1":{
-                        "type": "scene",
-                        "to": "The Depths",
-                        "x": 950,
-                        "y": 200,
-                        "width": 100,
-                        "height": 100  
-                    },
-                    "2":{
-                        "type": "scene",
-                        "to": "Alchemy Shop",
-                        "x": 150,
-                        "y": 0,
-                        "width": 50,
-                        "height": 50  
-                    }
+                "movableAreas": [{
+                    "x": 0,
+                    "y": 0,
+                    "width": -1,
+                    "height": -1
+                }],
+                "locations" : {   
+                    "portals":{
+                        "1":{
+                            "type": "scene",
+                            "to": "The Depths",
+                            "x": 950,
+                            "y": 200,
+                            "width": 100,
+                            "height": 100  
+                        },
+                        "2":{
+                            "type": "scene",
+                            "to": "Alchemy Shop",
+                            "x": 150,
+                            "y": 0,
+                            "width": 50,
+                            "height": 50  
+                        }
+                    },                 
+                    "chars" : {},
+                    "npcs" : {},
+                    "objects": {}
                 }
             }
         }
@@ -94,24 +140,33 @@
                 "y": 300,
                 "width": 1000,
                 "height": 590,
+                "movableAreas": {
+                    "type": "limitless",
+                    "shapes" : []
+                },
                 "ambiance": "alchemy-shop-1/ambiance.mp3",
-                "portals":{
-                    "1":{
-                        "type": "scene",
-                        "to": "The Royal Bank",
-                        "x": 300,
-                        "y": 200,
-                        "width": 100,
-                        "height": 100  
+                "locations" : {
+                    "portals":{
+                        "1":{
+                            "type": "scene",
+                            "to": "The Royal Bank",
+                            "x": 300,
+                            "y": 200,
+                            "width": 100,
+                            "height": 100  
+                        },
+                        "2":{
+                            "type": "layer",
+                            "to": "2",
+                            "x": 150,
+                            "y": 0,
+                            "width": 50,
+                            "height": 50
+                        }
                     },
-                    "2":{
-                        "type": "layer",
-                        "to": "2",
-                        "x": 150,
-                        "y": 0,
-                        "width": 50,
-                        "height": 50
-                    }
+                    "chars" : {},
+                    "npcs" : {},
+                    "objects": {}
                 }
             },
             "2": {
@@ -120,15 +175,88 @@
                 "y": 400,
                 "width": 200,
                 "height": 200,
+                "movableAreas": {
+                    "type": "all",
+                    "shapes" : [
+                        {"shape": "box", "x": 0, "y": 0, "w": 300, "h": 200},
+                        {"shape": "circle", "x": 100, "y": 100, "r": 75},
+                        {"shape": "complex", "x": 150, "y": 150, "coord": [
+                            [50, 50], [50, 100], [30, 20], [40, 40]
+                        ]}
+                    ]
+                },
                 "ambiance": "alchemy-shop-1/ambiance.mp3",
-                "portals":{
-                    "1":{
-                        "type": "layer",
-                        "to": "1",
-                        "x": 300,
-                        "y": 200,
-                        "width": 100,
-                        "height": 100  
+                "locations" : {
+                    "portals":{
+                        "1":{
+                            "type": "layer",
+                            "to": "1",
+                            "x": 300,
+                            "y": 200,
+                            "width": 100,
+                            "height": 100  
+                        }
+                    },
+                    "chars": {
+
+                    },
+                    "npcs": {
+                        "sari" : {
+                            "x": 50,
+                            "y": 50
+                        }
+                    },
+                    "objects" : {
+                        "1": {
+                            "id": 1,
+                            "type": "pouch",
+                            "x": 200,
+                            "y": 200,
+                            "inventory": {
+                                "items": [
+                                    {"id": "standart_sword", "count": 3}
+                                ],
+                                "currency": {
+                                    "gold": 200,
+                                    "silver": 0,
+                                    "bronze": 0
+                                }
+                            }
+                        },
+                        "2": {
+                            "type": "obstacle",
+                            "x": 250,
+                            "y": 100,
+                            "shape": "box",
+                            "width": 50,
+                            "height": 50,
+                            "movable": true,
+                            "breakable" : false,
+                            "interactable" : true,
+                            "on_interact": {
+                                "text": "This is an obstacle!",
+                                "options": [
+                                    {"text": "Move Object", "action": "action-3"},
+                                    {"text": "Break Object", "action": "action-2"}
+                                ]
+                            },
+                            "on_move": {},
+                            "actions": {
+                                "action-1": {
+                                     "type": "move_object",
+                                     "info": {"target": 2}
+                                },
+                                "action-2": {
+                                    "type": "transform_object",
+                                    "target": 2,
+                                    "info": {"type": "char", "id": "Destroyer Of Nine Realms"}
+                                },
+                                "action-3": {
+                                    "action": "require_roll",
+                                    "info": {"type": "luck", "val": 20, "pass": "action-1", "fail": "action-2"}
+                                }
+                            }
+                        }
                     }
                 }
             }

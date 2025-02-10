@@ -1,0 +1,8 @@
+{
+    "visible_inventories" : true,
+    "fog_type" : "none",
+    "include_all_classic_spells" : true,
+    "spells" : {
+        "levels": [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    }
+}

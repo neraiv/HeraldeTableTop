@@ -1,12 +1,5 @@
 {
-    "visible_inventories" : true,
-    "is_player_can_make_items" : {
-        "state" : true,
-        "count" : "unlimited"
-    },
-    "fog_type" : "none",
-    "include_all_classic_spells" : true,
-    "spells" : {
-        "levels": [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    }
+    "visableInventories" : true,
+    "fogType" : "FACTION_BASED",
+    "includeAllClassicSpells" : true
 }

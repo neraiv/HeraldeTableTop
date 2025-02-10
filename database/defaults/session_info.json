@@ -1,0 +1,35 @@
+{
+    "turnBased" : true,
+    "locations" : [
+        {
+            "charId": "faramir",
+            "x": 200,
+            "y":100,
+            "team" : "Enemy",
+            "currentScene" : {
+                "name": "The Depths",
+                "layer" : 1
+            }
+        },
+        {
+            "charId": "sir_gawain",
+            "x": 200,
+            "y": 200,
+            "team" : "Ally",
+            "currentScene" : {
+                "name": "The Depths",
+                "layer" : 1
+            }
+        },
+        {
+            "charId": "mountainless_dwarf",
+            "x": 300,
+            "y":100,
+            "team" : "Enemy",
+            "currentScene" : {
+                "name": "The Depths",
+                "layer" : 1
+            }
+        }
+    ]
+}

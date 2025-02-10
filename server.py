@@ -8,7 +8,7 @@ import os
 import atexit
 
 from import_db_files import *
-from db_handler import *
+from db_handler_old import *
 
 DEBUG_MODE = False
 

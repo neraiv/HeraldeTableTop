@@ -1,197 +1,358 @@
-import threading
+import copy
 import time
 import json
-from datetime import datetime, timezone
-from import_db_files import *  # Ensure this has the USERS path or constants
-import secrets
-from chat_handeler import ChatHandler
-from images_handler import ImagesHandeler
-from permission_handeler import PermissonHandeler
+from datetime import datetime, timezone, timedelta
+import os
+import threading
 
-class DBHandeler(ChatHandler, ImagesHandeler, PermissonHandeler):
-    def __init__(self, file_path):
-        """
-        Initialize the DBHandeler with the path to the CSV file.
-        :param file_path: Path to the CSV file.
-        """
-        super().__init__(file_path)
-        self.last_update_time = None
+from key_handeler import controlKey, generate_key
 
+import db_fog_handeler as fogger
 
+## Types
+from db_fog_handeler import FogType
+
+DEBUG_PRINT = True
+
+class TypeRules():
+    def __init__(self, rules_file: dict):
+        self.fogType: FogType = fogger.get_fog_type(rules_file.get('fogType'))
+        self.visableInventories: bool = rules_file["visableInventories"]
+        self.includeAllClassicSpells: bool = rules_file["includeAllClassicSpells"]
+    
+    def toDict(self):
+        return {
+            "fogType": self.fogType.name,
+            "visibleInventories" : self.visableInventories,
+            "includaAllClassicSpells": self.includeAllClassicSpells
+        }
+        
+class DBHandeler():
+    DB_MAIN_PATH = os.path.dirname(os.path.abspath(__file__))
+    GAMES_PATH = os.path.join(DB_MAIN_PATH, 'database', 'games')
+    
+    def __init__(self):  
         self.server_info : dict   = self.getGameFile("server_info.json", False)
         self.users       : dict   = self.getGameFile("users.json", False)
 
         self.session_info: dict   = self.getGameFile("session_info.json")
-        self.rules       : dict   = self.getGameFile("rules.json")
+        self.rules       : TypeRules   = TypeRules(self.getGameFile("rules.json"))
         self.spells      : dict   = self.getGameFile("spells.json")
         self.chars       : dict   = self.getGameFile("chars.json")
         self.scenes      : dict   = self.getGameFile("scenes.json")
-     
-    DEBUG_MODE = True
-    TEST_MODE = True
-
-    SETTING_USER_SYNC_TIME_IN_SECONDS = 100000
-    SETTING_SERVER_SYNC_TIME_IN_SECONDS = 1
-
-    default_server_info = {"server_time": "", "server_status": "online", "last_session": "session-1", "chat_idx": 0}
-
-    def generate_key(self):     
-        # Generate a secure random key using secrets
-        res = secrets.token_urlsafe(16)  # 16 bytes, which is 128 bits long
-        while any(user['key'] == res and user['status'] == 'online' for user in self.users.values()):
-            res = secrets.token_urlsafe(16)  # Regenerate the key if it already exists
-
-        return res
-
-    # Define the on_exit function
-    def controlKey(self, key) -> tuple[str, dict]:       
-        char = {}
-        # Check if the provided key exists for an online user
-        for username in self.users.keys():
-            user = self.users[username]
-            if user['key'] == key and user['status'] == 'online':
-                return username, user
-        return None, None
+        self.objects     : dict   = self.getGameFile("objects.json")
+        self.quests      : dict   = self.getGameFile("quests.json")
+        self.npcs        : dict   = self.getGameFile("npcs.json")
+        
+        active_session = self.server_info["active_session"]
+        self.event_handeler = f"games/{active_session}/events.csv"
+        
+        self.visable_areas: dict = {}
+        self.fogged_areas: dict = {}
+        
+        self.sync_timeout = 5
+        self.userSyncTimeout = 10
+        self.syncTimerCounter = 0
+        self.syncTimer = threading.Timer(self.sync_timeout, self.syncing)
+        
+    def syncing(self):
+        if DEBUG_PRINT:
+            print("Syncing...")
+        self.updateServerTime()
+        self.syncTimerCounter += 1
+        if self.syncTimerCounter >= 10:
+            self.updateUsersStatus()
+            self.syncTimerCounter = 0
+            
+    def updateServerTime(self):
+        if DEBUG_PRINT:
+            print("Updating server time...")
+        self.server_info["time"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
+        self.server_info["status"] = "online"
+        self.sync(server_info=True)
+        
+    def updateUsersStatus(self):
+        if  DEBUG_PRINT:
+            print("Updating user statuses...")
+        for username, user in self.users.items():
+            if user["status"] == "offline":
+                if user["last_seen"] - timedelta(seconds=self.userSyncTimeout * self.sync_timeout):
+                    self.users[username]["status"] = "online"
+                else:
+                    self.users[username]["status"] = "offline"
+        self.sync(users=True)
+         
+    ########################################################################
+    #########################  USER RELATED ################################
+    ########################################################################    
+    def userLogin(self, username, password):
+        if username in self.users and self.users[username]["password"] == password:
+            if self.users[username]["status"] == "offline":
+                self.users[username]["last_seen"] = datetime.now(timezone.utc)
+                self.users[username]["status"] = "online"
+                self.users[username]["key"] = generate_key(self.users)
+                self.sync(users=True)
+                return self.users[username]["key"], self.users[username]["character"]
+            else: 
+                return None, None ## User is alerady online
+        return None, None ## Invalid username and password
     
-    def wait_until_file_is_closed(self, file_path):
-        while True:
-            try:
-                # Try opening the file in read mode
-                with open(file_path, 'r'):
-                    # If we can open it without an error, it means the file is not open by another process
-                    break
-            except IOError:
-                # If the file is being used by another process, IOError will be raised
-                print(f"File {file_path} is in use. Waiting for it to be closed...")
-                time.sleep(0.1)  # Wait for 0.1 second before trying again
+    def controlKey(self, key):
+        return controlKey(self.users, key)
     
+    def updateUser(self, key):
+        if key in self.users:
+            self.users[key]["last_seen"] = datetime.now(timezone.utc)
+            self.sync(users=True)
+            return True
+        else:
+            return False
+    #########################^^^^^^^^^^^^^^^^^^#############################
+    #########################   USER RELATED   #############################
+    ########################################################################  
+    def sync(self, server_info = False, users = False, session_info = False, rules = False, spells = False, chars = False, scenes = False):
+        if server_info:
+            self.saveGameFile(self.server_info, "server_info.json", False)
+        if users:
+            self.saveGameFile(self.users, "users.json", False)
+        if session_info:
+            self.saveGameFile(self.session_info, "session_info.json")
+        if rules:
+            self.saveGameFile(self.rules.toDict(), "rules.json")
+        if spells:
+            self.saveGameFile(self.spells, "spells.json")
+        if chars:
+            self.saveGameFile(self.chars, "chars.json")
+        if scenes:
+            self.saveGameFile(self.scenes, "scenes.json")
+            
     def getGameFile(self, name, from_session = True):
         path = ""
         if from_session:
-            last_session = self.server_info["last_session"]       
-            path = os.path.join(GAMES_PATH, last_session, name)
+            active_session = self.server_info["active_session"]       
+            path = os.path.join(DBHandeler.GAMES_PATH, active_session, name)
         else:
-            path = os.path.join(DB_MAIN_PATH,"database", name)
+            path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", name)
 
         with open(path, 'r', encoding="utf-8") as file:
             return json.load(file)
-        
-    def getDbData(self, info):
-        if info == "session_info":
-            db_data = self.session_info
-        elif info == "scenes":
-            db_data = self.scenes
-        elif info == "chars":
-            db_data = self.chars
-        elif info == "rules":
-            db_data = self.rules
-        elif info == "spells":
-            db_data = self.spells
-        elif info == "server_info":
-            db_data = self.server_info
-        elif info == "users":
-            db_data = self.users
-        else:
-            db_data = None
-
-        return db_data
     
-    # Function to check and set users offline if their last sync exceeds 5 seconds
-    def check_users_sync(self):
-        try:
-            # Check each user's last sync time and update status if necessary
-            for user_id, user_data in self.users.items():
-                if  user_data["status"]  == "online":
-                    if "last_sync" in user_data:
-                        # Get the current time in UTC
-                        current_time = datetime.now(timezone.utc)
-                        last_sync_time = datetime.strptime(user_data["last_sync"], "%Y-%m-%d %H:%M:%S %Z")
-                        last_sync_time = last_sync_time.replace(tzinfo=timezone.utc)  # Ensure it's UTC-aware
-                        time_diff = (current_time - last_sync_time).total_seconds()
-
-                        # If the time difference exceeds 5 seconds, set the status to "offline"
-                        if not self.TEST_MODE and time_diff > self.SETTING_USER_SYNC_TIME_IN_SECONDS:
-                            user_data["status"] = "offline"
-                            if self.DEBUG_MODE:
-                                print(f"User {user_id} set to offline due to timeout.")
-
-            # Save the updated data back to the file
-            with open(USERS, 'w') as file:
-                json.dump(self.users, file, indent=4)
-
-        except json.JSONDecodeError:
-            print(f"Error decoding JSON. check_users_sync()")
-        except Exception as e:
-            print(f"Error: {str(e)}")
-
-    def update_server_time(self):
-        try:       
-            # Update the server time in the server data
-            self.server_info["server_time"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
-            self.server_info["server_status"] = "online"
-            if str(self.last_idx) != self.server_info["chat_idx"]:
-                self.server_info["chat_idx"] = self.last_idx
+    def saveGameFile(self, data, name, from_session = True, ):
+        path = ""
+        if from_session:
+            active_session = self.server_info["active_session"]       
+            path = os.path.join(DBHandeler.GAMES_PATH, active_session, name)
+        else:
+            path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", name)
+        
+        with open(path, 'w', encoding="utf-8") as file:
+            json.dump(data, file)
             
-            # Save the updated server data back to the file
-            self.wait_until_file_is_closed(SERVER_INFO)
-            with open(SERVER_INFO, 'w') as file:
-                json.dump(self.server_info, file, indent=4)
+    def reInit(self):
+        self.__init__()
+        
+    def calc_visible_areas_scene(self, scene_name, layer):
+        return fogger.calc_fog(self.scenes[scene_name]["layers"][layer]["locations"]["chars"],
+                                                                       self.rules.fogType, self.chars)
+    def calc_visible_areas_all(self):
+        for key in self.session_info["locations"]:
+            currentScene = self.session_info["locations"][key]["currentScene"]
             
+            scene_name = currentScene["name"]
+            layer = currentScene["layer"]
+            
+            currentSceneName = scene_name + "-" + layer
+            
+            if not (currentSceneName in self.visable_areas):
+                self.visable_areas[currentSceneName] = self.calc_visible_areas_scene(scene_name, layer)
+        
+        return self.visable_areas
+        
+    def get_scene(self, charId: str):
+        current_scene = self.session_info["locations"][charId]["currentScene"]
+        scene_name = current_scene["name"]
+        layer = current_scene["layer"]
+        
+        currentSceneName = scene_name + "-" + layer
+        
+        if not (currentSceneName in self.visable_areas):
+            self.visable_areas[currentSceneName] = self.calc_visible_areas_scene(scene_name, layer)
+            
+        self.fogged_areas = copy.deepcopy(self.scenes[scene_name])
+        
+        for layer_key in self.scenes[scene_name]["layers"].keys():
+            if  layer_key != layer:
+                self.fogged_areas["layers"].pop(layer_key)
+            else:
+                for location_key in self.fogged_areas["layers"][layer_key]["locations"].keys():
+                    self.fogged_areas["layers"][layer_key]["locations"][location_key] = fogger.apply_mask(self.fogged_areas["layers"][layer_key]["locations"][location_key],
+                                                                                                   self.visable_areas[currentSceneName])
+            
+        return self.fogged_areas
+        
+        
+    def move_char(self, charId: str, x , y):
+    
+        currentScene: dict = self.session_info["locations"].get(charId).get("currentScene")
+
+        sceneInfo: dict = self.scenes.get(currentScene["name"])
+        
+        layerInfo: dict = sceneInfo.get("layers").get(currentScene["layer"])
+        
+        movableAreas = layerInfo["movableAreas"]
+        
+        searched: dict
+        
+        if movableAreas[0]["width"] == -1 and movableAreas[0]["height"] == -1:
+            charInfo = self.session_info["locations"][charId]
+            charInfo["x"] = x
+            charInfo["y"] = y
+            self.sync(session_info=True)
+        else: 
+            searched: dict = fogger.apply_mask({"x": x, "y": y}, movableAreas)
+            
+            if len(searched.keys()) != 0: 
+                if DEBUG_PRINT:
+                    print(f"Char {charId} moved to {x}, {y}.")
+                charInfo = self.session_info["locations"][charId]
+                charInfo["x"] = x
+                charInfo["y"] = y
+                self.sync(session_info=True)
+            else:
+                raise ValueError(f"Char cant move to {x}, {y}")
+            
+    def handle_action(self, actionInfo: dict, userName: str, userInfo: dict):
+        charId = userInfo.get("character")
+        action = actionInfo.get("action")
+        
+        if action == "move":
+            x = actionInfo.get("x")
+            y = actionInfo.get("y")
+            self.move_char(charId, x, y)
+    
+    def getCroppedSession(self, userInfo):
+        player_scene: dict = self.session_info["locations"][userInfo["character"]]["currentScene"]
+        cropped_by_layer_locations : dict = {}
+        for char_id in self.session_info["locations"].keys():
+            char_info = self.session_info["locations"].get(char_id)
+            if char_info["currentScene"] == player_scene:
+                cropped_by_layer_locations[char_id] = char_info
+        
+        cropped_session = {
+            "locations" : fogger.apply_mask(cropped_by_layer_locations, self.visable_areas)
+        }
+        
+        return cropped_session
+    
+    def getCroppedPortals(self, userInfo):
+        player_scene: dict = self.session_info["locations"][userInfo["character"]]["currentScene"]
+        return fogger.apply_mask([player_scene["layer"]]["portals"], self.visable_areas)
+        
+    def getCroppedScene(self, userInfo):
+        player_scene: dict = self.session_info["locations"][userInfo["character"]]["currentScene"]
+
+        scene_data:dict = self.scenes[player_scene["scene"]]
+        
+        for key in scene_data["layers"].keys():
+            if key != player_scene["layer"]:
+                scene_data.pop(key)
+                
+        scene_data["layers"][player_scene["layer"]]["portals"] = self.getCroppedPortals(userInfo) ## Future iki kere bakıyor
+              
+        return scene_data
+        
+        
+    def getSession(self, key):
+        try: 
+            username, userInfo = db.controlKey(key)       
+            if username and userInfo:   
+                data = {
+                    "scene": None,
+                    "session" : None
+                }
+                ## Gettin cropped session
+
+                data["session"] = self.getCroppedSession(userInfo)
+                data["scene"] = self.getCroppedScene()
+                return 
         except json.JSONDecodeError:
-            print(f"Error decoding JSON. update_server_time")
-            self.wait_until_file_is_closed(SERVER_INFO)
-            with open(SERVER_INFO, 'w') as file:
-                json.dump(self.default_server_info, file)
-        except Exception as e:
-            print(f"Error: {str(e)}")
-    # Function to periodically check user sync status every 5 seconds
-    def start_sync_timer(self):
-        lastUserSyncTime = time.time()  # Initial time for the first check
-        lastServerSyncTime = time.time()  # Initial time for the first check
-
-        while True:       
-            currentTime = time.time()
-            if currentTime - lastUserSyncTime >= self.SETTING_USER_SYNC_TIME_IN_SECONDS:
-                self.check_users_sync()
-                lastUserSyncTime = currentTime  # Update the last time for the next check
-            if currentTime - lastServerSyncTime >= self.SETTING_SERVER_SYNC_TIME_IN_SECONDS:
-                self.update_server_time()
-                lastServerSyncTime = currentTime  # Update the last time for the next check
-
+            return None
+        
+            
+    def handle_request(self, requestInfo: dict, userName: str, userInfo: dict):
+        type  = requestInfo.get("type")
+        scene = requestInfo.get("scene")
+        layer = requestInfo.get("layer")
+        
+        visable_areas = None
+        if self.rules.fogType == FogType.PLAYER_BASED:
+            visable_areas = self.calc_visible_areas_all(userInfo["char"])
+        else:
+            visable_areas = self.visable_areas
+            
+        if type == "scene":
+            print(fogger.apply_mask(self.scenes[scene]["layers"][layer]["portals"], visable_areas))
+        elif requestInfo.get("type") == "request":
+            pass
+        else:
+            raise ValueError(f"Unknown request type: {requestInfo.get('type')}")
+        
+    def socket_handler(self, socketMessage: dict):
+        key = socketMessage.get("key")
+        username, user = controlKey(self.users, key)
+        
+        if username is None:
+            raise ValueError(f"User not found for key: {key}")
+        
+        type = socketMessage.get("type")
+        payload = socketMessage.get("payload")
+        
+        if type == "request":
+            self.handle_request(payload, username, user)
+        elif type == "action":
+            self.handle_action(payload, username, user)
+            
     def on_exit(self):
-        """
-        This function is called when the server shuts down.
-        It sets all users to 'offline' in the USERS file.
-        """
-        print("Shutting down the server...")
+        self.syncTimer.cancel()
+        user :dict
+        for user in self.users.keys():
+            user["status"] = "offline"
+        self.sync(users=True)
+
+            
         
-        if os.path.exists(SERVER_INFO):
-            self.wait_until_file_is_closed(SERVER_INFO)
-            with open(SERVER_INFO, 'r') as file:
-                server_data = json.load(file)
-            server_data["server_status"] = "Offline"
-            self.wait_until_file_is_closed(SERVER_INFO)
-            with open(SERVER_INFO, 'w') as file:
-                json.dump(server_data, file)
-        else:
-            print("Server data file not found.")
-            return
         
-        # Load the user data from the USERS file
-        if os.path.exists(USERS):
-            with open(USERS, 'r') as file:
-                users_data = json.load(file)
-        else:
-            print("Users file not found.")
-            return
+        
+        
+if __name__ == "__main__":   
+    db = DBHandeler()
+        
+    #db.socket_handler({"key": "_Rhvb0NxPahENXGbO1rJGw","type": "action", "payload" : {"action" : "move", "x": 500, "y" : 500}})
 
-        # Set the status of all users to 'offline'
-        for user_id in users_data:
-            users_data[user_id]["status"] = "offline"
-            users_data[user_id]["key"] = self.generate_key() # randomize before exit
+    db.visable_areas = db.calc_visible_areas_all()
 
-        # Save the updated user data back to the file
-        with open(USERS, 'w') as file:
-            json.dump(users_data, file, indent=4)
+    print("Before getting close")
 
-        print("All users set to offline.")
+    scene = db.get_scene("faramir")
+    
+    print(scene)
+    # print(fogger.apply_mask(db.session_info["locations"], db.visable_areas))
+
+    # print("----------------------------------------------------------")
+
+    # print("After getting close")
+
+    # db.socket_handler({"key": "_Rhvb0NxPahENXGbO1rJGw","type": "action", "payload" : {"action" : "move", "x": 100, "y" : 100}})
+
+    # print(fogger.apply_mask(db.session_info["locations"], db.visable_areas))
+
+    # print("----------------------------------------------------------")
+    # print(db.scenes["Alchemy Shop"]["layers"]["1"]["portals"])
+
+    # print("----------------------------------------------------------")
+
+    # print(db.socket_handler({"key": "_Rhvb0NxPahENXGbO1rJGw","type": "request", "payload" : {"type" : "scene", "scene": "Alchemy Shop", "layer": "1"}}))
+        
+    # while True:
+    #     print(db.server_info["status"])
+    #     time.sleep(1)
