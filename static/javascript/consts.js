@@ -1,0 +1,1 @@
+const pouchImgSrc = "url(static/images/general/pouch.png)"

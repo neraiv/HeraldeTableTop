@@ -1,4 +1,4 @@
-from chat_handeler import ChatHandler
+from chat_handler import ChatHandler
 import os
 from import_db_files import DB_MAIN_PATH
 

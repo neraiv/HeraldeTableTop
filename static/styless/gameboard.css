@@ -35,7 +35,8 @@
 
 .background {
     position: absolute;
-    background-color: greenyellow;
+    background-size: cover;
+    background-position: center;
 }
 
 .portal {

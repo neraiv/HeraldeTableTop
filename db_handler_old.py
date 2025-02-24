@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timezone
 from import_db_files import *  # Ensure this has the USERS path or constants
 import secrets
-from chat_handeler import ChatHandler
+from chat_handler import ChatHandler
 from images_handler import ImagesHandeler
 from permission_handeler import PermissonHandeler
 

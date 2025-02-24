@@ -18,16 +18,17 @@ def get_fog_type(string) -> FogType:
     else:
         return FogType.NONE
     
-def calc_fog(char_locations: dict, fog_type: FogType, chars: dict) -> dict:
+def calc_visible_areas(locations: dict, fog_type: FogType, chars: dict) -> dict:
     visableAreas = []
+    
+    char_locations = locations["chars"]
     
     for id in char_locations.keys():
         pos: dict = char_locations.get(id, None)
         loc_x  = pos.get("x")
         loc_y = pos.get("y")
 
-
-        if fog_type == FogType.FACTION_BASED:
+        if fog_type == FogType.FACTION_BASED.name:
             charInfo: dict = chars.get(id, None)
             
             if not charInfo:
@@ -46,9 +47,30 @@ def calc_fog(char_locations: dict, fog_type: FogType, chars: dict) -> dict:
             visableAreas.append({
                 "x": loc_x,
                 "y": loc_y,
+                "shape": "circle",
                 "radius": vision
             })
                 
+    object_locations = locations["objects"]
+    
+    for object in object_locations:
+        
+        vision = object.get("vision", None)
+        
+        if vision:
+            x = object.get("x")
+            y = object.get("y")
+            
+            if x is None or y is None:
+                raise ValueError(f"Invalid object values: {object}")
+            
+            visableAreas.append({
+                "x": x,
+                "y": y,
+                "shape": "circle",
+                "radius": vision
+            })
+    
     return visableAreas
 
 

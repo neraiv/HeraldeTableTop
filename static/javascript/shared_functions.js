@@ -9,8 +9,15 @@ function createTestDots(parent, count){
     return dotList;
 }
 
+
 function removeTestDots(parent, dotlist){
     dotlist.forEach(dot => parent.removeChild(dot));
+}
+
+function calc_hover_button_final_location(buttonSize, radius, angle){
+    const finalX = (radius * 2) * Math.cos((angle * Math.PI) / 180) + radius - buttonSize / 2;
+    const finalY = -(radius * 2) * Math.sin((angle * Math.PI) / 180) + radius - buttonSize / 2;
+    return {finalX, finalY}
 }
 
 function compareWithDb(arr1, arr2) {

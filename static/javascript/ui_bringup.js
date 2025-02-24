@@ -206,7 +206,7 @@ topBarTools.appendChild(topBarCenterButton);
 */
 
 const spellBook = document.getElementById("ui-spellbook");
-spellBook.style.display = "flex";
+spellBook.style.display = "none";
 spellBook.style.width = "1000px";
 spellBook.style.height = "85%";
 spellBook.style.position = "absolute";

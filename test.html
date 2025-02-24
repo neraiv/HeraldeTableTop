@@ -18,19 +18,34 @@
             console.log('Connected to server');
         });
 
-        socket.on('message', (msg) => {
-            const li = document.createElement('li');
-            li.textContent = msg;
-            document.getElementById('messages').appendChild(li);
-        });
-
-        function sendMessage() {
-            const body = {
-                key: "2d4UgMvnw88DuNUI_lTovw", // Assuming `player.userKey` is defined elsewhere
-                message: document.getElementById('message').value
-            };
-            socket.send(body);
+        async function sendRequest({ type, payload, timeout = 5000 }) {
+            return new Promise((resolve, reject) => {
+                const timeoutId = setTimeout(() => {
+                    reject(new Error(`Request timed out after ${timeout}ms`));
+                }, timeout);
+        
+                socket.emit("request", {
+                    key: "7iF2M0S5pdyN4mdvhlS8Kg",
+                    type: type,
+                    payload: payload
+                });
+        
+                socket.once("response", (data) => {
+                    clearTimeout(timeoutId);
+                    if(data.success === false) {
+                        console.log("Error Fetching Request: ", data)
+                    }
+                    resolve(data);
+                });
+        
+                socket.once("error", (err) => {
+                    clearTimeout(timeoutId);
+                    console.error("Socket error:", err);
+                    reject(err);
+                });
+            });
         }
+
     </script>
 </body>
 </html>

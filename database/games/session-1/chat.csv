@@ -1,0 +1,63 @@
+idx;timestamp;user;message
+1;2025-02-19 13:44 UTC;Alice;Hello, world!
+2;2025-02-19 13:44 UTC;Bob;How are you?
+3;2025-02-19 13:48 UTC;Alice;Hello, world!
+4;2025-02-19 13:48 UTC;Bob;How are you?
+5;2025-02-19 13:49 UTC;Alice;Hello, world!
+6;2025-02-19 13:49 UTC;Bob;How are you?
+7;2025-02-19 13:50 UTC;Alice;Hello, world!
+8;2025-02-19 13:50 UTC;Bob;How are you?
+9;2025-02-20 07:08 UTC;Bob;hi
+10;2025-02-20 07:09 UTC;Bob;hi
+11;2025-02-20 07:10 UTC;Bob;sdas
+12;2025-02-20 07:14 UTC;Bob;asdasda
+13;2025-02-20 07:15 UTC;Bob;sadsada
+14;2025-02-20 07:52 UTC;Bob;sdasdas
+15;2025-02-20 07:53 UTC;Bob;sdasadas
+16;2025-02-20 07:54 UTC;Bob;adsasdas
+17;2025-02-20 07:55 UTC;Bob;asdas
+18;2025-02-20 09:50 UTC;Bib;message
+19;2025-02-20 09:52 UTC;yilmo;hop
+20;2025-02-20 09:52 UTC;yilmo;selam
+21;2025-02-20 09:53 UTC;yilmo;naber
+22;2025-02-20 09:54 UTC;yilmo;hi
+23;2025-02-20 09:54 UTC;yilmo;hoy
+24;2025-02-20 09:55 UTC;yilmo;selam
+25;2025-02-20 09:55 UTC;yilmo;naber
+26;2025-02-20 09:55 UTC;yilmo;selam
+27;2025-02-20 09:57 UTC;yilmo;hebele
+28;2025-02-20 10:02 UTC;yilmo;selo
+29;2025-02-20 10:02 UTC;yilmo;melo
+30;2025-02-20 10:04 UTC;yilmo;sdas
+31;2025-02-20 10:05 UTC;yilmo;mata
+32;2025-02-20 10:05 UTC;yilmo;hakuna
+33;2025-02-20 10:06 UTC;yilmo;hakana
+34;2025-02-20 10:07 UTC;yilmo;naber
+35;2025-02-20 10:09 UTC;yilmo;iyi
+36;2025-02-20 10:09 UTC;yilmo;iyi knk ne olsun ya
+37;2025-02-20 10:09 UTC;yilmo;İyilik fena değil bizde
+38;2025-02-20 10:09 UTC;yilmo;E oldu o zaman
+39;2025-02-20 10:09 UTC;yilmo;Öyle duruyor
+40;2025-02-20 10:19 UTC;yilmo;sanki
+41;2025-02-20 10:34 UTC;yilmo;olur
+42;2025-02-20 10:34 UTC;yilmo;galiba
+43;2025-02-20 10:34 UTC;yilmo;heralde
+44;2025-02-20 10:34 UTC;yilmo;oluru var
+45;2025-02-20 10:35 UTC;yilmo;"
+dini"
+46;2025-02-20 10:35 UTC;yilmo;sdas
+47;2025-02-20 10:35 UTC;yilmo;ere
+48;2025-02-20 10:35 UTC;yilmo;sdasa
+49;2025-02-20 10:35 UTC;yilmo;das
+50;2025-02-20 10:40 UTC;yilmo;tamam knk
+51;2025-02-20 10:40 UTC;yilmo;sdsadsa
+52;2025-02-20 10:40 UTC;yilmo;das
+53;2025-02-20 10:41 UTC;yilmo;dis
+54;2025-02-20 10:41 UTC;yilmo;dos
+55;2025-02-20 10:41 UTC;yilmo;hebele
+56;2025-02-20 10:41 UTC;yilmo;tamam be gülüm
+57;2025-02-20 10:41 UTC;yilmo;hallederiz
+58;2025-02-22 16:59:25 UTC;yilmo;selam
+59;2025-02-22 16:59:32 UTC;yilmo;naber
+60;2025-02-22 16:59:42 UTC;yilmo;hey
+61;2025-02-22 16:59:44 UTC;yilmo;ok

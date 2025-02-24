@@ -6,20 +6,20 @@
         "grid_size" : 50,
         "layers" : {
             "1": {
-                "img" : "living-depths-1/dark.jpg",
+                "img" : "living-depths-1/dark_1.jpg",
                 "x": 400,
                 "y": 300,
                 "width": 1000,
                 "height": 590,
-                "movableAreas": [{
-                    "x": 0,
-                    "y": 0,
-                    "width": -1,
-                    "height": -1
-                }],
+                "movableAreas": {
+                    "type": "limitless",
+                    "shapes" : []
+                },
+                "ambiance": null,
                 "locations" :{
                     "portals":{
                         "1":{
+                            "status" : "open",
                             "type": "layer",
                             "to": "2",
                             "x": 300,
@@ -28,6 +28,7 @@
                             "height": 50  
                         },
                         "2":{
+                            "status" : "open",
                             "type": "scene",
                             "to": "The Royal Bank",
                             "x": 150,
@@ -55,20 +56,20 @@
                 }
             },
             "2": {
-                "img" : "living-depths-2/dark.jpg",
+                "img" : "living-depths-2/dark_1.jpg",
                 "x": 500,
                 "y": 400,
                 "width": 200,
                 "height": 200,
-                "movableAreas": [{
-                    "x": 0,
-                    "y": 0,
-                    "width": -1,
-                    "height": -1
-                }],
+                "movableAreas": {
+                    "type": "limitless",
+                    "shapes" : []
+                },
+                "ambiance": null,
                 "locations" : {                
                     "portals":{
                         "1":{
+                            "status" : "open",
                             "type": "layer",
                             "to": "1",
                             "x": 300,
@@ -91,20 +92,20 @@
         "grid_size" : 50,
         "layers" : {
             "1": {
-                "img" : "royal-bank-1/light.jpg",
+                "img" : "royal-bank-1/light_1.jpg",
                 "x": 400,
                 "y": 300,
                 "width": 1000,
                 "height": 590,
-                "movableAreas": [{
-                    "x": 0,
-                    "y": 0,
-                    "width": -1,
-                    "height": -1
-                }],
+                "movableAreas": {
+                    "type": "limitless",
+                    "shapes" : []
+                },
+                "ambiance": null,
                 "locations" : {   
                     "portals":{
                         "1":{
+                            "status" : "open",
                             "type": "scene",
                             "to": "The Depths",
                             "x": 950,
@@ -113,6 +114,7 @@
                             "height": 100  
                         },
                         "2":{
+                            "status" : "open",
                             "type": "scene",
                             "to": "Alchemy Shop",
                             "x": 150,
@@ -135,7 +137,7 @@
         "grid_size" : 50,
         "layers" : {
             "1": {
-                "img" : "alchemy-shop-1/light_1.jpg",
+                "img" : "alchemy-shop-1/light_1_1.jpg",
                 "x": 400,
                 "y": 300,
                 "width": 1000,
@@ -148,6 +150,7 @@
                 "locations" : {
                     "portals":{
                         "1":{
+                            "status" : "open",
                             "type": "scene",
                             "to": "The Royal Bank",
                             "x": 300,
@@ -156,6 +159,7 @@
                             "height": 100  
                         },
                         "2":{
+                            "status" : "open",
                             "type": "layer",
                             "to": "2",
                             "x": 150,
@@ -189,6 +193,7 @@
                 "locations" : {
                     "portals":{
                         "1":{
+                            "status" : "open",
                             "type": "layer",
                             "to": "1",
                             "x": 300,
@@ -208,7 +213,7 @@
                     },
                     "objects" : {
                         "1": {
-                            "id": 1,
+                            "name": "Pouch",
                             "type": "pouch",
                             "x": 200,
                             "y": 200,
@@ -224,6 +229,7 @@
                             }
                         },
                         "2": {
+                            "name": "Box",
                             "type": "obstacle",
                             "x": 250,
                             "y": 100,
@@ -254,6 +260,36 @@
                                 "action-3": {
                                     "action": "require_roll",
                                     "info": {"type": "luck", "val": 20, "pass": "action-1", "fail": "action-2"}
+                                }
+                            }
+                        },
+                        "3" : {
+                            "name": "Torch",
+                            "type" : "obstacle",
+                            "x": 150,
+                            "y": 150,
+                            "shape": "circle",
+                            "radius": 30,
+                            "vision" : 200,
+                            "movable": false,
+                            "breakable" : true,
+                            "interactable" : true,
+                            "on_interact": {
+                                "text": "This is an obstacle!",
+                                "options": [
+                                    {"text": "Extinguish the torch.", "action": "action-1"},
+                                    {"text": "Put out the torch.", "action": "action-2"}
+                                ]
+                            },
+                            "on_move": {},
+                            "actions": {
+                                "action-1" : {
+                                     "type": "remove_vision",
+                                     "info": {"target": 3}
+                                },
+                                "action-2" : {
+                                     "type": "add_vision",
+                                     "info": {"target": 3, "val": 200}
                                 }
                             }
                         }
