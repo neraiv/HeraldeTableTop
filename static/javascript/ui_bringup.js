@@ -41,6 +41,12 @@ playerCharSheetButton.id = "ui-account-button"
 playerCharSheetButton.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(playerCharSheetButton);
 
+
+const infoButton = createImageButton(40, {icon: "info"})
+infoButton.id = "ui-account-button"
+infoButton.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(infoButton);
+
 const bottomBar = document.getElementById('ui-bottom-bar');
 bottomBar.classList.add('row');
 bottomBar.classList.add('vertical');

@@ -4,25 +4,27 @@
         "disabled": false,
         "quests": {
             "01": {
-                "completed": false,
-                "disabled": false,
+                "status" :  {
+                    "completed": false,
+                    "disabled": false
+                },
                 "requires": [
-                    {"type": "scene", "target": "Alchemy Shop"}
+                    {"type": "scene", "target": "The Depths"}
                 ],
-                "short": "Sari's Test",
+                "title": "Sari's Test",
                 "description": "Sari needs you to kill a god.",
                 "objectives": [
                     {
                         "type": "achievement_check",
                         "description": "Kill 1 god.",
-                        "info": {
+                        "check": {
                             "type": "kill",
                             "count": 1,
                             "target": "a_god"
                         }
                     }
                 ],
-                "reward": {
+                "rewards": {
                     "currency": { "gold": 100, "silver": 1 },
                     "items": [
                         { "name": "Golden Coin", "quantity": 100 }
@@ -70,7 +72,7 @@
                 "requires": [
                     { "type": "quest", "target": "sari-01" }
                 ],
-                "short": "Sari's Yükselişi",
+                "title": "Sari's Yükselişi",
                 "description": "Sari now wants you to collect 100 silver coins and a copper coin to create an artifact that seals the god's power.",
                 "objectives": [
                     {
@@ -137,7 +139,7 @@
                 "completed": false,
                 "disabled": false,
                 "requires": [],
-                "short": "Lord-ezio Rules",
+                "title": "Lord-ezio Rules",
                 "description": "Lord Ezio, a powerful noble, wants you to eliminate a rival merchant and claim his wealth.",
                 "objectives": [
                     {
@@ -189,8 +191,8 @@
                 "requires": [
                     { "type": "quest", "target": "sari-01" }
                 ],
-                "short": "Choose Your Side",
-                "description": "Lord Ezio offers a reward for weakening Sari's faction by stealing their sacred relics.",
+                "title": "Choose Your Side",
+                "description": "Lord Ezio offers a rewards for weakening Sari's faction by stealing their sacred relics.",
                 "objectives": [
                     {
                         "type": "has_item",

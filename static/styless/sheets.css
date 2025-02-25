@@ -345,3 +345,187 @@ h2 {
     z-index: 75;
 }
 /* AVALIABLE SPELLS SHEET  END*/
+
+/* QUEST SHEET */
+
+/* General container styling */
+.quest-container {
+    width: 300px;
+    height: 400px;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    font-family: 'Georgia', serif;
+    color: #4A2E1D;
+    padding: 20px;
+    position: absolute;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Custom Scrollbar Styling */
+.quest-content::-webkit-scrollbar {
+    width: 8px; /* Thin scrollbar */
+}
+
+.quest-content::-webkit-scrollbar-track {
+    background: rgba(139, 69, 19, 0.2); /* Light brown background */
+    border-radius: 10px;
+}
+
+.quest-content::-webkit-scrollbar-thumb {
+    background: rgba(139, 69, 19, 0.7); /* Darker brown scrollbar */
+    border-radius: 10px;
+}
+
+.quest-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 69, 19, 1); /* Slightly darker on hover */
+}
+/* Quest Badge Styling */
+.quest-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 3px 6px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+/* Different Badge States */
+.quest-badge.completed {
+    background: linear-gradient(to bottom, #32CD32, #228B22);
+    box-shadow: 0 0 10px rgba(50, 205, 50, 0.6);
+}
+
+.quest-badge.failed {
+    background: linear-gradient(to bottom, #FF4500, #B22222);
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.6);
+}
+
+.quest-badge.in-progress {
+    background: linear-gradient(to bottom, #FFD700, #DAA520);
+    color: black;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+.quest-badge.not-started {
+    display: none;
+}
+
+/* Hover Effect */
+.quest-badge:hover {
+    transform: scale(1.1);
+    filter: brightness(1.2);
+}
+
+
+/* ID styling */
+.quest-id {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: #8B4513;
+}
+
+/* Title styling */
+.quest-title {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.5em;
+}
+
+/* Quest content */
+.quest-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+    position: relative;
+    line-height: 1.5;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,1) 90%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,1) 90%, rgba(0,0,0,0) 100%);
+}
+
+/* Quest options */
+.quest-options {
+    padding: 10px;
+    text-align: center;
+    border-top: 2px solid #8B4513;
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+}
+
+/* Button styling */
+.quest-button {
+    background: #8B4513;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 1em;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.quest-button:hover {
+    background: #A0522D;
+    transform: scale(1.05);
+}
+/* Quest SHEET END */
+
+
+
+/* Dialog SHEET*/
+.dialog {
+    display: none;
+    position: fixed;
+    background: white;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 100;
+    width: 80%;
+    max-width: 500px;
+}
+
+.dialog-content {
+    margin-bottom: 20px;
+    font-family: 'Cinzel', serif;
+}
+
+.dialog-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.talk-sheet-element {
+    padding: 10px;
+    gap: 5px;
+    width: 100%;
+    background-color: white;
+    cursor: pointer;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.talk-sheet-element:hover {
+    background-color: #f0f0f0;
+}
+/*----------------------------------------------------------------*/

@@ -211,4 +211,24 @@ async function initScene(){
             addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
         }
     }
+
+    if(layer.locations.npcs){
+        for(const npcId of Object.keys(layer.locations.npcs)){
+
+            if(!database.npcs[npcId]){
+                await serverGetNpc(npcId);
+            }
+
+            const pos = layer.locations.npcs[npcId]
+            const charInfo = database.npcs[npcId]
+
+            // FUTURE addNPCToken fonksiyonu yap
+            
+            const npcToken = await addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
+
+            npcToken.addEventListener('click', async (event) => {
+                const questList =  createNpcTalkSheet(npcId)
+            })        
+        }
+    }
 }

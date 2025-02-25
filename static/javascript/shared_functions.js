@@ -1053,6 +1053,18 @@ function createDropdownMenu(buttonsDict) {
     return dropdownMenu;
 }
 
+function createCloseButton(id, parent){
+    const closeButton = createImageButton('28', {source: "url(static/images/menu-icons/close.png)", custom_padding: 4});
+    closeButton.id = id
+    closeButton.style.marginRight = '5px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.onclick = () => {
+        parent.remove();
+    };
+
+    return closeButton;
+}
+
 function createSelector(id, valueList, textList, {defaultValue=null, disable_filter= null, onclick_func=null}) {
     // Create the select element
     const selector = document.createElement('select');

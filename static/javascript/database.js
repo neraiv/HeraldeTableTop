@@ -87,3 +87,17 @@ async function serverGetChar(charId){
 }
 
 
+async function serverGetNpc(npcId){
+    if (!database.npcs[npcId]){
+        const _npcData =  await sendRequest({type: "item", payload: {type: "npc", id: npcId}})
+
+        if(_npcData.success === true){
+            database.npcs[npcId] = _npcData.data
+            
+        }else{
+            console.log("Character not found", npcId, ". Retrying in 1 second")
+            return setTimeout(serverGetChar, 1000, npcId)
+        }
+    }
+}
+

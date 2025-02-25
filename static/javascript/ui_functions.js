@@ -56,6 +56,15 @@ spellBookButton.onclick = () => {
     }
 }
 
+infoButton.onclick = async (event) => {
+    const sheet = await createQuestSheet("sari-01")
+    sheet.style.left = event.clientX + "px";
+    sheet.style.top = event.clientY + "px";
+    userInterface.appendChild(sheet)
+}
+
+
+// Update functionality
 async function updateRequired(){
     isUpdating = true
     // Chat updates
@@ -97,6 +106,7 @@ function startSyncTimer() {
     }
     setInterval(update, 1000); // Update every second
 }
+
 
 document.addEventListener("DOMContentLoaded", async () => {
     const urlParams = new URLSearchParams(window.location.search);

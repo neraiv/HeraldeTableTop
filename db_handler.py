@@ -19,7 +19,11 @@ DEBUG_PRINT = True
 class SocketUpdatePrior(Enum):
     IMMEDIATELY = 0
     WHEN_AVALIABLE = 1
-    
+
+class DatabaseWhere(Enum):
+    FROM_DEFAULTS = 0
+    FROM_SESSION = 1
+    FROM_ROOT = 2
     
 class TypeError(Enum):
     FILE_NOT_FOUND = {"error": "File not found"}
@@ -41,11 +45,11 @@ class TypeRules():
         
 class DBHandeler():
     DB_MAIN_PATH = os.path.dirname(os.path.abspath(__file__))
-    GAMES_PATH = os.path.join(DB_MAIN_PATH, 'database', 'games')
+    DB_GAMES_PATH = os.path.join(DB_MAIN_PATH, 'database', 'games')
     
     def __init__(self):  
-        self.server_info : dict   = self.getGameFile("server_info.json", False)
-        self.users       : dict   = self.getGameFile("users.json", False)
+        self.server_info : dict   = self.getGameFile("server_info.json", DatabaseWhere.FROM_ROOT)
+        self.users       : dict   = self.getGameFile("users.json", DatabaseWhere.FROM_ROOT)
 
         self.init_server_info()
         self.init_users()
@@ -59,6 +63,10 @@ class DBHandeler():
         self.quests      : dict   = self.getGameFile("quests.json")
         self.npcs        : dict   = self.getGameFile("npcs.json")
         
+        
+        self.defaults : dict = {
+            "char" : self.getGameFile("char.json", DatabaseWhere.FROM_DEFAULTS)
+        }
         
         active_session = self.server_info["active_session"]
         self.event_handeler = f"games/{active_session}/events.csv"
@@ -74,7 +82,7 @@ class DBHandeler():
         self.sync_thread.start()
         
         ## Chat 
-        self.chat = ChatHandler(os.path.join(DBHandeler.GAMES_PATH, active_session, "chat.csv"))
+        self.chat = ChatHandler(os.path.join(DBHandeler.DB_GAMES_PATH, active_session, "chat.csv"))
         
         if self.session_info["chat_idx"] != self.chat.last_idx:
             self.session_info["chat_idx"] = self.chat.last_idx
@@ -179,9 +187,9 @@ class DBHandeler():
     ########################################################################  
     def sync(self, server_info = False, users = False, session_info = False, rules = False, spells = False, chars = False, scenes = False):
         if server_info:
-            self.saveGameFile(self.server_info, "server_info.json", False)
+            self.saveGameFile(self.server_info, "server_info.json", DatabaseWhere.FROM_ROOT)
         if users:
-            self.saveGameFile(self.users, "users.json", False)
+            self.saveGameFile(self.users, "users.json", DatabaseWhere.FROM_ROOT)
         if session_info:
             self.saveGameFile(self.session_info, "session_info.json")
         if rules:
@@ -193,22 +201,26 @@ class DBHandeler():
         if scenes:
             self.saveGameFile(self.scenes, "scenes.json")
             
-    def getGameFile(self, name, from_session = True):
+    def getGameFile(self, name, where = DatabaseWhere.FROM_SESSION):
         path = ""
-        if from_session:
+        if where == DatabaseWhere.FROM_SESSION:
             active_session = self.server_info["active_session"]       
-            path = os.path.join(DBHandeler.GAMES_PATH, active_session, name)
+            path = os.path.join(DBHandeler.DB_GAMES_PATH, active_session, name)
+        elif where == DatabaseWhere.FROM_DEFAULTS:
+            path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", "defaults", name)
         else:
             path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", name)
 
         with open(path, 'r', encoding="utf-8") as file:
             return json.load(file)
     
-    def saveGameFile(self, data, name, from_session = True, ):
+    def saveGameFile(self, data, name, where = DatabaseWhere.FROM_SESSION):
         path = ""
-        if from_session:
+        if where == DatabaseWhere.FROM_SESSION:
             active_session = self.server_info["active_session"]       
-            path = os.path.join(DBHandeler.GAMES_PATH, active_session, name)
+            path = os.path.join(DBHandeler.DB_GAMES_PATH, active_session, name)
+        elif where == DatabaseWhere.FROM_DEFAULTS:
+            path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", "defaults", name)
         else:
             path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", name)
         
@@ -391,24 +403,101 @@ class DBHandeler():
     #     except json.JSONDecodeError:
     #         return None
         
-            
-    def handle_request(self, requestInfo: dict, userName: str, userInfo: dict):
-        type  = requestInfo.get("type")
-        scene = requestInfo.get("scene")
-        layer = requestInfo.get("layer")
         
-        visable_areas = None
-        if self.rules["fogType"] == FogType.FACTION_BASED.name:
-            visable_areas = self.calc_visible_areas_all(userInfo["char"])
-        else:
-            visable_areas = self.visable_areas
+    def handle_item(self, payload, userID, userInfo):
+        socket_reply = None
+        socket_update = None
+        
+        if payload["type"] == "char":
+            charId = payload["id"]
+            if charId in self.chars:
+                charInfo = self.chars[charId]
+                
+                if self.rules["visableInventories"] == False:
+                    charInfo["char"]["inventory"] = None
+                    
+                socket_reply =  {'success': True, "data" : charInfo}
+                
+        elif payload["type"] == "npc":
             
+            npcId = payload["id"]
+            
+            npcData = self.npcs[npcId]
+            
+            quests = {}
+            
+            if npcData["quests"]:
+                for quest_key in self.quests[npcId]["quests"].keys():
+                    questFullId = npcId+ "-" + quest_key
+                    if self.check_quest_requirements(npcId, quest_key, userInfo["character"]):
+                        reply, _ = self.handle_quest({"type": "get", "id": questFullId}, userID, userInfo)
+                        if reply["success"]:
+                            quests[questFullId] = reply["data"]
+                
+                
+            npcData["quests"] = quests
+            npcData["dialogs"] = {}
+             
+            if npcData["char"] == "default":
+                npcData["char"] = self.defaults["char"]
+                npcData["char"]["id"] = npcId
+                
+            socket_reply = {'success': True, "data" : npcData}
+                
+        return socket_reply, socket_update
+        
+    def check_requirements(self, rquirement, charId):
+        type = rquirement["type"]
         if type == "scene":
-            print(fogger.apply_mask(self.scenes[scene]["layers"][layer]["portals"], visable_areas))
-        elif requestInfo.get("type") == "request":
-            pass
+            return self.session_info["locations"][charId]["currentScene"]["name"] == rquirement["target"]
         else:
-            raise ValueError(f"Unknown request type: {requestInfo.get('type')}")
+            return False
+        
+    def check_quest_requirements(self, questGiver, questId, forChar):
+        questRequirements = self.quests[questGiver]["quests"][questId]["requires"]
+        
+        if len(questRequirements) == 0:
+            return True
+        
+        return all(self.check_requirements(requirement, forChar) for requirement in questRequirements)
+        
+    def handle_quest(self, payload, userId, userInfo):
+        charId = userInfo.get("character")
+        requestType = payload.get("type")
+        questFullId = payload.get("id")
+        
+        socket_reply = None
+        socket_update = None
+        
+        if requestType == "get":
+            questGiver = questFullId.split("-")[0]
+            questId = questFullId.split("-")[1]
+            
+            if self.quests[questGiver]["disabled"] == True:
+                socket_reply = {"success": True, "data": "giver-disabled"}
+                socket_update = None
+            else:
+                if self.quests[questGiver]["quests"][questId]["status"]["disabled"] == True:
+                    socket_reply = {"success": True, "data": "quest-disabled"}
+                    socket_update = None
+                else:
+                    quest_data = self.quests[questGiver]["quests"][questId]
+                    data = {}
+                    data["title"] = quest_data["title"]
+                    data["description"] = quest_data["description"]
+                    data["objectives"] = quest_data["objectives"]
+                    data["rewards"] = quest_data["rewards"]
+                    data["id"] = questFullId
+                    data["status"] = quest_data["status"]
+                    
+                    socket_reply = {
+                        "success": True,
+                        "data": data
+                    }
+                    
+        return socket_reply, socket_update
+        
+        
         
     def socket_handler(self, socketMessage: dict, userID = None, userInfo = None):
         type = socketMessage.get("type")
@@ -440,20 +529,15 @@ class DBHandeler():
             }
             
         elif type == "item":
-            if payload["type"] == "char":
-                charId = payload["id"]
-                if charId in self.chars:
-                    charInfo = self.chars[charId]
-                    
-                    if self.rules["visableInventories"] == False:
-                        charInfo["char"]["inventory"] = None
-                        
-                    socket_reply =  {'success': True, "data" : charInfo}
+            socket_reply, socket_update = self.handle_item(payload, userID, userInfo)
                     
                     
         elif type == "action":
             socket_reply, socket_update =  self.handle_action(payload, userID, userInfo)
-        
+            
+        elif type == "quest": 
+            socket_reply, socket_update = self.handle_quest(payload, userID, userInfo)
+            
         elif "chat" in type:
             if "send" in type:
                 state = self.chat.addMessage(userID, payload["message"], self.get_currentTime())

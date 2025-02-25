@@ -40,3 +40,10 @@ const boardEvent = {
 const updates = {
     chat: true,
 }
+
+
+const database = {
+    quests : {},
+    npcs : {},
+    dialogs : {}
+}
