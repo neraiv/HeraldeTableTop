@@ -1149,6 +1149,20 @@ function updateSelector(valueList, textList, selector = null, selectorId = null,
     });
 }
 
+function makeDraggable(parent){
+    parent.onmousedown = function (event) {
+        offsetX = event.clientX - parent.offsetLeft;
+        offsetY = event.clientY - parent.offsetTop;
+        document.onmousemove = function (event) {
+            parent.style.left = `${event.clientX - offsetX}px`;
+            parent.style.top = `${event.clientY - offsetY}px`;
+        };
+        document.onmouseup = function () {
+            document.onmousemove = null;
+            document.onmouseup = null;
+        };
+    };
+}
 function addDraggableRow(parent){
     const draggableRow = document.createElement('div');
     draggableRow.classList.add('draggable-row');

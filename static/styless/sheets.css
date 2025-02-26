@@ -515,6 +515,15 @@ h2 {
     gap: 10px;
 }
 
+
+.talk-sheet{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    position: absolute;
+}
+
 .talk-sheet-element {
     padding: 10px;
     gap: 5px;

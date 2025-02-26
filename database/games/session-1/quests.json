@@ -1,13 +1,9 @@
 {
     "sari": {
-        "completed": false,
-        "disabled": false,
+        "status" : "ok",
         "quests": {
             "01": {
-                "status" :  {
-                    "completed": false,
-                    "disabled": false
-                },
+                "status": "ok",
                 "requires": [
                     {"type": "scene", "target": "The Depths"}
                 ],
@@ -32,45 +28,35 @@
                 },
                 "on_fail": [
                     {
-                        "type": "transform_faction",
-                        "info": {
-                            "type": "npc",
-                            "target": "sari",
-                            "value": "Enemy"
-                        }
+                        "type": "change_quest_status",
+                        "target": "sari",
+                        "value": "ok"
                     }
                 ],
                 "on_accept": [{
-                    "type": "transform_faction",
-                    "info": {
-                        "type": "npc",
-                        "target": "sari",
-                        "value": "Enemy"
-                    }
+                    "type": "add_achivement_all",
+                    "id": "desert_friendship"
+                    
                 }],
                 "on_complete": [
                     {
-                        "type": "transform_faction",
-                        "info": {
-                            "type": "npc",
-                            "target": "sari",
-                            "value": "Enemy"
-                        }
+                        "type": "transform_npc_faction",
+                        "target": "sari",
+                        "value": "enemy"
+                        
                     },
                     {
-                        "type": "change_quest_status",
-                        "info": {
-                            "type": "disable",
-                            "target": "sari"
-                        }
+                        "type": "change_quest_giver_status",
+                        "target": "sari",
+                        "value": "not_available"
+                        
                     }
                 ]
             },
             "02": {
-                "completed": false,
-                "disabled": false,
+                "status": "ok",
                 "requires": [
-                    { "type": "quest", "target": "sari-01" }
+                    { "type": "quest_ok", "target": "sari-01" }
                 ],
                 "title": "Sari's Yükselişi",
                 "description": "Sari now wants you to collect 100 silver coins and a copper coin to create an artifact that seals the god's power.",
@@ -93,39 +79,27 @@
                         }
                     }
                 ],
+                "rewards": {
+                    "currency": { "gold": 100, "silver": 1 },
+                    "items": [
+                        { "name": "Golden Coin", "quantity": 100 }
+                    ]
+                },
                 "on_fail": [
                     {
-                        "type": "transform_faction",
-                        "info": {
-                            "type": "npc",
-                            "target": "sari",
-                            "value": "Enemy"
-                        }
+                        "type": "transform_npc_faction",
+                        "target": "sari",
+                        "value": "enemy"
+                        
                     }
                 ],
-                "on_accept": [{
-                    "type": "transform_faction",
-                    "info": {
-                        "type": "npc",
-                        "target": "sari",
-                        "value": "Enemy"
-                    }
-                }],
+                "on_accept": [
+                ],
                 "on_complete": [
                     {
-                        "type": "transform_faction",
-                        "info": {
-                            "type": "npc",
-                            "target": "sari",
-                            "value": "Enemy"
-                        }
-                    },
-                    {
-                        "type": "change_quest_status",
-                        "info": {
-                            "type": "disable",
-                            "target": "sari"
-                        }
+                        "type": "change_quest_giver_status",
+                        "target": "sari",
+                        "value": "completed"
                     }
                 ]
             }
@@ -158,7 +132,7 @@
                         "info": {
                             "type": "npc",
                             "target": "sari",
-                            "value": "Enemy"
+                            "value": "enemy"
                         }
                     }
                 ],
@@ -167,7 +141,7 @@
                     "info": {
                         "type": "npc",
                         "target": "sari",
-                        "value": "Enemy"
+                        "value": "enemy"
                     }
                 }],
                 "on_complete": [
@@ -210,7 +184,7 @@
                         "info": {
                             "type": "npc",
                             "target": "sari",
-                            "value": "Enemy"
+                            "value": "enemy"
                         }
                     }
                 ],
@@ -219,7 +193,7 @@
                     "info": {
                         "type": "npc",
                         "target": "sari",
-                        "value": "Enemy"
+                        "value": "enemy"
                     }
                 }],
                 "on_complete": [

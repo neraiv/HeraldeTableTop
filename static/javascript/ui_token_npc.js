@@ -41,10 +41,9 @@ function displayDialog(dialogId) {
     dialog.style.display = 'block';
 }
 
-function createTalkSheetElement(index, title, dialogId, iconName = 'chat') {
+function createTalkSheetElement(index, title, id, type= "quest") {
     const container = document.createElement('div');
     container.classList.add('talk-sheet-element', 'row');
-    container.dataset.dialogId = dialogId;
 
     // Index
     const indexSpan = document.createElement('span');
@@ -52,6 +51,8 @@ function createTalkSheetElement(index, title, dialogId, iconName = 'chat') {
     indexSpan.style.minWidth = '20px';
 
     // Icon
+    const iconName = type === "quest"? "book" : "chat";
+
     const icon = document.createElement('span');
     icon.classList.add('material-icon');
     icon.textContent = iconName;
@@ -61,64 +62,86 @@ function createTalkSheetElement(index, title, dialogId, iconName = 'chat') {
     titleSpan.textContent = title;
 
     // Event Listener
-    container.addEventListener('click', () => displayDialog(dialogId));
+    container.addEventListener('click', async (event) => {
+        if(type === "quest"){
+            const questSheet = await createQuestSheet(id)
+            questSheet.style.left = event.clientX + "px";
+            questSheet.style.top = event.clientY + "px";
+            userInterface.appendChild(questSheet)
+        }else if(type === "dialog"){
+            displayDialog(id)
+        } 
+    });
 
     container.append(indexSpan, icon, titleSpan);
     return container;
 }
 
 function createNpcTalkSheet(npcId) {
-    const npcData = database.npcs[npcId];
-    const talkSheet = document.createElement('div');
-    talkSheet.id = `talk-sheet-${npcId}`;
-    talkSheet.classList.add('talk-sheet', 'column', 'vertical');
 
-    // Header
-    const header = document.createElement('div');
-    header.classList.add('row', 'space-between');
-    
-    const title = document.createElement('h2');
-    title.textContent = npcData.name;
-    header.appendChild(title);
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '×';
-    closeBtn.onclick = () => talkSheet.remove();
-    header.appendChild(closeBtn);
+    let talkSheet = document.getElementById(`talk-sheet-${npcId}`)
 
-    // Content
-    const content = document.createElement('div');
-    content.classList.add('column', 'vertical', 'gap-10');
+    if(talkSheet){
+        talkSheet.style.top = "50%"
+        talkSheet.style.left = "50%"
+    }else{
+        const npcData = database.npcs[npcId];
+        talkSheet = document.createElement('div');
+        talkSheet.id = `talk-sheet-${npcId}`;
+        talkSheet.classList.add('talk-sheet', 'column', 'vertical');
+        talkSheet.style.zIndex = uiZIndex;
 
-    // Dialogs
-    // npcData.dialogs.forEach((dialog, index) => {
-    //     content.appendChild(
-    //         createTalkSheetElement(
-    //             index + 1,
-    //             dialog.title,
-    //             dialog.id,
-    //             'forum'
-    //         )
-    //     );
-    // });
+        const topRow = addDraggableRow(talkSheet)
+        topRow.style.justifyContent = "space-between";
+        
+        // Header
+        const header = document.createElement('div');
+        header.classList.add('row', 'space-between');
+        
+        const title = document.createElement('h2');
+        title.textContent = npcData.name;
+        topRow.appendChild(title);
+        
+        const closeBtn = createImageButton('28', {source: "url(static/images/menu-icons/close.png)", custom_padding: 4})
+        closeBtn.onclick = () => talkSheet.remove();
+        topRow.appendChild(closeBtn);
+        
+        // Content
+        const content = document.createElement('div');
+        content.classList.add('column', 'vertical', 'gap-10');
+        talkSheet.appendChild(content)
 
-    // Quests
 
-    for (const quest of Object.values(npcData.quests)){
-        const element = createTalkSheetElement(
-            npcData.dialogs.length + index + 1,
-            quest.id,
-            quest.introDialogId,
-            'assignment'
-        );
-        element.style.color = quest.completed ? '#00aa00' : '#aa0000';
-        content.appendChild(element);
+        let optionNumber = 1;
+
+        // Dialogs
+        // npcData.dialogs.forEach((dialog, index) => {
+        //     content.appendChild(
+        //         createTalkSheetElement(
+        //             index + 1,
+        //             dialog.title,
+        //             dialog.id,
+        //             'forum'
+        //         )
+        //     );
+        // });
+
+        // Quests
+
+        for (const quest of Object.values(npcData.quests)){
+            const element = createTalkSheetElement(
+                optionNumber++,
+                quest.title,
+                quest.id,
+                'quest'
+            );
+            element.style.color = quest.completed ? '#00aa00' : '#aa0000';
+            content.appendChild(element);
+        }
+
+        
+        userInterface.appendChild(talkSheet);
     }
 
-
-    talkSheet.append(header, content);
-    userInterface.appendChild(talkSheet);
-    
-    // Add draggable functionality here
-    // addDraggable(talkSheet, header);
+    return talkSheet
 }

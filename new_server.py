@@ -7,7 +7,7 @@ import json
 import os
 import atexit
 
-from db_handler import DBHandeler, TypeRules
+from db_handler import DBHandeler
 from key_handeler import controlKey
 
 

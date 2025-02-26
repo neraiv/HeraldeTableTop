@@ -28,16 +28,19 @@ async function createQuestSheet(questId) {
             text: ""
         }
         
-        if (data.status.disabled){
+        if (data.status == typeQuestStatus.NOT_AVAILABLE){
             status.badge = "disabled";
             status.text = "Disabled"
         }
-        else if (data.status.completed){
+        else if (data.status == typeQuestStatus.COMPLETED){
             status.badge = "completed";
             status.text = "Completed"
-        }else{
+        }else if(data.status == typeQuestStatus.IN_PROGRESS){
             status.badge = "in-progress";
             status.text = "In progress"
+        }else{
+            status.badge = "not-started";
+            status.text = "Not started"
         }
 
         questSheet.innerHTML = `
@@ -49,7 +52,7 @@ async function createQuestSheet(questId) {
                 <div> 
                     <h3>Objectives</h3>
                     <ul> 
-                        ${data.objectives.map(element => `<li>${element}</li>`).join('')}
+                        ${data.objectives.map(element => `<li>${element.description}</li>`).join('')}
                     </ul>
                 </div>
                 <div> 
@@ -60,17 +63,29 @@ async function createQuestSheet(questId) {
                 </div>
             </div>
             <div class="quest-options">
-                <button class="quest-button">Accept</button>
-                <button class="quest-button">Decline</button>
-                <button class="quest-button quest-close-button">Close</button>
+                <button class="quest-button quest-accept">Accept</button>
+                <button class="quest-button quest-decline">Decline</button>
+                <button class="quest-button quest-close">Close</button>
             </div>`;
 
         // Close button event listener
-        const closeButton = questSheet.querySelector(".quest-close-button");
+        const closeButton = questSheet.querySelector(".quest-close");
         closeButton.addEventListener("click", () => {
             questSheet.remove(); // Removes the quest sheet from the DOM
         });
 
+        const acceptButton = questSheet.querySelector(".quest-accept");
+        acceptButton.addEventListener("click", () => {
+            sendRequest({type: "quest", payload: {type: "accept"}})
+        });
+
+        const declineButton = questSheet.querySelector(".quest-decline");
+        declineButton.addEventListener("click", () => {
+            sendRequest({type: "quest", payload: {type: "decline"}})
+        });
+
+        makeDraggable(questSheet)
+        
         return questSheet;
     }
 }

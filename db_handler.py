@@ -14,34 +14,8 @@ import db_fog_handeler as fogger
 ## Types
 from db_fog_handeler import FogType
 
+from db_types import *
 DEBUG_PRINT = True
-
-class SocketUpdatePrior(Enum):
-    IMMEDIATELY = 0
-    WHEN_AVALIABLE = 1
-
-class DatabaseWhere(Enum):
-    FROM_DEFAULTS = 0
-    FROM_SESSION = 1
-    FROM_ROOT = 2
-    
-class TypeError(Enum):
-    FILE_NOT_FOUND = {"error": "File not found"}
-    JSON_PARSE_ERROR = {"error": "Json parse error"}
-    WRONG_TYPE = {"error": "Wrong type"}
-    
-class TypeRules():
-    def __init__(self, rules_file: dict):
-        self.fogType: FogType = fogger.get_fog_type(rules_file.get('fogType'))
-        self.visableInventories: bool = rules_file["visableInventories"]
-        self.includeAllClassicSpells: bool = rules_file["includeAllClassicSpells"]
-    
-    def toDict(self):
-        return {
-            "fogType": self.fogType.name,
-            "visibleInventories" : self.visableInventories,
-            "includaAllClassicSpells": self.includeAllClassicSpells
-        }
         
 class DBHandeler():
     DB_MAIN_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -152,8 +126,8 @@ class DBHandeler():
     def controlKey(self, key):
         userId, userInfo = controlKey(self.users, key)
         
-        if userId and userInfo:
-            self.updateUser(userId)
+        # if userId and userInfo:
+        #     self.updateUser(userId)
             
         return userId, userInfo
     
@@ -355,54 +329,6 @@ class DBHandeler():
                 
             return socket_reply, socket_update
     
-    # def getCroppedSession(self, userInfo):
-    #     player_scene: dict = self.session_info["locations"][userInfo["character"]]["currentScene"]
-    #     cropped_by_layer_locations : dict = {}
-    #     for char_id in self.session_info["locations"].keys():
-    #         char_info = self.session_info["locations"].get(char_id)
-    #         if char_info["currentScene"] == player_scene:
-    #             cropped_by_layer_locations[char_id] = char_info
-        
-    #     cropped_session = {
-    #         "locations" : fogger.apply_mask(cropped_by_layer_locations, self.visable_areas)
-    #     }
-        
-    #     return cropped_session
-    
-    # def getCroppedPortals(self, userInfo):
-    #     player_scene: dict = self.session_info["locations"][userInfo["character"]]["currentScene"]
-    #     return fogger.apply_mask(player_scene["layer"]["portals"], self.visable_areas)
-        
-    # def getCroppedScene(self, userInfo):
-    #     player_scene: dict = self.session_info["locations"][userInfo["character"]]["currentScene"]
-
-    #     scene_data:dict = self.scenes[player_scene["scene"]]
-        
-    #     for key in scene_data["layers"].keys():
-    #         if key != player_scene["layer"]:
-    #             scene_data.pop(key)
-                
-    #     scene_data["layers"][player_scene["layer"]]["portals"] = self.getCroppedPortals(userInfo) ## Future iki kere bakıyor
-              
-    #     return scene_data
-        
-        
-    # def getSession(self, key):
-    #     try: 
-    #         username, userInfo = db.controlKey(key)       
-    #         if username and userInfo:   
-    #             data = {
-    #                 "scene": None,
-    #                 "session" : None
-    #             }
-    #             ## Gettin cropped session
-
-    #             data["session"] = self.getCroppedSession(userInfo)
-    #             data["scene"] = self.getCroppedScene()
-    #             return 
-    #     except json.JSONDecodeError:
-    #         return None
-        
         
     def handle_item(self, payload, userID, userInfo):
         socket_reply = None
@@ -446,20 +372,36 @@ class DBHandeler():
                 
         return socket_reply, socket_update
         
-    def check_requirements(self, rquirement, charId):
+    def check_requirement(self, rquirement, charId):
         type = rquirement["type"]
         if type == "scene":
             return self.session_info["locations"][charId]["currentScene"]["name"] == rquirement["target"]
+        elif "quest" in type:
+            questFullId = rquirement["target"]
+            questGiver, questId = questFullId.split("-")
+            
+            if "completed" in type:
+                return self.quests[questGiver]["quests"][questId]["status"] == TypeQuestStatus.COMPLETED.value
+            elif "ok" in type:
+                return self.quests[questGiver]["quests"][questId]["status"] == TypeQuestStatus.OK.value
+            else:
+                return False
         else:
             return False
-        
+            
+    def get_quest_objective(self, objective, character):
+        if "has" in objective["type"]:
+            if "item" in objective["type"]:
+                pass
+            if "currency" in objective["type"]:
+                pass
     def check_quest_requirements(self, questGiver, questId, forChar):
         questRequirements = self.quests[questGiver]["quests"][questId]["requires"]
         
         if len(questRequirements) == 0:
             return True
         
-        return all(self.check_requirements(requirement, forChar) for requirement in questRequirements)
+        return all(self.check_requirement(requirement, forChar) for requirement in questRequirements)
         
     def handle_quest(self, payload, userId, userInfo):
         charId = userInfo.get("character")
@@ -473,12 +415,12 @@ class DBHandeler():
             questGiver = questFullId.split("-")[0]
             questId = questFullId.split("-")[1]
             
-            if self.quests[questGiver]["disabled"] == True:
-                socket_reply = {"success": True, "data": "giver-disabled"}
+            if self.quests[questGiver]["status"] != TypeQuestStatus.OK.value:
+                socket_reply = {"success": False, "error": self.quests[questGiver]}
                 socket_update = None
             else:
-                if self.quests[questGiver]["quests"][questId]["status"]["disabled"] == True:
-                    socket_reply = {"success": True, "data": "quest-disabled"}
+                if self.quests[questGiver]["quests"][questId]["status"] !=  TypeQuestStatus.OK.value:
+                    socket_reply = {"success": False, "data": self.quests[questGiver]["quests"][questId]["status"]}
                     socket_update = None
                 else:
                     quest_data = self.quests[questGiver]["quests"][questId]
@@ -553,8 +495,16 @@ class DBHandeler():
                 start = payload.get("start")
                 length = payload.get("length")
                 socket_reply = self.chat.getMessages(start, length)
+        elif type == "status":
+            socket_reply = {
+                "success": self.updateUser(userID)
+            }
         else:
-            return TypeError.WRONG_TYPE.value
+            socket_reply = {
+                "success": False,
+                "error": TypeError.UNKNOWN_REQUEST_TYPE.value + "Input: " + type
+            }
+            
         
         return socket_reply, socket_update
             

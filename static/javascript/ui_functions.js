@@ -67,6 +67,9 @@ infoButton.onclick = async (event) => {
 // Update functionality
 async function updateRequired(){
     isUpdating = true
+
+    await sendRequest({type: 'status', payload: {}})
+
     // Chat updates
     if(updates.chat){
         const success = await updateChatMessages()
@@ -98,6 +101,7 @@ function startSyncTimer() {
         cnt++;
         if(isUpdating === false){
             try{
+                
                 await updateRequired()
             } catch(err){
                 console.error("Failed to fetch chat data", err);
