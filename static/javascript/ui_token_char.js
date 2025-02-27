@@ -86,7 +86,7 @@ async function addCharacter(char, width, height, x, y, img = null){
     charToken.appendChild(charTokenInventoryButton)
     initButton(charTokenInventoryButton)
     charTokenInventoryButton.onclick = function(event){
-        charDisplayInventory({id :char.id}, event.clientX, event.clientY)
+        displayInventory(char.name, char.id.inventory, event.clientX, event.clientY)
     }
 
     // Spellbook button -----------------------------------------------------------------------

@@ -41,11 +41,19 @@ playerCharSheetButton.id = "ui-account-button"
 playerCharSheetButton.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(playerCharSheetButton);
 
-
 const infoButton = createImageButton(40, {icon: "info"})
 infoButton.id = "ui-account-button"
 infoButton.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(infoButton);
+
+addSpacer(leftSideBar)
+
+const logOutButton = createImageButton(40, {icon: "logout"})
+logOutButton.style.justifySelf = 'flex-end'
+logOutButton.style.marginBottom = '10px'
+logOutButton.id = "ui-forge-item-button"
+logOutButton.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(logOutButton);
 
 const bottomBar = document.getElementById('ui-bottom-bar');
 bottomBar.classList.add('row');

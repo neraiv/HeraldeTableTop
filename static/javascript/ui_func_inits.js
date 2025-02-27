@@ -83,16 +83,18 @@ async function initSpells(){
 async function initGameBoardFunctions(){
     const maxZoomOut = 0.6 // If its lower grids dissaper
     const maxZoomIn = 5 // it can be higher
+
+    const dotList =  createTestDots(gameboardContent, 1)
     gameboardContent.addEventListener('mousedown', (event) => {
         if (event.button === 0 && gameboardContent.style.cursor === 'move') { // Middle mouse button
             boardEvent.isPanning = true;
-            boardEvent.startX = event.clientX - boardEvent.panX;
-            boardEvent.startY = event.clientY - boardEvent.panY;
+            boardEvent.panStartX = event.clientX - boardEvent.panX;
+            boardEvent.panStartY = event.clientY - boardEvent.panY;
         }
         if (event.button === 1 && gameboardContent.style.cursor !== 'move') { // Middle mouse button
             boardEvent.isPanning = true;
-            boardEvent.startX = event.clientX - boardEvent.panX;
-            boardEvent.startY = event.clientY - boardEvent.panY;
+            boardEvent.panStartX = event.clientX - boardEvent.panX;
+            boardEvent.panStartY = event.clientY - boardEvent.panY;
             gameboardContent.style.cursor = 'grabbing';
         }
     });
@@ -104,10 +106,7 @@ async function initGameBoardFunctions(){
 
     gameboardContent.addEventListener('mousemove', (event) => {
         if (!boardEvent.isPanning) return;
-        boardEvent.panX = event.clientX - boardEvent.startX;
-        boardEvent.panY = event.clientY - boardEvent.startY;
-        
-        gameboardContent.style.transform = `translate(${boardEvent.panX}px, ${boardEvent.panY}px) scale(${boardEvent.scale})`;
+        gameBoardPan(event.clientX - boardEvent.panStartX, event.clientY - boardEvent.panStartY)
     });
 
     gameboardContent.addEventListener('wheel', (event) => {
@@ -117,15 +116,31 @@ async function initGameBoardFunctions(){
         gameboardContent.style.transform = `translate(${boardEvent.panX}px, ${boardEvent.panY}px) scale(${boardEvent.scale})`;
     });
 
-    gameboardContent.addEventListener('dragStart', (event) => {
-        boardEvent.dragStartX = event.clientX;
-        boardEvent.dragStartY = event.clientY;
-        // Which element is being dragged
-        const element = event.target;
-        if(element.classList.contains("background")){
+    gameboardContent.addEventListener('dragstart', (event) => {
+        // Store initial screen position in transformed coordinates
+        boardEvent.dragStartX = (event.clientX - boardEvent.panX) / boardEvent.scale;
+        boardEvent.dragStartY = (event.clientY - boardEvent.panY) / boardEvent.scale;
+        
+        // Store element's current position
+        boardEvent.elementStartX = parseInt(event.target.style.left) || 0;
+        boardEvent.elementStartY = parseInt(event.target.style.top) || 0;
+    });
 
-        }
-    })
+    gameboardContent.addEventListener('dragend', (event) => {
+        // Calculate final board coordinates
+        const finalX = (event.clientX - boardEvent.panX) / boardEvent.scale;
+        const finalY = (event.clientY - boardEvent.panY) / boardEvent.scale;
+
+        // Calculate relative movement
+        const deltaX = finalX - boardEvent.dragStartX;
+        const deltaY = finalY - boardEvent.dragStartY;
+
+        // Update element position
+        const newX = boardEvent.elementStartX + deltaX;
+        const newY = boardEvent.elementStartY + deltaY;
+
+        gameBoardMoveToken(event.target, newX, newY);
+    });
 }
 
 async function initGameBoard() {
@@ -231,4 +246,43 @@ async function initScene(){
             })        
         }
     }
+
+// 1. Initialize fog layer (fully black canvas)
+const fogCtx = fogCanvas.getContext('2d');
+
+fogCanvas.width = parseInt(sceneData.width);  // Actual pixel dimensions
+fogCanvas.height = parseInt(sceneData.height); // (not CSS size)
+
+// 2. Fill fog layer with solid black
+fogCtx.fillStyle = 'black';
+fogCtx.fillRect(0, 0, fogCanvas.width, fogCanvas.height);
+
+// 3. Define your shape data
+// 4. Draw visible areas (holes in the fog)
+fogCtx.globalCompositeOperation = 'destination-out'; // Erase from fog
+
+sceneData.visible_areas.forEach(shape => {
+    if (shape.shape === 'circle') {
+        // Create radial gradient for soft edges
+        const gradient = fogCtx.createRadialGradient(
+            shape.x, shape.y, 0,
+            shape.x, shape.y, shape.radius
+        );
+        
+        // Use RGBA to control alpha: fully erase at center, no erase at edge
+        gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        fogCtx.fillStyle = gradient;
+        fogCtx.beginPath();
+        fogCtx.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2);
+        fogCtx.fill();
+    }
+});
+
+// 5. Reset composite mode
+fogCtx.globalCompositeOperation = 'source-over';
+
+
+
 }

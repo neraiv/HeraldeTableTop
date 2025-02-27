@@ -131,13 +131,17 @@ class DBHandeler():
             
         return userId, userInfo
     
-    def updateUser(self, userId):
-        if userId in self.users:
-            self.users[userId]["last_seen"] = self.get_currentTime()
-            self.sync(users=True)
-            return True
-        else:
-            return False
+    def handle_user_status(self, userId, type):
+        if type == "sync":
+            if userId in self.users:
+                self.users[userId]["last_seen"] = self.get_currentTime()
+                self.sync(users=True)
+                return True
+            else:
+                return False
+        elif type == "logout":
+            self.user_set_offline(userId)
+            
         
     def user_set_offline(self, id = None):
         """Sets a user or all users to offline
@@ -241,9 +245,13 @@ class DBHandeler():
                     self.fogged_areas["layers"][layer_key]["locations"][location_key] = fogger.apply_mask(self.fogged_areas["layers"][layer_key]["locations"][location_key],
                                                                                                    self.visable_areas[currentSceneName])
             
+        self.fogged_areas["visible_areas"] = self.visable_areas[currentSceneName]
+        
         return self.fogged_areas
         
-    def action_portal(self, charId, sceneName=None, layer=None):
+    def action_portal(self, charId, data):
+        
+        sceneName, layer = data.split('-')
         
         if not sceneName and not layer:
             return {"success": False}
@@ -256,7 +264,7 @@ class DBHandeler():
         
         if layer:
             self.session_info["locations"][charId]["currentScene"]["layer"] = layer
-        else:
+        if sceneName:
             self.session_info["locations"][charId]["currentScene"]["name"] = sceneName
             
         # Add char to new scene
@@ -267,11 +275,10 @@ class DBHandeler():
             
         self.scenes
         
-        
         self.calc_visible_areas_scene(self.session_info["locations"][charId]["currentScene"]["name"], 
                                       self.session_info["locations"][charId]["currentScene"]["layer"])
         
-        self.sync(session_info=True)
+        self.sync(session_info=True, scenes=True)
         
         return {"success": True}
             
@@ -286,12 +293,15 @@ class DBHandeler():
         movableAreas = layerInfo["movableAreas"]
         
         searched: dict
+        socket_reply = {}
+        socket_update = None
         
-        if movableAreas[0]["width"] == -1 and movableAreas[0]["height"] == -1:
-            charInfo = self.session_info["locations"][charId]
+        if movableAreas["type"] == "limitless":
+            charInfo = self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"][charId]
             charInfo["x"] = x
             charInfo["y"] = y
-            self.sync(session_info=True)
+            self.sync(scenes=True)
+            socket_reply, socket_update = {"success": True}, {"type": "reinit_scene", "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}
         else: 
             searched: dict = fogger.apply_mask({"x": x, "y": y}, movableAreas)
             
@@ -302,8 +312,13 @@ class DBHandeler():
                 charInfo["x"] = x
                 charInfo["y"] = y
                 self.sync(session_info=True)
+                socket_reply, socket_update = {"success": True}, {"type": "reinit_scene", "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}
             else:
-                raise ValueError(f"Char cant move to {x}, {y}")
+                socket_reply, socket_update = {"success": False, "error": f"Cant move to the x:{x}, y:{y}"}, None
+                 
+        self.visable_areas[currentScene["name"] +"-"+ currentScene["layer"]] =  self.calc_visible_areas_scene(currentScene["name"], currentScene["layer"])
+        
+        return socket_reply, socket_update
             
     def handle_action(self, actionInfo: dict, userID: str, userInfo: dict):
         charId = userInfo.get("character")
@@ -313,21 +328,31 @@ class DBHandeler():
         socket_update = None
                     
         if action == "move":
+            id = actionInfo.get("id")
             x = actionInfo.get("x")
             y = actionInfo.get("y")
-            self.move_char(charId, x, y)
+            
+            if charId == id or userInfo.get("type") == "dungeon_master":
+                socket_reply, socket_update = self.move_char(charId, x, y)
+            else:
+                socket_reply = {
+                    "success": False,
+                    "error": "U cant move this character."
+                },
+                socket_update = {
+                    "type": "reinit_scene",
+                    "prior": SocketUpdatePrior.IMMEDIATELY.value,
+                    "all_users": False
+                }
         
         elif "portal" in action:
             data = actionInfo.get("data")
-            if "layer" in action:
-                socket_reply = self.action_portal(charId, None, data)
-            elif "scene" in action:
-                socket_reply = self.action_portal(charId, data, 1)
-            
+            socket_reply = self.action_portal(charId, data)
+
             if socket_reply["success"] == True:
                 socket_update = {"type": "reinit_scene", "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}
                 
-            return socket_reply, socket_update
+        return socket_reply, socket_update
     
         
     def handle_item(self, payload, userID, userInfo):
@@ -497,8 +522,9 @@ class DBHandeler():
                 socket_reply = self.chat.getMessages(start, length)
         elif type == "status":
             socket_reply = {
-                "success": self.updateUser(userID)
+                "success": self.handle_user_status(userID, payload)
             }
+                
         else:
             socket_reply = {
                 "success": False,

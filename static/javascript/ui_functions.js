@@ -63,12 +63,23 @@ infoButton.onclick = async (event) => {
     userInterface.appendChild(sheet)
 }
 
+logOutButton.onclick = async (event) => {
+    userAskQuestion('Logging out!', "Are you sure you want to log out?", 
+        {buttons: ['Logout','Continue Advanture'], 
+            callback: (buttonText) => {
+                if (buttonText == 'Logout') {
+                    sendRequest({type: "status", payload: "logout"})
+                    window.location.href = "/";
+                }
+            },
+        blocking: true});
+}
 
 // Update functionality
 async function updateRequired(){
     isUpdating = true
 
-    await sendRequest({type: 'status', payload: {}})
+    await sendRequest({type: 'status', payload: "sync"})
 
     // Chat updates
     if(updates.chat){

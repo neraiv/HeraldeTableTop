@@ -10,3 +10,12 @@ function gameBoardPan(x = null, y = null, scale = null) {
     boardEvent.panY = y;
     boardEvent.scale = scale;
 }
+
+
+function gameBoardMoveToken(element, x, y){
+    if(element.classList.contains("character")){
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+        sendRequest({type: "action", payload: {action: "move", id: element.id, x: x, y: y}});
+    }
+}

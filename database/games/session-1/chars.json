@@ -8,7 +8,7 @@
             "classess": ["barbarian", "paladin"],
             "race": "",
             "hp": 100,
-            "vision" : 200,
+            "vision" : 400,
             "stats": {
                 "dex": 12,
                 "con": 12,
@@ -78,7 +78,7 @@
             "classess": ["archer"],
             "race": "",
             "hp": 100,
-            "vision": 200,
+            "vision": 240,
             "stats": {
                 "dex": 12,
                 "con": 12,
@@ -156,7 +156,7 @@
             "classess": ["druid", "cleric"],
             "race": "",
             "hp": 100,
-            "vision": 200,
+            "vision": 240,
             "stats": {
                 "dex": 12,
                 "con": 12,

@@ -83,7 +83,7 @@ def login():
             if status == "ok":
                 return jsonify({"success": "Login successful.", "key": newKey, "charId": charId}), 200
             else:
-                return jsonify({"error": status}), 401
+                return jsonify({"error": status}), 200
         else:
             return jsonify({"error": "Missing username or password"}), 400       
     except json.JSONDecodeError:
@@ -92,19 +92,6 @@ def login():
         }), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-    
-# Function to recursively get all files and folders
-def get_all_files_and_folders(directory):
-    result = {}
-
-    for root, dirs, files in os.walk(directory):
-        # Extract folder name
-        folder_name = os.path.basename(root)
-        # Store files in the folder
-        result[folder_name] = files
-    
-    return result
 
 @app.route('/getObjects', methods=['GET'])
 def get_objects():

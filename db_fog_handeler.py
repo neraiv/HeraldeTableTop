@@ -53,7 +53,7 @@ def calc_visible_areas(locations: dict, fog_type: FogType, chars: dict) -> dict:
                 
     object_locations = locations["objects"]
     
-    for object in object_locations:
+    for object in object_locations.values():
         
         vision = object.get("vision", None)
         

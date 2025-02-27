@@ -38,8 +38,6 @@ function moveObject(element, newX, newY){
     const elementRect = objectsPositions.get(element.id);
     elementRect.x = newX;
     elementRect.y = newY;
-
-    console.log("hello")
 }
 
 function addObjectToBoard(src, layer, x, y, z_index = null) {

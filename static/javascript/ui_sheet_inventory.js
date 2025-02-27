@@ -1,7 +1,4 @@
-async function displayInventory(inventory, x, y) {
-
-    inventory = char.inventory;
-
+async function displayInventory(owner, inventory, x, y) {
     // Create the inventory sheet container
     const inventorySheet = document.createElement('div');
     inventorySheet.classList.add('inventory-sheet');
@@ -15,11 +12,7 @@ async function displayInventory(inventory, x, y) {
     topRow.classList.add('centered');
     
     const title = document.createElement('h2');
-    if (isCharInventory) {
-        title.textContent = char.name + "'s Inventory";
-    } else {
-        title.textContent = "Inventory";
-    }
+    title.textContent = owner + "'s Inventory";
     title.style.margin = '0';
     title.style.fontSize = '1.5em';
     title.style.color = '#333';

@@ -12,21 +12,17 @@ async function addPortal(portal, parent){
     const portalToken = document.createElement("div")
     portalToken.classList.add("portal")
     portalToken.classList.add("type-"+portal.type)
-    portalToken.style.left = `${portal.x}px`
-    portalToken.style.top = `${portal.y}px`
+    portalToken.style.left = `${portal.x + parseInt(parent.style.left)}px`
+    portalToken.style.top = `${portal.y + parseInt(parent.style.top)}px`
     portalToken.style.width = `${portal.width}px`
     portalToken.style.height = `${portal.height}px`
-    portalToken.to = portal.to
     portalToken.type = portal.type
-    parent.appendChild(portalToken)
+    characterLayer.appendChild(portalToken)
 
+    const portalText = portal.scene + "-" + portal.layer
     const portalName = document.createElement("div")
     portalName.classList.add("portal-name")
-    if(portal.type == "layer"){ // FUTURE: Check for valid url
-        portalName.textContent = "Layer " + portal.to
-    }else if(portal.type == "scene"){
-        portalName.textContent = portal.to
-    }
+    portalName.textContent = portalText
     portalName.style.marginBottom = `${portal.height+5}px`
     portalToken.appendChild(portalName)
 
@@ -45,7 +41,7 @@ async function addPortal(portal, parent){
     })
 
     portalToken.addEventListener("click", async function(){
-        const actionInfo = await sendRequest({type: "action", payload: {action: "portal_" + portalToken.type, data: portalToken.to}})
+        const actionInfo = await sendRequest({type: "action", payload: {action: "portal", data: portalText}})
         if (actionInfo.success === false){
             alert("Failed to perform action")
         }
