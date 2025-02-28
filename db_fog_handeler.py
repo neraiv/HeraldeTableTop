@@ -1,6 +1,8 @@
 
 from enum import Enum
 
+import numpy as np
+
 DEBUG_PRINT = True
 
 ERROR_GENERAL = {'error': "Something went wrong in database!"}
@@ -85,25 +87,26 @@ def apply_mask(locations: dict, visableAreas: list) -> dict:
     for area in visableAreas:
         x = area.get("x")
         y = area.get("y")
-        radius = area.get("radius")
+        shape = area.get("shape")
         
-        if x is None or y is None or radius is None:
-            raise ValueError(f"Invalid area values: {area}")
-        
-        for key in locations:
-            item = locations[key]
-            loc_x = item.get("x")
-            loc_y = item.get("y")
+        if shape == "circle":
+            radius = area.get("radius")
             
-            if loc_x is None or loc_y is None:
-                raise ValueError(f"Item {key} missing x or y coordinates.")
+            if x is None or y is None or radius is None:
+                raise ValueError(f"Invalid area values: {area}")
             
-            dx = loc_x - x
-            dy = loc_y - y
-            distance_sq = dx ** 2 + dy ** 2
-            
-            if distance_sq <= radius ** 2:
-                visable_items[key] = item
+            for key in locations:
+                item = locations[key]
+                loc_x = item.get("x")
+                loc_y = item.get("y")
+                
+                if loc_x is None or loc_y is None:
+                    raise ValueError(f"Item {key} missing x or y coordinates.")
+                
+                distance = np.sqrt((loc_x - x)**2 + (loc_y - y)**2)
+                
+                if distance <= radius:
+                    visable_items[key] = item
     
     return visable_items    
             

@@ -163,32 +163,54 @@ async function initGameBoard() {
     
 }
 
+async function updateCharsLocation() {
+    let str = ""
+    for(const key of Object.keys(sceneData.layer.locations.chars)){
+        str += key + "= x: " + sceneData.layer.locations.chars[key].x + " y: " + sceneData.layer.locations.chars[key].y 
+        str += " --- ";
+    }
+    console.log(str);
+
+    for(const charId of Object.keys(sceneData.layer.locations.chars)){
+
+        if(!inGameChars[charId]){
+            await serverGetChar(charId);
+        }
+
+        const pos = sceneData.layer.locations.chars[charId]
+        const charInfo = inGameChars[charId]
+
+        if(charInfo.char.id === player.charId){ // TEST FUNC
+            inGameChars[charInfo.char.id].char.inventory.addItem(new Item("Potion", itemTypes.CONSUMABLE), 4)
+            inGameChars[charInfo.char.id].char.inventory.addItem(new Item("Sword", itemTypes.WEAPON), 1)
+        }
+
+        addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
+    }
+}
+
 async function initScene(){
     console.log("Initializing layer...")
-
-    if(!sceneData.layers) return alert("No layers found in the scene")
 
     // future get image  width and heigh with scale factor
     backgroundLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
     characterLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
     audioAmbiance.pause()
 
-    const layer = Object.values(sceneData.layers)[0];
-
-    if(!layer) return alert("Layer not found in the scene")
+    if(!sceneData.layer) return alert("Layer not found in the scene")
 
     topBarLayerName.textContent = "Layer Ov"
 
-    const background = await addBackground(layer.width, layer.height, layer.x, layer.y, "static/images/background/"+layer.img)
+    const background = await addBackground(sceneData.layer.width, sceneData.layer.height, sceneData.layer.x, sceneData.layer.y, "static/images/background/"+sceneData.layer.img)
     
-    if(layer.locations.portals){
-        for(let portal of Object.values(layer.locations.portals)){
-            addPortal(portal, background)
+    if(sceneData.layer.locations.portals){
+        for(let portal of Object.values(sceneData.layer.locations.portals)){
+            addPortal(portal)
         }
     }
 
-    if (layer.ambiance) {
-        audioAmbiance.src = `static/images/background/${layer.ambiance}`;
+    if (sceneData.layer.ambiance) {
+        audioAmbiance.src = `static/images/background/${sceneData.layer.ambiance}`;
         
         // Function to play ambiance audio
         const playAmbiance = () => {
@@ -208,33 +230,18 @@ async function initScene(){
         
     }
 
-    if(layer.locations.chars){
-        for(const charId of Object.keys(layer.locations.chars)){
-
-            if(!inGameChars[charId]){
-                await serverGetChar(charId);
-            }
-
-            const pos = layer.locations.chars[charId]
-            const charInfo = inGameChars[charId]
-
-            if(charInfo.char.id === player.charId){ // TEST FUNC
-                inGameChars[charInfo.char.id].char.inventory.addItem(new Item("Potion", itemTypes.CONSUMABLE), 4)
-                inGameChars[charInfo.char.id].char.inventory.addItem(new Item("Sword", itemTypes.WEAPON), 1)
-            }
-
-            addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
-        }
+    if(sceneData.layer.locations.chars){
+        await updateCharsLocation()
     }
 
-    if(layer.locations.npcs){
-        for(const npcId of Object.keys(layer.locations.npcs)){
+    if(sceneData.layer.locations.npcs){
+        for(const npcId of Object.keys(sceneData.layer.locations.npcs)){
 
             if(!database.npcs[npcId]){
                 await serverGetNpc(npcId);
             }
 
-            const pos = layer.locations.npcs[npcId]
+            const pos = sceneData.layer.locations.npcs[npcId]
             const charInfo = database.npcs[npcId]
 
             // FUTURE addNPCToken fonksiyonu yap
@@ -261,7 +268,7 @@ fogCtx.fillRect(0, 0, fogCanvas.width, fogCanvas.height);
 // 4. Draw visible areas (holes in the fog)
 fogCtx.globalCompositeOperation = 'destination-out'; // Erase from fog
 
-sceneData.visible_areas.forEach(shape => {
+sceneData.visibleAreas.forEach(shape => {
     if (shape.shape === 'circle') {
         // Create radial gradient for soft edges
         const gradient = fogCtx.createRadialGradient(

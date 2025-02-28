@@ -89,18 +89,43 @@ async function updateRequired(){
         }
     }
 
-    if(updates.scene){
+    if(updates.reinit){
         const _sceneData = await sendRequest({type: "update", payload: "scene"})
+
         if(_sceneData.success === true){
             sceneData = _sceneData.data
-            if(updates.scene.board){
+            if(updates.reinit.board){
                 await initGameBoard()
             }
-            if(updates.scene.layer){
+            if(updates.reinit.layer){
                 await initScene()
             }
-            updates.scene = false;
+            updates.reinit = false;
         }
+    }
+    if(updates.scene){
+
+        for (const item of updates.scene) {
+            let target = sceneData; // Reference to the root object
+    
+            // Traverse the object based on the "where" array except the last key
+            for (let i = 0; i < item.where.length - 1; i++) {
+                const key = item.where[i];
+    
+                // Ensure the key exists and is an object
+                if (!target[key]) {
+                    target[key] = {};
+                }
+    
+                target = target[key]; // Move deeper
+            }
+    
+            // Assign the data to the last key in the path
+            target[item.where[item.where.length - 1]] = item.data;
+            await updateCharsLocation()
+        }
+
+        updates.scene = false
     }
     isUpdating = false
 }

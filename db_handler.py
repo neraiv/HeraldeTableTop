@@ -208,20 +208,20 @@ class DBHandeler():
     def reInit(self):
         self.__init__()
         
-    def calc_visible_areas_scene(self, scene_name, layer):
+    def calc_visibleAreas_scene(self, scene_name, layer):
         return fogger.calc_visible_areas(self.scenes[scene_name]["layers"][layer]["locations"],
                                                                        self.rules["fogType"], self.chars)
-    def calc_visible_areas_all(self):
+    def calc_visibleAreas_all(self):
         for key in self.session_info["locations"]:
             currentScene = self.session_info["locations"][key]["currentScene"]
             
             scene_name = currentScene["name"]
             layer = currentScene["layer"]
             
-            currentSceneName = scene_name + "-" + layer
+            currentSceneFullName = scene_name + "-" + layer
             
-            if not (currentSceneName in self.visable_areas):
-                self.visable_areas[currentSceneName] = self.calc_visible_areas_scene(scene_name, layer)
+            if not (currentSceneFullName in self.visable_areas):
+                self.visable_areas[currentSceneFullName] = self.calc_visibleAreas_scene(scene_name, layer)
         
         return self.visable_areas
         
@@ -233,19 +233,21 @@ class DBHandeler():
         currentSceneName = scene_name + "-" + layer
         
         if not (currentSceneName in self.visable_areas):
-            self.visable_areas[currentSceneName] = self.calc_visible_areas_scene(scene_name, layer)
+            self.visable_areas[currentSceneName] = self.calc_visibleAreas_scene(scene_name, layer)
             
-        self.fogged_areas = copy.deepcopy(self.scenes[scene_name])
+        self.fogged_areas = {
+            'discovered': self.scenes[scene_name]['discovered'], 
+            'width'     : self.scenes[scene_name]['width'     ], 
+            'height'    : self.scenes[scene_name]['height'    ], 
+            'grid_size' : self.scenes[scene_name]['grid_size' ],
+            "layer"     : self.scenes[scene_name]["layers"][layer]
+        }
         
-        for layer_key in self.scenes[scene_name]["layers"].keys():
-            if  layer_key != layer:
-                self.fogged_areas["layers"].pop(layer_key)
-            else:
-                for location_key in self.fogged_areas["layers"][layer_key]["locations"].keys():
-                    self.fogged_areas["layers"][layer_key]["locations"][location_key] = fogger.apply_mask(self.fogged_areas["layers"][layer_key]["locations"][location_key],
-                                                                                                   self.visable_areas[currentSceneName])
-            
-        self.fogged_areas["visible_areas"] = self.visable_areas[currentSceneName]
+        for location_key in self.scenes[scene_name]["layers"][layer]["locations"].keys():
+            self.fogged_areas["layer"]["locations"][location_key] = fogger.apply_mask(self.scenes[scene_name]["layers"][layer]["locations"][location_key],
+                                                                                            self.visable_areas[currentSceneName])
+
+        self.fogged_areas["visibleAreas"] = self.visable_areas[currentSceneName]
         
         return self.fogged_areas
         
@@ -275,14 +277,17 @@ class DBHandeler():
             
         self.scenes
         
-        self.calc_visible_areas_scene(self.session_info["locations"][charId]["currentScene"]["name"], 
-                                      self.session_info["locations"][charId]["currentScene"]["layer"])
+        self.visable_areas[currentSceneName+"-"+currentLayerName] = self.calc_visibleAreas_scene(self.session_info["locations"][charId]["currentScene"]["name"], 
+                                                                                                self.session_info["locations"][charId]["currentScene"]["layer"])
         
         self.sync(session_info=True, scenes=True)
         
         return {"success": True}
             
     def move_char(self, charId: str, x , y):
+        
+        x = int(x)
+        y = int(y)
     
         currentScene: dict = self.session_info["locations"].get(charId).get("currentScene")
 
@@ -301,9 +306,11 @@ class DBHandeler():
             charInfo["x"] = x
             charInfo["y"] = y
             self.sync(scenes=True)
-            socket_reply, socket_update = {"success": True}, {"type": "reinit_scene", "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}
+            socket_reply, socket_update = {"success": True}, [{"type": "change_scene_layer_locations_chars", 
+                                                              "data": self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"], 
+                                                              "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}]
         else: 
-            searched: dict = fogger.apply_mask({"x": x, "y": y}, movableAreas)
+            searched: dict = fogger.apply_mask({"x": x, "y": y}, movableAreas["shapes"])
             
             if len(searched.keys()) != 0: 
                 if DEBUG_PRINT:
@@ -312,12 +319,17 @@ class DBHandeler():
                 charInfo["x"] = x
                 charInfo["y"] = y
                 self.sync(session_info=True)
-                socket_reply, socket_update = {"success": True}, {"type": "reinit_scene", "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}
+                socket_reply, socket_update = {"success": True}, [{"type": "change_scene_layer_locations_chars", 
+                                                                  "data": self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"], 
+                                                                  "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}]
             else:
                 socket_reply, socket_update = {"success": False, "error": f"Cant move to the x:{x}, y:{y}"}, None
                  
-        self.visable_areas[currentScene["name"] +"-"+ currentScene["layer"]] =  self.calc_visible_areas_scene(currentScene["name"], currentScene["layer"])
+        self.visable_areas[currentScene["name"] +"-"+ currentScene["layer"]] =  self.calc_visibleAreas_scene(currentScene["name"], currentScene["layer"])
         
+        socket_update.append({"type": "change_scene_visibleAreas", 
+                                        "data": self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"], 
+                                        "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False})
         return socket_reply, socket_update
             
     def handle_action(self, actionInfo: dict, userID: str, userInfo: dict):
@@ -339,23 +351,23 @@ class DBHandeler():
                     "success": False,
                     "error": "U cant move this character."
                 },
-                socket_update = {
+                socket_update = [{
                     "type": "reinit_scene",
                     "prior": SocketUpdatePrior.IMMEDIATELY.value,
                     "all_users": False
-                }
+                }]
         
         elif "portal" in action:
             data = actionInfo.get("data")
             socket_reply = self.action_portal(charId, data)
 
             if socket_reply["success"] == True:
-                socket_update = {"type": "reinit_scene", "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}
+                socket_update = [{"type": "reinit_scene", "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}]
                 
         return socket_reply, socket_update
     
         
-    def handle_item(self, payload, userID, userInfo):
+    def handle_get(self, payload, userID, userInfo):
         socket_reply = None
         socket_update = None
         
@@ -394,6 +406,15 @@ class DBHandeler():
                 npcData["char"]["id"] = npcId
                 
             socket_reply = {'success': True, "data" : npcData}
+            
+        elif payload["type"] == "spell":
+            spellId = payload["id"]
+            spellData = self.spells.get(spellId)
+            
+            if spellData: 
+                socket_reply = {'success': True, "data" : spellData}
+            else:
+                socket_reply = {'success': False, "error": "Spell not found"}
                 
         return socket_reply, socket_update
         
@@ -495,8 +516,8 @@ class DBHandeler():
                 "success" : success 
             }
             
-        elif type == "item":
-            socket_reply, socket_update = self.handle_item(payload, userID, userInfo)
+        elif type == "get":
+            socket_reply, socket_update = self.handle_get(payload, userID, userInfo)
                     
                     
         elif type == "action":
@@ -512,7 +533,7 @@ class DBHandeler():
                     self.session_info["chat_idx"] = self.chat.last_idx
                     self.sync(session_info=True)
                     socket_reply = {'success': True}
-                    socket_update = {"type":"chat", "prior": SocketUpdatePrior.WHEN_AVALIABLE.value, "all_users": True}
+                    socket_update = [{"type":"chat", "prior": SocketUpdatePrior.WHEN_AVALIABLE.value, "all_users": True}]
                 else:
                     socket_reply = {'success': False, 'error': state}
                     
@@ -553,7 +574,7 @@ if __name__ == "__main__":
         
     #db.socket_handler({"key": "_Rhvb0NxPahENXGbO1rJGw","type": "action", "payload" : {"action" : "move", "x": 500, "y" : 500}})
 
-    db.calc_visible_areas_all()
+    db.calc_visibleAreas_all()
     
     print(db.visable_areas)
 

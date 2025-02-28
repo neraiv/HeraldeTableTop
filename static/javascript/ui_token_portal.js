@@ -8,12 +8,12 @@ async function portalHideName(portalToken){
     portalName.style.display = "none"
 }
 
-async function addPortal(portal, parent){
+async function addPortal(portal){
     const portalToken = document.createElement("div")
     portalToken.classList.add("portal")
     portalToken.classList.add("type-"+portal.type)
-    portalToken.style.left = `${portal.x + parseInt(parent.style.left)}px`
-    portalToken.style.top = `${portal.y + parseInt(parent.style.top)}px`
+    portalToken.style.left = `${portal.x}px`
+    portalToken.style.top = `${portal.y}px`
     portalToken.style.width = `${portal.width}px`
     portalToken.style.height = `${portal.height}px`
     portalToken.type = portal.type

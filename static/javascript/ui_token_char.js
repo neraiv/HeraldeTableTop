@@ -41,7 +41,14 @@ function charHideHoverButtons({token = null, char_id = null}) {
 }
 
 async function addCharacter(char, width, height, x, y, img = null){
-    const charToken = document.createElement("div")
+    let charToken = characterLayer.querySelector(`#${char.id}`);
+
+    if(charToken){
+        gameBoardMoveToken(charToken, x, y, true);
+        return
+    }
+
+    charToken = document.createElement("div")
     charToken.classList.add("character")
     charToken.id = char.id
     charToken.style.left = `${x}px`

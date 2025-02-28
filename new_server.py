@@ -33,12 +33,13 @@ def handle_message(msg :dict):
             emit("response", socket_reply, room=request.sid)
             
             if socket_update:
-                isAllUsers = socket_update["all_users"]
-                socket_update.pop("all_users")
-                if isAllUsers:
-                    emit("change", {"type":"chat"})
-                else:
-                    emit("change", socket_update, room=request.sid)
+                for item in socket_update:
+                    isAllUsers = item["all_users"]
+                    item.pop("all_users")
+                    if isAllUsers:
+                        emit("change", item)
+                    else:
+                        emit("change", item, room=request.sid)
             
     except json.JSONDecodeError:
         # Send back the response

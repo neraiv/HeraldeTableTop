@@ -19,20 +19,30 @@ socket.on('change', async (data) => {
     }
     else if (typeParts[0] === "reinit"){
         if(typeParts[1] === "scene"){
-            updates.scene = {
+            updates.reinit = {
                 board: true,
                 layer: true
             }
         }else if (typeParts[1] === "layer"){
-            updates.scene = {
+            updates.reinit = {
                 board: false,
                 layer: true
             }
         }
     }
+    else if(typeParts[0] === "change"){
+        if(typeParts[1] === "scene") {
+            updates.scene = [
+                {
+                    where: typeParts.slice(2),
+                    data: data.data
+                }
+            ]
+        }
+    }
 
     if(data.prior === 0){
-        updateRequired()
+        await updateRequired()
     }
 });
 
@@ -70,7 +80,7 @@ async function sendRequest({ type, payload, timeout = 5000 }) {
 
 async function serverGetChar(charId){
     if (!inGameChars[charId]){
-        const _charData =  await sendRequest({type: "item", payload: {type: "char", id: charId}})
+        const _charData =  await sendRequest({type: "get", payload: {type: "char", id: charId}})
 
         if(_charData.success === true){
             inGameChars[_charData.data.char.id] = {
@@ -89,7 +99,7 @@ async function serverGetChar(charId){
 
 async function serverGetNpc(npcId){
     if (!database.npcs[npcId]){
-        const _npcData =  await sendRequest({type: "item", payload: {type: "npc", id: npcId}})
+        const _npcData =  await sendRequest({type: "get", payload: {type: "npc", id: npcId}})
 
         if(_npcData.success === true){
             database.npcs[npcId] = _npcData.data
