@@ -8,8 +8,9 @@ async function portalHideName(portalToken){
     portalName.style.display = "none"
 }
 
-async function addPortal(portal){
+async function addPortal(id, portal){
     const portalToken = document.createElement("div")
+    portalToken.id = "portal-" + id
     portalToken.classList.add("portal")
     portalToken.classList.add("type-"+portal.type)
     portalToken.style.left = `${portal.x}px`

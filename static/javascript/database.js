@@ -32,12 +32,10 @@ socket.on('change', async (data) => {
     }
     else if(typeParts[0] === "change"){
         if(typeParts[1] === "scene") {
-            updates.scene = [
-                {
-                    where: typeParts.slice(2),
-                    data: data.data
-                }
-            ]
+            updates.scene.push({
+                where: typeParts.slice(2),
+                data: data.data
+            })
         }
     }
 

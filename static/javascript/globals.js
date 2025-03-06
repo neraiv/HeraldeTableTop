@@ -1,7 +1,4 @@
 const godLevelServerDomain = "https://heraldednd.wuaze.com/"
-
-const DEBUG_MODE = true;
-
 let player = {}
 let inGameChars = {}
 let serverRules = {}
@@ -45,6 +42,7 @@ const boardEvent = {
 
 const updates = {
     chat: true,
+    scene: []
 }
 
 

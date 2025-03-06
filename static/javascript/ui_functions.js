@@ -90,20 +90,26 @@ async function updateRequired(){
     }
 
     if(updates.reinit){
+        let log = "Reinitializing "
         const _sceneData = await sendRequest({type: "update", payload: "scene"})
 
         if(_sceneData.success === true){
             sceneData = _sceneData.data
             if(updates.reinit.board){
+                log += " Gameboard"
                 await initGameBoard()
             }
             if(updates.reinit.layer){
+                log += " Scene"
                 await initScene()
             }
             updates.reinit = false;
+            console.log(log)
         }
     }
     if(updates.scene){
+
+        updateList = new Set()
 
         for (const item of updates.scene) {
             let target = sceneData; // Reference to the root object
@@ -121,11 +127,20 @@ async function updateRequired(){
             }
     
             // Assign the data to the last key in the path
-            target[item.where[item.where.length - 1]] = item.data;
-            await updateCharsLocation()
+            target[item.where[item.where.length - 1]] = item.data;    
+            
+            if(item.where.includes("locations")){
+                updateList.add(updateLocations)
+            }else if(item.where.includes("visibleAreas")){
+                updateList.add(updateFog)
+            }
         }
 
-        updates.scene = false
+        for(const item of updateList){
+            await item()
+        }
+
+        updates.scene = []
     }
     isUpdating = false
 }

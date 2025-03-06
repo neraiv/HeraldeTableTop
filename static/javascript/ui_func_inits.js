@@ -164,13 +164,6 @@ async function initGameBoard() {
 }
 
 async function updateCharsLocation() {
-    let str = ""
-    for(const key of Object.keys(sceneData.layer.locations.chars)){
-        str += key + "= x: " + sceneData.layer.locations.chars[key].x + " y: " + sceneData.layer.locations.chars[key].y 
-        str += " --- ";
-    }
-    console.log(str);
-
     for(const charId of Object.keys(sceneData.layer.locations.chars)){
 
         if(!inGameChars[charId]){
@@ -180,13 +173,52 @@ async function updateCharsLocation() {
         const pos = sceneData.layer.locations.chars[charId]
         const charInfo = inGameChars[charId]
 
-        if(charInfo.char.id === player.charId){ // TEST FUNC
-            inGameChars[charInfo.char.id].char.inventory.addItem(new Item("Potion", itemTypes.CONSUMABLE), 4)
-            inGameChars[charInfo.char.id].char.inventory.addItem(new Item("Sword", itemTypes.WEAPON), 1)
-        }
+        const charToken = characterLayer.querySelector(`#${charInfo.char.id}`);
 
-        addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
+        if(charToken){
+            gameBoardMoveToken(charToken, x, y, true);
+        }else{
+            addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
+        }
     }
+}
+
+async function updateFog(){
+    // 1. Initialize fog layer (fully black canvas)
+    const fogCtx = fogCanvas.getContext('2d');
+
+    fogCanvas.width = parseInt(sceneData.width);  // Actual pixel dimensions
+    fogCanvas.height = parseInt(sceneData.height); // (not CSS size)
+
+    // 2. Fill fog layer with solid black
+    fogCtx.fillStyle = 'black';
+    fogCtx.fillRect(0, 0, fogCanvas.width, fogCanvas.height);
+
+    // 3. Define your shape data
+    // 4. Draw visible areas (holes in the fog)
+    fogCtx.globalCompositeOperation = 'destination-out'; // Erase from fog
+
+    sceneData.visibleAreas.forEach(shape => {
+        if (shape.shape === 'circle') {
+            // Create radial gradient for soft edges
+            const gradient = fogCtx.createRadialGradient(
+                shape.x, shape.y, 0,
+                shape.x, shape.y, shape.radius
+            );
+            
+            // Use RGBA to control alpha: fully erase at center, no erase at edge
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            fogCtx.fillStyle = gradient;
+            fogCtx.beginPath();
+            fogCtx.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2);
+            fogCtx.fill();
+        }
+    });
+
+    // 5. Reset composite mode
+    fogCtx.globalCompositeOperation = 'source-over';
 }
 
 async function initScene(){
@@ -203,93 +235,11 @@ async function initScene(){
 
     const background = await addBackground(sceneData.layer.width, sceneData.layer.height, sceneData.layer.x, sceneData.layer.y, "static/images/background/"+sceneData.layer.img)
     
-    if(sceneData.layer.locations.portals){
-        for(let portal of Object.values(sceneData.layer.locations.portals)){
-            addPortal(portal)
-        }
-    }
+    await updateLocations()
 
     if (sceneData.layer.ambiance) {
-        audioAmbiance.src = `static/images/background/${sceneData.layer.ambiance}`;
-        
-        // Function to play ambiance audio
-        const playAmbiance = () => {
-            audioAmbiance.play().catch(error => {
-                console.error("Failed to play ambiance audio:", error, "Source:", audioAmbiance.src);
-            });
-        };
-
-            // Add an event listener to play the audio on the first user interaction
-            const userInteractionHandler = () => {
-                playAmbiance();
-                document.removeEventListener('click', userInteractionHandler);
-                document.removeEventListener('keydown', userInteractionHandler);
-            };
-            document.addEventListener('click', userInteractionHandler);
-            document.addEventListener('keydown', userInteractionHandler);
-        
+        audioAmbiance.src = `static/images/background/${sceneData.layer.ambiance}`;        
     }
-
-    if(sceneData.layer.locations.chars){
-        await updateCharsLocation()
-    }
-
-    if(sceneData.layer.locations.npcs){
-        for(const npcId of Object.keys(sceneData.layer.locations.npcs)){
-
-            if(!database.npcs[npcId]){
-                await serverGetNpc(npcId);
-            }
-
-            const pos = sceneData.layer.locations.npcs[npcId]
-            const charInfo = database.npcs[npcId]
-
-            // FUTURE addNPCToken fonksiyonu yap
-            
-            const npcToken = await addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
-
-            npcToken.addEventListener('click', async (event) => {
-                const questList =  createNpcTalkSheet(npcId)
-            })        
-        }
-    }
-
-// 1. Initialize fog layer (fully black canvas)
-const fogCtx = fogCanvas.getContext('2d');
-
-fogCanvas.width = parseInt(sceneData.width);  // Actual pixel dimensions
-fogCanvas.height = parseInt(sceneData.height); // (not CSS size)
-
-// 2. Fill fog layer with solid black
-fogCtx.fillStyle = 'black';
-fogCtx.fillRect(0, 0, fogCanvas.width, fogCanvas.height);
-
-// 3. Define your shape data
-// 4. Draw visible areas (holes in the fog)
-fogCtx.globalCompositeOperation = 'destination-out'; // Erase from fog
-
-sceneData.visibleAreas.forEach(shape => {
-    if (shape.shape === 'circle') {
-        // Create radial gradient for soft edges
-        const gradient = fogCtx.createRadialGradient(
-            shape.x, shape.y, 0,
-            shape.x, shape.y, shape.radius
-        );
-        
-        // Use RGBA to control alpha: fully erase at center, no erase at edge
-        gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-        fogCtx.fillStyle = gradient;
-        fogCtx.beginPath();
-        fogCtx.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2);
-        fogCtx.fill();
-    }
-});
-
-// 5. Reset composite mode
-fogCtx.globalCompositeOperation = 'source-over';
-
-
-
+    
+    await updateFog()
 }

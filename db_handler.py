@@ -225,14 +225,14 @@ class DBHandeler():
         
         return self.visable_areas
         
-    def get_scene(self, charId: str):
+    def get_scene(self, charId: str, force_visible_area_calc = False):
         current_scene = self.session_info["locations"][charId]["currentScene"]
         scene_name = current_scene["name"]
         layer = current_scene["layer"]
         
         currentSceneName = scene_name + "-" + layer
         
-        if not (currentSceneName in self.visable_areas):
+        if force_visible_area_calc or (not (currentSceneName in self.visable_areas)):
             self.visable_areas[currentSceneName] = self.calc_visibleAreas_scene(scene_name, layer)
             
         self.fogged_areas = {
@@ -240,7 +240,7 @@ class DBHandeler():
             'width'     : self.scenes[scene_name]['width'     ], 
             'height'    : self.scenes[scene_name]['height'    ], 
             'grid_size' : self.scenes[scene_name]['grid_size' ],
-            "layer"     : self.scenes[scene_name]["layers"][layer]
+            "layer"     : copy.deepcopy(self.scenes[scene_name]["layers"][layer])
         }
         
         for location_key in self.scenes[scene_name]["layers"][layer]["locations"].keys():
@@ -274,8 +274,6 @@ class DBHandeler():
         currentLayerName = self.session_info["locations"][charId]["currentScene"]["layer"]
 
         self.scenes[currentSceneName]["layers"][currentLayerName]["locations"]["chars"][charId] = {"x": 200, "y": 200} # FUTURE char start location belirlenmeli
-            
-        self.scenes
         
         self.visable_areas[currentSceneName+"-"+currentLayerName] = self.calc_visibleAreas_scene(self.session_info["locations"][charId]["currentScene"]["name"], 
                                                                                                 self.session_info["locations"][charId]["currentScene"]["layer"])
@@ -300,36 +298,29 @@ class DBHandeler():
         searched: dict
         socket_reply = {}
         socket_update = None
-        
-        if movableAreas["type"] == "limitless":
+
+        def update():
             charInfo = self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"][charId]
             charInfo["x"] = x
             charInfo["y"] = y
             self.sync(scenes=True)
-            socket_reply, socket_update = {"success": True}, [{"type": "change_scene_layer_locations_chars", 
-                                                              "data": self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"], 
+        
+        if movableAreas["type"] == "limitless":
+            update()
+            socket_reply, socket_update = {"success": True}, [{"type": "change_scene", 
+                                                              "data": self.get_scene(charId, True), 
                                                               "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}]
         else: 
             searched: dict = fogger.apply_mask({"x": x, "y": y}, movableAreas["shapes"])
             
             if len(searched.keys()) != 0: 
-                if DEBUG_PRINT:
-                    print(f"Char {charId} moved to {x}, {y}.")
-                charInfo = self.session_info["locations"][charId]
-                charInfo["x"] = x
-                charInfo["y"] = y
-                self.sync(session_info=True)
-                socket_reply, socket_update = {"success": True}, [{"type": "change_scene_layer_locations_chars", 
-                                                                  "data": self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"], 
+                update()
+                socket_reply, socket_update = {"success": True}, [{"type": "change_scene", 
+                                                                  "data": self.get_scene(charId, True), 
                                                                   "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}]
             else:
                 socket_reply, socket_update = {"success": False, "error": f"Cant move to the x:{x}, y:{y}"}, None
                  
-        self.visable_areas[currentScene["name"] +"-"+ currentScene["layer"]] =  self.calc_visibleAreas_scene(currentScene["name"], currentScene["layer"])
-        
-        socket_update.append({"type": "change_scene_visibleAreas", 
-                                        "data": self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"], 
-                                        "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False})
         return socket_reply, socket_update
             
     def handle_action(self, actionInfo: dict, userID: str, userInfo: dict):

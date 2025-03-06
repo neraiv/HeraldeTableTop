@@ -41,14 +41,13 @@ function charHideHoverButtons({token = null, char_id = null}) {
 }
 
 async function addCharacter(char, width, height, x, y, img = null){
-    let charToken = characterLayer.querySelector(`#${char.id}`);
 
-    if(charToken){
-        gameBoardMoveToken(charToken, x, y, true);
-        return
+    if(char.id === player.charId){ // TEST FUNC
+        inGameChars[char.id].char.inventory.addItem(new Item("Potion", itemTypes.CONSUMABLE), 4)
+        inGameChars[char.id].char.inventory.addItem(new Item("Sword", itemTypes.WEAPON), 1)
     }
 
-    charToken = document.createElement("div")
+    const charToken = document.createElement("div")
     charToken.classList.add("character")
     charToken.id = char.id
     charToken.style.left = `${x}px`
