@@ -209,5 +209,89 @@
                 ]
             }
         }
+    },
+    "pubido": {
+        "status" : "ok",
+        "quests": {
+            "01" : {
+                "status": "ok",
+                "requires": [
+                    {"type": "scene", "target": "The Royal Bank"}
+                ],
+                "metadata": {
+                    "target": null
+                },
+                "title": "Pubido's Love to Humans",
+                "description": "Pubido loves humans. Especially young humans. But Pubido is a fairy. Pubido lives long humans leave less. Pubido wants a humen to love it forever. Can u help Pubido to find his human love?",
+                "objectives": [
+                    {
+                        "type": "has_companion",
+                        "description": "Find a young child.",
+                        "info": {
+                            "type": "select",
+                            "filters": [
+                                {
+                                     "type": "age",
+                                     "min": 1,
+                                     "max": 12
+                                }
+                            ],
+                            "event": {
+                                "type": "edit_metadata",
+                                "info": {
+                                    "target": "this",
+                                    "name": "target"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "rewards": {
+                    "currency": { "gold": 100, "silver": 1 },
+                    "items": [
+                        { "name": "", "quantity": 100 }
+                    ]
+                },
+                "on_complete" : [
+                    {
+                        "type": "cast_npc_pubido_freeze",
+                        "info": {
+                            "type": "metadata_this",
+                            "name": "target"
+                        }
+                    },
+                    {
+                        "type": "change_quest_status",
+                        "target": "pubido",
+                        "value": "completed"
+                    },
+                    {
+                        "type": "change_npc_dialog",
+                        "target": "02"
+                    },
+                    {   
+                        "type": "action_add",
+                        "info": {
+                            "type": "teleport",
+                            "target": "this",
+                            "location": {
+                                "scene": "Pubidos's Cave",
+                                "layer": "1",
+                                "x": 500,
+                                "y": 500
+                            },
+                            "delay": "3s"
+                        }
+                    }
+                ],
+                "on_fail": [
+                    {
+                        "type": "change_quest_status",
+                        "target": "pubido",
+                        "value": "ok"
+                    }
+                ]
+            }
+        }
     }
 }

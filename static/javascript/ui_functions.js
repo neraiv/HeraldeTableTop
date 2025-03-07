@@ -37,14 +37,29 @@ playerCharSheetButton.onclick = () => {
     displayCharaterSheet(player.charId)
 }
 
+// Map Button ----------------------------------------------------------------------------
+mapButton.onclick = () => {
+    userAskQuestion("Open Map In","Would you like to open on new tab?",
+        {buttons: ["Yes", "No"],
+            callback: (buttonText) => {
+                if(buttonText === 'Yes'){
+                    window.open('/map', '_blank');
+                }else if(buttonText === 'No'){
+                    
+                }
+            }
+        }       
+    )
+}
+
 // Storage Button ----------------------------------------------------------------------------
-storageButton.onclick = () => {
-    if (storage.style.left !== "50px") {
-        storage.style.left = "50px";
-    } else {
-        storage.style.left = "-330px";
-    }
-};
+// storageButton.onclick = () => {
+//     if (storage.style.left !== "50px") {
+//         storage.style.left = "50px";
+//     } else {
+//         storage.style.left = "-330px";
+//     }
+// };
 
 // Spell book button
 spellBookButton.onclick = () => {
@@ -107,7 +122,7 @@ async function updateRequired(){
             console.log(log)
         }
     }
-    if(updates.scene){
+    if(updates.scene.length > 0){
 
         updateList = new Set()
 

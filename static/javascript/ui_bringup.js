@@ -31,15 +31,15 @@ spellBookButton.id = "ui-spellbook-button"
 spellBookButton.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(spellBookButton);
 
-const addItemButton = createImageButton(40, {icon: "add_circle_outline"})
-addItemButton.id = "ui-forge-item-button"
-addItemButton.style.fontFamily = 'Material Icons Outlined'
-leftSideBar.appendChild(addItemButton);
-
 const playerCharSheetButton = createImageButton(40, {icon: "account_circle"})
 playerCharSheetButton.id = "ui-account-button"
 playerCharSheetButton.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(playerCharSheetButton);
+
+const mapButton = createImageButton(40, {icon: "public"})
+mapButton.id = "ui-forge-item-button"
+mapButton.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(mapButton);
 
 const infoButton = createImageButton(40, {icon: "info"})
 infoButton.id = "ui-account-button"
@@ -74,33 +74,33 @@ bottomBar.appendChild(chatButton);
 
 
 //Storage
-const storage = document.getElementById("ui-storage");
+// const storage = document.getElementById("ui-storage");
 
-const menuBar = document.createElement("div");
-menuBar.classList.add("menu-bar")
-storage.appendChild(menuBar);
+// const menuBar = document.createElement("div");
+// menuBar.classList.add("menu-bar")
+// storage.appendChild(menuBar);
 
-const menuName = document.createElement("div");
-menuName.textContent = "Storage"; 
-menuName.classList.add("menu-name")
-menuBar.appendChild(menuName);
+// const menuName = document.createElement("div");
+// menuName.textContent = "Storage"; 
+// menuName.classList.add("menu-name")
+// menuBar.appendChild(menuName);
 
-const closeButton = createImageButton(40, {icon: "arrow_circle_left"});
-closeButton.id = "ui-storage-close-button";
-closeButton.style.fontFamily = 'Material Icons Outlined';
-menuBar.appendChild(closeButton);
+// const closeButton = createImageButton(40, {icon: "arrow_circle_left"});
+// closeButton.id = "ui-storage-close-button";
+// closeButton.style.fontFamily = 'Material Icons Outlined';
+// menuBar.appendChild(closeButton);
 
-const tabbedContainer = createTabbedContainer(3, ["Chars", "Env", "NPC"], "ui-storage-tabbed-container", false)
-tabbedContainer.style.width = "96%";
-tabbedContainer.style.flex= "auto";
-storage.appendChild(tabbedContainer);
+// const tabbedContainer = createTabbedContainer(3, ["Chars", "Env", "NPC"], "ui-storage-tabbed-container", false)
+// tabbedContainer.style.width = "96%";
+// tabbedContainer.style.flex= "auto";
+// storage.appendChild(tabbedContainer);
 
-const contentChars = getContentContainer(tabbedContainer, "Chars")
-contentChars.innerHTML = ""
-const contentEnv   = getContentContainer(tabbedContainer, "Env")
-contentEnv.innerHTML = ""
-const contentNPC    = getContentContainer(tabbedContainer, "NPC")
-contentNPC.innerHTML = ""
+// const contentChars = getContentContainer(tabbedContainer, "Chars")
+// contentChars.innerHTML = ""
+// const contentEnv   = getContentContainer(tabbedContainer, "Env")
+// contentEnv.innerHTML = ""
+// const contentNPC    = getContentContainer(tabbedContainer, "NPC")
+// contentNPC.innerHTML = ""
 
 
 // CHAT

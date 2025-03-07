@@ -116,6 +116,10 @@ def get_background():
 def editor():
     return render_template('debug_editor.html')
 
+@app.route('/map')  # Route to display the map
+def map_view():
+    # You can pass any map-related data here
+    return render_template('map_view.html')  # Render the map in this view
 
 def get_background_data():
     backgrounds = {}
@@ -161,4 +165,4 @@ def get_background_data():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='127.0.0.1', port=5000, debug=True)

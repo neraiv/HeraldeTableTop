@@ -49,10 +49,8 @@ def calc_visible_areas(locations: dict, fog_type: FogType, chars: dict) -> dict:
             visableAreas.append({
                 "x": loc_x,
                 "y": loc_y,
-                "shape": {
-                    "type": "circle",
-                    "radius": vision
-                }
+                "shape": "circle",
+                "radius": vision
             })
                 
     object_locations = locations["objects"]
@@ -71,10 +69,8 @@ def calc_visible_areas(locations: dict, fog_type: FogType, chars: dict) -> dict:
             visableAreas.append({
                 "x": x,
                 "y": y,
-                "shape": {
-                    "type": "circle",
-                    "radius": vision
-                }
+                "shape": "circle",
+                "radius": vision
             })
     
     return visableAreas
@@ -93,8 +89,8 @@ def apply_mask(locations: dict, visableAreas: list) -> dict:
         y = area.get("y")
         shape = area.get("shape")
         
-        if shape["type"] == "circle":
-            radius = shape.get("radius")
+        if shape == "circle":
+            radius = area.get("radius")
             
             if x is None or y is None or radius is None:
                 raise ValueError(f"Invalid area values: {area}")

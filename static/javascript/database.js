@@ -109,3 +109,19 @@ async function serverGetNpc(npcId){
     }
 }
 
+async function serverGetSpell(spellId){
+    if (!database.npcs[spellId]){
+        const spellData =  await sendRequest({type: "get", payload: {type: "spell", id: spellId}})
+
+        if(spellData.success === true){
+            database.spells[spellId] = spellData.data
+            
+        }else{
+            console.log("Spell not found", spellId, ". Retrying in 1 second")
+            return setTimeout(serverGetChar, 1000, spellId)
+        }
+    }else{
+        return database.spells[spellId]
+    }
+}
+

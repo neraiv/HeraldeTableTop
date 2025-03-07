@@ -49,5 +49,6 @@ const updates = {
 const database = {
     quests : {},
     npcs : {},
-    dialogs : {}
+    dialogs : {},
+    spells: {}
 }

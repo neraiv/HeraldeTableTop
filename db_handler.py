@@ -8,11 +8,8 @@ import threading
 
 from chat_handler import ChatHandler
 from key_handeler import controlKey, generate_key
-
-import db_fog_handeler as fogger
-
-## Types
-from db_fog_handeler import FogType
+from db_fog_handeler import FogType, apply_mask, calc_visible_areas
+from db_event_handler import EventHandler
 
 from db_types import *
 DEBUG_PRINT = True
@@ -46,7 +43,9 @@ class DBHandeler():
         self.event_handeler = f"games/{active_session}/events.csv"
         
         self.visable_areas: dict = {}
+        self.visable_areas = self.calc_visibleAreas_all()
         self.fogged_areas: dict = {}
+
         
         self.sync_timeout = 5
         self.userSyncTimeout = 2
@@ -57,6 +56,12 @@ class DBHandeler():
         
         ## Chat 
         self.chat = ChatHandler(os.path.join(DBHandeler.DB_GAMES_PATH, active_session, "chat.csv"))
+        
+        ## Event handler
+        self.event_handler = EventHandler(self.session_info["current_turn"], os.path.join(DBHandeler.DB_GAMES_PATH, active_session, "events.csv"),
+                                          {
+                                            "action" : self.handle_action,  
+                                          })
         
         if self.session_info["chat_idx"] != self.chat.last_idx:
             self.session_info["chat_idx"] = self.chat.last_idx
@@ -209,7 +214,7 @@ class DBHandeler():
         self.__init__()
         
     def calc_visibleAreas_scene(self, scene_name, layer):
-        return fogger.calc_visible_areas(self.scenes[scene_name]["layers"][layer]["locations"],
+        return calc_visible_areas(self.scenes[scene_name]["layers"][layer]["locations"],
                                                                        self.rules["fogType"], self.chars)
     def calc_visibleAreas_all(self):
         for key in self.session_info["locations"]:
@@ -244,7 +249,7 @@ class DBHandeler():
         }
         
         for location_key in self.scenes[scene_name]["layers"][layer]["locations"].keys():
-            self.fogged_areas["layer"]["locations"][location_key] = fogger.apply_mask(self.scenes[scene_name]["layers"][layer]["locations"][location_key],
+            self.fogged_areas["layer"]["locations"][location_key] = apply_mask(self.scenes[scene_name]["layers"][layer]["locations"][location_key],
                                                                                             self.visable_areas[currentSceneName])
 
         self.fogged_areas["visibleAreas"] = self.visable_areas[currentSceneName]
@@ -298,7 +303,8 @@ class DBHandeler():
         searched: dict
         socket_reply = {}
         socket_update = None
-
+        moved = False
+        
         def update():
             charInfo = self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"][charId]
             charInfo["x"] = x
@@ -307,19 +313,27 @@ class DBHandeler():
         
         if movableAreas["type"] == "limitless":
             update()
-            socket_reply, socket_update = {"success": True}, [{"type": "change_scene", 
-                                                              "data": self.get_scene(charId, True), 
-                                                              "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}]
+            moved = True
+            
         else: 
-            searched: dict = fogger.apply_mask({"x": x, "y": y}, movableAreas["shapes"])
+            searched: dict = apply_mask({"x": x, "y": y}, movableAreas["shapes"])
             
             if len(searched.keys()) != 0: 
                 update()
-                socket_reply, socket_update = {"success": True}, [{"type": "change_scene", 
-                                                                  "data": self.get_scene(charId, True), 
-                                                                  "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}]
+                moved = True
             else:
                 socket_reply, socket_update = {"success": False, "error": f"Cant move to the x:{x}, y:{y}"}, None
+            
+        if moved:    
+            new_scene_data = self.get_scene(charId, True)
+            socket_reply, socket_update = {"success": True}, [{"type": "change_scene_layer_locations", 
+                                                                "data": new_scene_data["layer"]["locations"], 
+                                                                "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False},
+                                                                {"type": "change_scene_visibleAreas", 
+                                                                 "data" : new_scene_data["visibleAreas"],
+                                                                "prior": SocketUpdatePrior.IMMEDIATELY.value, 
+                                                                "all_users": False}
+                                                                ]
                  
         return socket_reply, socket_update
             
@@ -572,7 +586,7 @@ if __name__ == "__main__":
     scene = db.get_scene("faramir")
     
     print(scene)
-    # print(fogger.apply_mask(db.session_info["locations"], db.visable_areas))
+    # print(apply_mask(db.session_info["locations"], db.visable_areas))
 
     # print("----------------------------------------------------------")
 
@@ -580,7 +594,7 @@ if __name__ == "__main__":
 
     # db.socket_handler({"key": "_Rhvb0NxPahENXGbO1rJGw","type": "action", "payload" : {"action" : "move", "x": 100, "y" : 100}})
 
-    # print(fogger.apply_mask(db.session_info["locations"], db.visable_areas))
+    # print(apply_mask(db.session_info["locations"], db.visable_areas))
 
     # print("----------------------------------------------------------")
     # print(db.scenes["Alchemy Shop"]["layers"]["1"]["portals"])
