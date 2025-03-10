@@ -134,6 +134,7 @@ async function addCharacter(char, width, height, x, y, img = null){
         }
     });
 
+    gameSceneData.chars.push(charToken);
     return charToken
 }
 
@@ -141,7 +142,7 @@ function charDropInventory(charId) {
     if(inGameChars[charId]){
         const charInfo = inGameChars[charId]
         const charLoaction = sessionInfo.charLocations.find(charLocation => charLocation.charId === charId)
-        addPouch(new Inventory(charInfo.char.inventory), charLoaction.x + charInfo.width / 2 - 12.5, charLoaction.y + charInfo.height / 2 - 12.5) // -12.5 is half of the pouch size
+        addObject(new Inventory(charInfo.char.inventory), charLoaction.x + charInfo.width / 2 - 12.5, charLoaction.y + charInfo.height / 2 - 12.5) // -12.5 is half of the pouch size
         charInfo.char.inventory.clear()
     }else{
         alert("Character not found")

@@ -38,6 +38,12 @@ socket.on('change', async (data) => {
             })
         }
     }
+    else if(typeParts[0] === "turn") {
+        updates.turnStatus = {
+            type: typeParts[1],
+            data: data.data
+        }
+    }
 
     if(data.prior === 0){
         await updateRequired()

@@ -52,6 +52,24 @@ mapButton.onclick = () => {
     )
 }
 
+// topBarButtons
+passTurnButton.onclick = async () => {
+    if(passTurnButton.innerHTML != "play_circle_outline"){
+
+        async function send() {
+            const reply = await sendRequest({type: "turn", payload: {type: "statusUpdate", status: "continue"}})
+            if (reply.success === false) {
+                alert(reply.error)
+                setTimeout(send, 50);
+            }
+        }
+
+        send()
+
+        passTurnButton.innerHTML = "play_circle_outline"
+    }
+}
+
 // Storage Button ----------------------------------------------------------------------------
 // storageButton.onclick = () => {
 //     if (storage.style.left !== "50px") {
@@ -103,7 +121,6 @@ async function updateRequired(){
             updates.chat = false;
         }
     }
-
     if(updates.reinit){
         let log = "Reinitializing "
         const _sceneData = await sendRequest({type: "update", payload: "scene"})
@@ -157,7 +174,18 @@ async function updateRequired(){
 
         updates.scene = []
     }
+    if( Object.keys(updates.turnStatus).length !== 0){
+        updateTurnStatus(updates.turnStatus)
+        updates.turnStatus = {}
+    }
     isUpdating = false
+}
+
+function updateTurnStatus(){
+    if (updates.turnStatus.type == "change"){
+        passTurnButton.innerHTML = "pause_circle_outline"
+        labelCurrentTurn.textContent = updates.turnStatus.data
+    }
 }
 
 function startSyncTimer() {

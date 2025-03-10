@@ -48,6 +48,14 @@
     pointer-events: none;
 }
 
+
+.gray-out {
+    filter: grayscale(100%);
+    opacity: 0.6; /* Optional: Makes it look more faded */
+    pointer-events: none; /* Optional: Prevents interaction */
+}
+  
+
 .background {
     position: absolute;
     background-size: cover;

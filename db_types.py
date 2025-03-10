@@ -14,6 +14,7 @@ class TypeError(Enum):
     FILE_NOT_FOUND = "File not found"
     JSON_PARSE_ERROR = "Json parse error"
     UNKNOWN_REQUEST_TYPE = "Got unknown request type!"
+    INSUFFİCENT_DATA = "Not provided enough data to parse!"
     
 class TypeQuestStatus(Enum):
     COMPLETED = "completed"

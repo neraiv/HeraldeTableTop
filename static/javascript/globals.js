@@ -42,13 +42,25 @@ const boardEvent = {
 
 const updates = {
     chat: true,
-    scene: []
+    scene: [],
+    turnStatus: {}
 }
-
 
 const database = {
     quests : {},
     npcs : {},
     dialogs : {},
     spells: {}
+}
+
+
+const gameSessionData = {
+    currentTurn: 0,
+    turnStatus: "free"
+}
+const gameSceneData = {
+    portals : [],
+    chars : [],
+    objects : [],
+    npcs: []
 }

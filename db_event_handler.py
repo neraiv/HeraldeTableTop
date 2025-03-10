@@ -1,7 +1,16 @@
 import json
 import pandas as pd
 
-
+"""
+0;active;mounatainless_dwarf;25;26;"{""type"": ""attack_weapon"",""info"": {""source"": ""mounatainless_dwarf"", ""spell"": ""universe_smasher"", ""target"": ""char-faramir""}}"
+1;active;env;-1;-1;"{""type"": ""additional_effect"",""info"": {""source"": ""Alchemy Shop-layer-2"", ""effect"": ""sickness"", ""target"": ""char""}}"
+2;active;env;-1;-1;"{""type"": ""additional_effect"",""info"": {""source"": ""Alchemy Shop-layer-2"", ""effect"": ""inspriation_bonus"", ""target"": ""char""}}"
+3;active;env;-1;-1;"{""type"": ""additional_effect"",""info"": {""source"": ""Alchemy Shop-layer-2"", ""effect"": ""slow"", ""target"": ""char""}}"
+4;active;mounatainless_dwarf;25;30;"{""type"": ""additional_effect"",""info"": {""source"": null, ""effect"": ""poison"", ""target"": ""npc-sari""}}"
+5;active;thief;25;26;"{""type"": ""move_char"",""info"": {type: ""random-50""}}"
+6;active;ogre;25;26;"{""type"": ""move_char"",""info"": {type: ""random-50""}}"
+7;active;faramir;5;27;"{""action"": ""require_roll"", ""info"": {""type"": ""luck"", ""val"": 20, ""pass"": ""action-1"", ""fail"": ""action-2""}}"
+"""
 class EventHandler():
     def __init__(self, current_turn, csv_file_path, function_pointers):
         """
@@ -82,6 +91,7 @@ class EventHandler():
         """
         Placeholder for executing an event.
         """
+        return
         action  = json.load(event.get("action"))
         
         type_ = action["type"]

@@ -10,7 +10,10 @@ async function portalHideName(portalToken){
 
 async function addPortal(id, portal){
     const portalToken = document.createElement("div")
-    portalToken.id = "portal-" + id
+
+    gameSceneData.portals.push(portalToken)
+
+    portalToken.id = id
     portalToken.classList.add("portal")
     portalToken.classList.add("type-"+portal.type)
     portalToken.style.left = `${portal.x}px`
@@ -42,9 +45,9 @@ async function addPortal(id, portal){
     })
 
     portalToken.addEventListener("click", async function(){
-        const actionInfo = await sendRequest({type: "action", payload: {action: "portal", data: portalText}})
+        const actionInfo = await sendRequest({type: "action", payload: {action: "portal", data: portalText, id: id}})
         if (actionInfo.success === false){
-            alert("Failed to perform action")
+            alert(actionInfo.error);
         }
     })
 

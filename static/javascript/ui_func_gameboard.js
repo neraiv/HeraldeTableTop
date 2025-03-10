@@ -25,62 +25,96 @@ async function updateLocations(){
 
     const locations = sceneData.layer.locations
 
-    if(locations.portals){
-        for(let portalId of Object.keys(locations.portals)){
-            const portalToken = characterLayer.querySelector("#portal-" + portalId)
-            if(portalToken){
-                //  FUTURE change color of portal
-            }else{
-                addPortal(portalId, locations.portals[portalId])
-            }
+    const portalCompare = compareWithDb(gameSceneData.portals.map((portal) => portal.id),
+                                        Object.keys(locations.portals))
+
+    if(portalCompare.updateStatus === true){
+        for(let portalId of portalCompare.removed){
+            characterLayer.querySelector(`#${portalId}`).remove()
+            gameSceneData.portals = gameSceneData.portals.filter((portal) => portal.id!== portalId)
+        }
+        for(let portalId of portalCompare.missing){
+            addPortal(portalId, locations.portals[portalId])
         }
     }
 
-    if(locations.chars){
-        for(let charId of Object.keys(locations.chars)){
-            const charToken = characterLayer.querySelector("#" + charId)
-            if(charToken){
-                if(charId == player.charId) continue;
-                gameBoardMoveToken(charToken, locations.chars[charId].x, locations.chars[charId].y, true)
-            }else{
-                if(!inGameChars[charId]){
-                    await serverGetChar(charId);
-                }
-        
-                const pos = locations.chars[charId]
-                const charInfo = inGameChars[charId]
-        
-                const charToken = characterLayer.querySelector(`#${charInfo.char.id}`);
+    const charCompare = compareWithDb(gameSceneData.chars.map((char) => char.id), 
+                                        Object.keys(locations.chars))
 
-                addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
-            }
+    if(charCompare.updateStatus === true){
+
+        for(let charId of charCompare.removed){
+            characterLayer.querySelector(`#${charId}`).remove()
+            gameSceneData.chars = gameSceneData.chars.filter((char) => char.id!== charId)
         }
 
-
-        if(locations.npcs){
-            for(const npcId of Object.keys(locations.npcs)){
-                const npcToken = characterLayer.querySelector(`#${database.npcs[npcId].id}`);
-                if(npcToken){
-                    gameBoardMoveToken(npcToken, locations.npcs[npcId].x, locations.npcs[npcId].y, true)
-                }else{
-                    if(!database.npcs[npcId]){
-                        await serverGetNpc(npcId);
-                    }
-        
-                    const pos = locations.npcs[npcId]
-                    const charInfo = database.npcs[npcId]
-        
-                    // FUTURE addNPCToken fonksiyonu yap
-                    
-                    const npcToken = await addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
-        
-                    npcToken.addEventListener('click', async (event) => {
-                        const questList =  createNpcTalkSheet(npcId)
-                    })  
-                }      
+        for(let charId of charCompare.missing){
+            if(!inGameChars[charId]){
+                await serverGetChar(charId);
             }
+        
+            const charInfo = inGameChars[charId]
+        
+            addCharacter(charInfo.char, charInfo.width, charInfo.height, locations.chars[charId].x, locations.chars[charId].y, "static/images/character/"+charInfo.img)
         }
     }
 
+    const npcCompare = compareWithDb(gameSceneData.npcs.map((npc) => npc.id), 
+                                        Object.keys(locations.npcs))
 
+    if(npcCompare.updateStatus === true){
+        for(let npcId of npcCompare.removed){
+            characterLayer.querySelector(`#${database.npcs[npcId].id}`).remove()
+            gameSceneData.npcs = gameSceneData.npcs.filter((npc) => npc.id!== npcId)
+        }
+        for(let npcId of npcCompare.missing){
+            if(!database.npcs[npcId]){
+                await serverGetNpc(npcId);
+            }
+            const pos = locations.npcs[npcId]
+            const charInfo = database.npcs[npcId]
+            const charToken = await addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
+            npcToken.addEventListener('click', async (event) => {
+                const questList =  createNpcTalkSheet(npcId)
+            })
+        }
+    }   
+}
+
+async function updateFog(){
+    // 1. Initialize fog layer (fully black canvas)
+    const fogCtx = fogCanvas.getContext('2d');
+
+    fogCanvas.width = parseInt(sceneData.width);  // Actual pixel dimensions
+    fogCanvas.height = parseInt(sceneData.height); // (not CSS size)
+
+    // 2. Fill fog layer with solid black
+    fogCtx.fillStyle = 'black';
+    fogCtx.fillRect(0, 0, fogCanvas.width, fogCanvas.height);
+
+    // 3. Define your shape data
+    // 4. Draw visible areas (holes in the fog)
+    fogCtx.globalCompositeOperation = 'destination-out'; // Erase from fog
+
+    sceneData.visibleAreas.forEach(shape => {
+        if (shape.shape === 'circle') {
+            // Create radial gradient for soft edges
+            const gradient = fogCtx.createRadialGradient(
+                shape.x, shape.y, 0,
+                shape.x, shape.y, shape.radius
+            );
+            
+            // Use RGBA to control alpha: fully erase at center, no erase at edge
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            fogCtx.fillStyle = gradient;
+            fogCtx.beginPath();
+            fogCtx.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2);
+            fogCtx.fill();
+        }
+    });
+
+    // 5. Reset composite mode
+    fogCtx.globalCompositeOperation = 'source-over';
 }

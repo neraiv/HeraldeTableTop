@@ -6,12 +6,15 @@ from datetime import datetime, timezone, timedelta
 import os
 import threading
 
+import numpy as np
+
 from chat_handler import ChatHandler
 from key_handeler import controlKey, generate_key
 from db_fog_handeler import FogType, apply_mask, calc_visible_areas
 from db_event_handler import EventHandler
-
+from db_consts import *
 from db_types import *
+
 DEBUG_PRINT = True
         
 class DBHandeler():
@@ -40,12 +43,16 @@ class DBHandeler():
         }
         
         active_session = self.server_info["active_session"]
-        self.event_handeler = f"games/{active_session}/events.csv"
         
-        self.visable_areas: dict = {}
-        self.visable_areas = self.calc_visibleAreas_all()
-        self.fogged_areas: dict = {}
-
+        self.activeAreas: dict = {}
+                
+        for key in self.session_info["locations"]:
+            currentScene = self.session_info["locations"][key]["currentScene"]
+            
+            scene_name = currentScene["name"]
+            layer = currentScene["layer"]
+            
+            self.init_activeArea(scene_name, layer)
         
         self.sync_timeout = 5
         self.userSyncTimeout = 2
@@ -216,19 +223,26 @@ class DBHandeler():
     def calc_visibleAreas_scene(self, scene_name, layer):
         return calc_visible_areas(self.scenes[scene_name]["layers"][layer]["locations"],
                                                                        self.rules["fogType"], self.chars)
-    def calc_visibleAreas_all(self):
-        for key in self.session_info["locations"]:
-            currentScene = self.session_info["locations"][key]["currentScene"]
-            
-            scene_name = currentScene["name"]
-            layer = currentScene["layer"]
-            
-            currentSceneFullName = scene_name + "-" + layer
-            
-            if not (currentSceneFullName in self.visable_areas):
-                self.visable_areas[currentSceneFullName] = self.calc_visibleAreas_scene(scene_name, layer)
+    def init_activeArea(self, scene_name, layer, visible_areas= True, events= True):
         
-        return self.visable_areas
+        sceneFullName = scene_name + "-" + layer
+        
+        if not (sceneFullName in self.activeAreas):
+            
+
+            for npcId, npcData in self.scenes[scene_name]["layers"][layer]["locations"]["npcs"].keys():
+                movement = npcData.get("movement")
+                continue
+                # Future add events to event handlers
+                if movement is not None:
+                    self.event_handler.addEvent("scene", -1, {"type": "env", "payload": {"action": "move", "id": npcId, "info": movement}})
+                        
+            self.activeAreas[sceneFullName] = {
+                "visibleAreas" : self.calc_visibleAreas_scene(scene_name, layer) if visible_areas else self.activeAreas[sceneFullName]["visibleAreas"],
+                "events" : {} if events else self.activeAreas[sceneFullName]["events"]
+            }
+        
+        return self.activeAreas[sceneFullName]
         
     def get_scene(self, charId: str, force_visible_area_calc = False):
         current_scene = self.session_info["locations"][charId]["currentScene"]
@@ -236,11 +250,8 @@ class DBHandeler():
         layer = current_scene["layer"]
         
         currentSceneName = scene_name + "-" + layer
-        
-        if force_visible_area_calc or (not (currentSceneName in self.visable_areas)):
-            self.visable_areas[currentSceneName] = self.calc_visibleAreas_scene(scene_name, layer)
-            
-        self.fogged_areas = {
+              
+        masked_scene = {
             'discovered': self.scenes[scene_name]['discovered'], 
             'width'     : self.scenes[scene_name]['width'     ], 
             'height'    : self.scenes[scene_name]['height'    ], 
@@ -249,30 +260,55 @@ class DBHandeler():
         }
         
         for location_key in self.scenes[scene_name]["layers"][layer]["locations"].keys():
-            self.fogged_areas["layer"]["locations"][location_key] = apply_mask(self.scenes[scene_name]["layers"][layer]["locations"][location_key],
-                                                                                            self.visable_areas[currentSceneName])
+            masked_scene["layer"]["locations"][location_key] = apply_mask(self.scenes[scene_name]["layers"][layer]["locations"][location_key],
+                                                                                            self.activeAreas[currentSceneName]["visibleAreas"])
 
-        self.fogged_areas["visibleAreas"] = self.visable_areas[currentSceneName]
+        masked_scene["visibleAreas"] = self.activeAreas[currentSceneName]["visibleAreas"]
         
-        return self.fogged_areas
+        return masked_scene
+    
+    def check_collision(self, target1, target2):
+        if not (target1["x"] in self.activeAreas[f"{target1['scene']}-{target1['layer']}"]["visibleAreas"] and 
+                            target2["x"] in self.activeAreas[f"{target2['scene']}-{target2['layer']}"]["visibleAreas"]):
+            return False
         
-    def action_portal(self, charId, data):
+        if (target1["x"] - target2["x"]) % self.scenes[target1["scene"]]["grid_size"]!= 0 or \
+            (target1["y"] - target2["y"]) % self.scenes[target1["scene"]]["grid_size"]!= 0:
+            return False
         
-        sceneName, layer = data.split('-')
+        return True
+    
+    def check_distance(self, target1, target2, distance):
         
-        if not sceneName and not layer:
-            return {"success": False}
+        distance_x = target1["x"] - target2["x"]
+        distance_y = target1["y"] - target2["y"]
+         
+        return np.sqrt(distance_x**2 + distance_y**2) < distance
+        
+    def action_portal(self, charId, data, portalId):
+        
+        destinationSceneName, destinationLayer = data.split('-')
+        
+        if not destinationSceneName and not destinationLayer: 
+            return {"success": False, "error": TypeError.INSUFFİCENT_DATA.value+ " (action_portal)"}
         
         # Remove char from current scene
         currentSceneName = self.session_info["locations"][charId]["currentScene"]["name"]
         currentLayerName = self.session_info["locations"][charId]["currentScene"]["layer"]
+         
+        if not self.check_distance(
+            self.scenes[currentSceneName]["layers"][currentLayerName]["locations"]["chars"][charId],
+            self.scenes[currentSceneName]["layers"][currentLayerName]["locations"]["portals"][portalId],
+            PORTAL_PASS_DISTANCE
+        ):
+            return {"success": False, "error": "It's too far away. (action_portal)"}
         
         self.scenes[currentSceneName]["layers"][currentLayerName]["locations"]["chars"].pop(charId) 
         
-        if layer:
-            self.session_info["locations"][charId]["currentScene"]["layer"] = layer
-        if sceneName:
-            self.session_info["locations"][charId]["currentScene"]["name"] = sceneName
+        if destinationLayer:
+            self.session_info["locations"][charId]["currentScene"]["layer"] = destinationLayer
+        if destinationSceneName:
+            self.session_info["locations"][charId]["currentScene"]["name"] = destinationSceneName
             
         # Add char to new scene
         currentSceneName = self.session_info["locations"][charId]["currentScene"]["name"]
@@ -280,7 +316,8 @@ class DBHandeler():
 
         self.scenes[currentSceneName]["layers"][currentLayerName]["locations"]["chars"][charId] = {"x": 200, "y": 200} # FUTURE char start location belirlenmeli
         
-        self.visable_areas[currentSceneName+"-"+currentLayerName] = self.calc_visibleAreas_scene(self.session_info["locations"][charId]["currentScene"]["name"], 
+        if not (currentSceneName in self.activeAreas):
+            self.activeAreas[currentSceneName]["visibleAreas"] = self.calc_visibleAreas_scene(self.session_info["locations"][charId]["currentScene"]["name"], 
                                                                                                 self.session_info["locations"][charId]["currentScene"]["layer"])
         
         self.sync(session_info=True, scenes=True)
@@ -325,7 +362,9 @@ class DBHandeler():
                 socket_reply, socket_update = {"success": False, "error": f"Cant move to the x:{x}, y:{y}"}, None
             
         if moved:    
-            new_scene_data = self.get_scene(charId, True)
+            self.init_activeArea(currentScene["name"], currentScene["layer"], events=False)
+            
+            new_scene_data = self.get_scene(charId)
             socket_reply, socket_update = {"success": True}, [{"type": "change_scene_layer_locations", 
                                                                 "data": new_scene_data["layer"]["locations"], 
                                                                 "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False},
@@ -364,7 +403,8 @@ class DBHandeler():
         
         elif "portal" in action:
             data = actionInfo.get("data")
-            socket_reply = self.action_portal(charId, data)
+            portalId = actionInfo.get("id")
+            socket_reply = self.action_portal(charId, data, portalId)
 
             if socket_reply["success"] == True:
                 socket_update = [{"type": "reinit_scene", "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False}]
@@ -491,74 +531,115 @@ class DBHandeler():
         return socket_reply, socket_update
         
         
+    def handle_turn(self, payload, userID, userInfo):
         
-    def socket_handler(self, socketMessage: dict, userID = None, userInfo = None):
-        type = socketMessage.get("type")
-        payload = socketMessage.get("payload")
+        type = payload["type"]
         
-        socket_reply = None
+        socket_reply = {}
         socket_update = None
         
-        if type == "update":
-            data = None
-            success = True
-            
-            if payload == "server_info":
-                data =  self.server_info
-            elif payload == "session_info":
-                data =  self.session_info
-            elif payload == "rules":
-                data =  self.rules
-            elif payload == "spells":
-                data =  self.spells
-            elif payload == "scene":
-                data =  self.get_scene(userInfo["character"])
-            else:
-                success = False
+        if type == "statusUpdate":
+            status = payload["status"]
+            charId = userInfo.get("character")
+            self.session_info["locations"][charId]["turnStatus"] = status
             
             socket_reply = {
-                "data" : data,
-                "success" : success 
+                "success": True
             }
             
-        elif type == "get":
-            socket_reply, socket_update = self.handle_get(payload, userID, userInfo)
-                    
-                    
-        elif type == "action":
-            socket_reply, socket_update =  self.handle_action(payload, userID, userInfo)
+            for char in self.session_info["locations"].values():
+                print(char["turnStatus"])
             
-        elif type == "quest": 
-            socket_reply, socket_update = self.handle_quest(payload, userID, userInfo)
-            
-        elif "chat" in type:
-            if "send" in type:
-                state = self.chat.addMessage(userID, payload["message"], self.get_currentTime())
-                if state == "success":
-                    self.session_info["chat_idx"] = self.chat.last_idx
-                    self.sync(session_info=True)
-                    socket_reply = {'success': True}
-                    socket_update = [{"type":"chat", "prior": SocketUpdatePrior.WHEN_AVALIABLE.value, "all_users": True}]
-                else:
-                    socket_reply = {'success': False, 'error': state}
+            if self.session_info["turnType"] != "free" and all([char["turnStatus"] == "continue" for char in self.session_info["locations"].values()]):
+                self.event_handler.run()
+                socket_update = [{"type": "turn_change", "data": self.event_handler.current_turn, "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": True}]
+                for char in self.session_info["locations"].values():
+                    char["turnStatus"] == "paused"
                     
-            elif "get" in type:
-                start = payload.get("start")
-                length = payload.get("length")
-                socket_reply = self.chat.getMessages(start, length)
-        elif type == "status":
-            socket_reply = {
-                "success": self.handle_user_status(userID, payload)
-            }
+            self.sync(session_info=True)
                 
-        else:
+        elif (type == "getStatuses"):
             socket_reply = {
-                "success": False,
-                "error": TypeError.UNKNOWN_REQUEST_TYPE.value + "Input: " + type
+                "success": True,
+                "data": {charId: char["turnStatus"] for charId, char in self.session_info["locations"].items()}
             }
-            
-        
+
         return socket_reply, socket_update
+    
+    def socket_handler(self, socketMessage: dict, userID = None, userInfo = None):
+        try:
+            type = socketMessage.get("type")
+            payload = socketMessage.get("payload")
+            
+            socket_reply = None
+            socket_update = None
+            
+            if type == "update":
+                data = None
+                success = True
+                
+                if payload == "server_info":
+                    data =  self.server_info
+                elif payload == "session_info":
+                    data =  self.session_info
+                elif payload == "rules":
+                    data =  self.rules
+                elif payload == "spells":
+                    data =  self.spells
+                elif payload == "scene":
+                    data =  self.get_scene(userInfo["character"])
+                else:
+                    success = False
+                
+                socket_reply = {
+                    "data" : data,
+                    "success" : success 
+                }
+                
+            elif type == "get":
+                socket_reply, socket_update = self.handle_get(payload, userID, userInfo)
+                        
+                        
+            elif type == "action":
+                socket_reply, socket_update =  self.handle_action(payload, userID, userInfo)
+                
+            elif type == "quest": 
+                socket_reply, socket_update = self.handle_quest(payload, userID, userInfo)
+                
+            elif "chat" in type:
+                if "send" in type:
+                    state = self.chat.addMessage(userID, payload["message"], self.get_currentTime())
+                    if state == "success":
+                        self.session_info["chat_idx"] = self.chat.last_idx
+                        self.sync(session_info=True)
+                        socket_reply = {'success': True}
+                        socket_update = [{"type":"chat", "prior": SocketUpdatePrior.WHEN_AVALIABLE.value, "all_users": True}]
+                    else:
+                        socket_reply = {'success': False, 'error': state}
+                        
+                elif "get" in type:
+                    start = payload.get("start")
+                    length = payload.get("length")
+                    socket_reply = self.chat.getMessages(start, length)
+            
+            elif type == "turn":
+                socket_reply, socket_update = self.handle_turn(payload, userID, userInfo)
+            elif type == "status":
+                socket_reply = {
+                    "success": self.handle_user_status(userID, payload)
+                }
+                    
+            else:
+                socket_reply = {
+                    "success": False,
+                    "error": TypeError.UNKNOWN_REQUEST_TYPE.value + "Input: " + type + " (socket_handler)"
+                }
+                
+            return socket_reply, socket_update
+        
+        except Exception as e:
+            print(f"Error in socket_handler: {str(e)}")
+            return {"success": False, "error": str(e)}, None
             
             
     def on_exit(self):
@@ -579,9 +660,9 @@ if __name__ == "__main__":
         
     #db.socket_handler({"key": "_Rhvb0NxPahENXGbO1rJGw","type": "action", "payload" : {"action" : "move", "x": 500, "y" : 500}})
 
-    db.calc_visibleAreas_all()
+    db.init_activeAreas()
     
-    print(db.visable_areas)
+    print(db.activeAreas)
 
     scene = db.get_scene("faramir")
     

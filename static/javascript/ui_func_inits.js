@@ -163,64 +163,6 @@ async function initGameBoard() {
     
 }
 
-async function updateCharsLocation() {
-    for(const charId of Object.keys(sceneData.layer.locations.chars)){
-
-        if(!inGameChars[charId]){
-            await serverGetChar(charId);
-        }
-
-        const pos = sceneData.layer.locations.chars[charId]
-        const charInfo = inGameChars[charId]
-
-        const charToken = characterLayer.querySelector(`#${charInfo.char.id}`);
-
-        if(charToken){
-            gameBoardMoveToken(charToken, x, y, true);
-        }else{
-            addCharacter(charInfo.char, charInfo.width, charInfo.height, pos.x, pos.y, "static/images/character/"+charInfo.img)
-        }
-    }
-}
-
-async function updateFog(){
-    // 1. Initialize fog layer (fully black canvas)
-    const fogCtx = fogCanvas.getContext('2d');
-
-    fogCanvas.width = parseInt(sceneData.width);  // Actual pixel dimensions
-    fogCanvas.height = parseInt(sceneData.height); // (not CSS size)
-
-    // 2. Fill fog layer with solid black
-    fogCtx.fillStyle = 'black';
-    fogCtx.fillRect(0, 0, fogCanvas.width, fogCanvas.height);
-
-    // 3. Define your shape data
-    // 4. Draw visible areas (holes in the fog)
-    fogCtx.globalCompositeOperation = 'destination-out'; // Erase from fog
-
-    sceneData.visibleAreas.forEach(shape => {
-        if (shape.shape === 'circle') {
-            // Create radial gradient for soft edges
-            const gradient = fogCtx.createRadialGradient(
-                shape.x, shape.y, 0,
-                shape.x, shape.y, shape.radius
-            );
-            
-            // Use RGBA to control alpha: fully erase at center, no erase at edge
-            gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-            fogCtx.fillStyle = gradient;
-            fogCtx.beginPath();
-            fogCtx.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2);
-            fogCtx.fill();
-        }
-    });
-
-    // 5. Reset composite mode
-    fogCtx.globalCompositeOperation = 'source-over';
-}
-
 async function initScene(){
     console.log("Initializing layer...")
 
@@ -228,6 +170,8 @@ async function initScene(){
     backgroundLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
     characterLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
     audioAmbiance.pause()
+
+    Object.keys(gameSceneData).forEach((key) => gameSceneData[key] = [])
 
     if(!sceneData.layer) return alert("Layer not found in the scene")
 
@@ -237,9 +181,10 @@ async function initScene(){
     
     await updateLocations()
 
+    await updateFog()
+
     if (sceneData.layer.ambiance) {
         audioAmbiance.src = `static/images/background/${sceneData.layer.ambiance}`;        
     }
     
-    await updateFog()
 }

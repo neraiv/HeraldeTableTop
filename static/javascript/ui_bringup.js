@@ -213,6 +213,43 @@ topBarTools.appendChild(topBarPanningButton);
 const topBarCenterButton = createImageButton(36, {source:  "url(static/images/menu-icons/center.png)"})
 topBarTools.appendChild(topBarCenterButton);
 
+const topBarButtons = document.createElement("div");
+topBarButtons.classList.add("row");
+topBarButtons.classList.add("centered");
+topBarButtons.style.backgroundColor = "#d3dae2";
+topBarButtons.style.borderRadius = "8px";
+topBarButtons.style.padding = "5px";
+topBarButtons.style.width = "fit-content";
+topBarButtons.style.height = "fit-content";
+topBarButtons.style.flex = "auto";
+topBarButtons.style.gap = "5px";
+topBar.appendChild(topBarButtons);
+
+const passTurnButton = createImageButton(36, {icon: "pause_circle_outline"})
+passTurnButton.style.fontFamily = 'Material Icons Outlined';
+topBarButtons.appendChild(passTurnButton);
+
+const labelCurrentTurn = document.createElement("div");
+
+labelCurrentTurn.style.backgroundColor = "#2c3e50",  // Darker fantasy-style background
+labelCurrentTurn.style.color = "#f1c40f",  // Gold text for a DnD theme
+labelCurrentTurn.style.fontFamily = "'Cinzel', serif",
+labelCurrentTurn.style.fontSize = "2rem",  // Large enough for visibility
+labelCurrentTurn.style.fontWeight = "bold",
+labelCurrentTurn.style.width = "36px",  // Fixed width for consistent appearance
+labelCurrentTurn.style.height = "36px",
+labelCurrentTurn.style.display = "flex",
+labelCurrentTurn.style.alignItems = "center",
+labelCurrentTurn.style.justifyContent = "center",
+labelCurrentTurn.style.borderRadius = "12px",  // Soft rounded edges
+labelCurrentTurn.style.border = "3px solid #f39c12",  // Fantasy-style border
+labelCurrentTurn.style.boxShadow = "0 0 10px rgba(241, 196, 15, 0.7)", // Glowing effect
+labelCurrentTurn.style.textAlign = "center",
+labelCurrentTurn.style.userSelect = "none" // Prevent text selection
+
+topBarButtons.appendChild(labelCurrentTurn);
+
+
 /*
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////// TOP BAR //////////////////////////////////////////////////////////////
