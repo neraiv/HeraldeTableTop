@@ -1,5 +1,6 @@
 import copy
 from enum import Enum
+import shutil
 import time
 import json
 from datetime import datetime, timezone, timedelta
@@ -36,7 +37,6 @@ class DBHandeler():
         self.objects     : dict   = self.getGameFile("objects.json")
         self.quests      : dict   = self.getGameFile("quests.json")
         self.npcs        : dict   = self.getGameFile("npcs.json")
-        
         
         self.defaults : dict = {
             "char" : self.getGameFile("char.json", DatabaseWhere.FROM_DEFAULTS)
@@ -76,8 +76,6 @@ class DBHandeler():
         
     def sync_loop(self):
         while True:
-            if DEBUG_PRINT:
-                print("Syncing...")
             self.updateServerTime()
             self.syncTimerCounter += 1
             if self.syncTimerCounter >= self.userSyncTimeout:
@@ -91,15 +89,11 @@ class DBHandeler():
         return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
     
     def updateServerTime(self):
-        if DEBUG_PRINT:
-            print("Updating server time...")
         self.server_info["time"] = self.get_currentTime()
         self.server_info["status"] = "online"
         self.sync(server_info=True)
         
     def updateUsersStatus(self):
-        if  DEBUG_PRINT:
-            print("Updating user statuses...")
         for username, user in self.users.items():
             if user["status"] == "online":
                 timestamp = datetime.strptime(user["last_seen"], "%Y-%m-%d %H:%M:%S %Z")
@@ -642,14 +636,46 @@ class DBHandeler():
             return {"success": False, "error": str(e)}, None
             
             
-    def on_exit(self):
-        self.syncTimer.cancel()
-        
+    def on_exit(self):      
         self.server_info["status"] = "offline"
         self.sync(server_info=True)
     
         self.user_set_offline()
 
+    def fileManagement_saveCharacter(self, data: dict):
+        root = os.path.join(self.DB_MAIN_PATH, "static", "images", "character")
+        
+        if data["type"] == "local":
+            char_name = data["name"]  # Get character name
+
+            if not char_name:
+                print("Character name is empty")
+                return
+
+            # Create main directory if it doesn't exist
+            os.makedirs(root, exist_ok=True)
+
+            # Create character subdirectory
+            char_dir = os.path.join(root, char_name)
+            os.makedirs(char_dir, exist_ok=True)
+
+            # Get image path from QLabel
+            char_image_path = data["image_path"]
+
+            if not char_image_path or not os.path.exists(char_image_path):
+                print("No valid image selected")
+                return
+
+            # Extract file extension
+            file_ext = os.path.splitext(char_image_path)[-1].lower()  # e.g., ".png"
+
+            # Define new file path
+            save_path = os.path.join(char_dir, f"char{file_ext}")
+
+            # Copy image to new location
+            shutil.copy(char_image_path, save_path)
+
+            print(f"Image saved to: {save_path}")
             
         
         

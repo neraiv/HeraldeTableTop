@@ -8,7 +8,6 @@
         body {
             margin: 0;
             font-family: 'Garamond', serif;
-            background: url('https://i.imgur.com/v5FWhBG.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #f5e3a1;
         }
@@ -74,7 +73,6 @@
             color: #ccc;
         }
     </style>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 </head>
 <body>
     <div class="login-container">
@@ -93,43 +91,14 @@
                 <input type="text" id="password" name="password" placeholder="Enter Password" value="123321avz">
             </div>
             <button id="login-button" type="submit">Login</button>
+            <button id="editor-button" type="submit">Editor</button>
+            <button id="game-button" type="submit">Game</button>
         </form>
         <div class="footer">
             <p>Adventurers' Guild © 2024</p>
         </div>
     </div>
 </body>
-    <script>
-        // Handle game join button clic
-        $('#login-button').on('click', function(event) {
-            event.preventDefault();
-            
-            $.ajax({
-                url: "http://127.0.0.1:5000/login", // Same URL as before
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    username: $('#username').val(),
-                    password: $('#password').val(),
-                }),
-                success: function(response) {
-                    // If the server responds with an HTML page after login
-                    if (response.error) {
-                        alert('Login failed: ' + response.error); // Show an error if login fails
-                    }else{
-                        let urlParams = new URLSearchParams(window.location.search);
-                        urlParams.set("game_id", $('#server-key').val());
-                        urlParams.set("userName", $('#username').val())
-                        urlParams.set("charId", response.charId)
-                        urlParams.set("key", response.key)
-                        window.location.href = "/game?" + urlParams.toString(); 
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                    alert('An error occurred while processing the login.', error);
-                }
-            });       
-        });
-    </script>
+    <script src = "/static/javascript/shared_functions.js"></script>
+    <script src = "/static/javascript/login/login.js"></script>
 </html>

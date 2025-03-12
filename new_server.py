@@ -82,7 +82,7 @@ def login():
         if  username and password:
             status, newKey, charId = db.userLogin(username, password) 
             if status == "ok":
-                return jsonify({"success": "Login successful.", "key": newKey, "charId": charId}), 200
+                return jsonify({"success": True, "key": newKey, "charId": charId}), 200
             else:
                 return jsonify({"error": status}), 200
         else:
@@ -96,21 +96,24 @@ def login():
 
 @app.route('/getObjects', methods=['GET'])
 def get_objects():
-    result = {}
-    path = os.path.join(db.DB_MAIN_PATH,"static/images/objects")
-    for root, dirs, files in os.walk(path):
-        if root == path: continue
-        # Extract folder name
-        folder_name = os.path.basename(root)
-        # Store files in the folder
-        result[folder_name] = files
-        
-    return jsonify(result)
+    # CONTROL KEY
+    key = request.args.get('key')
+    userId, userInfo = db.controlKey(key)
+    
+    if not userId and not userInfo:
+        return jsonify({"error": "Invalid key."}), 401    
+    return jsonify(get_objects_data())
 
 @app.route('/getBackground', methods=['GET'])
 def get_background():
-    data = get_background_data()
-    return jsonify(data)
+        # CONTROL KEY
+    key = request.args.get('key')
+    userId, userInfo = db.controlKey(key)
+    
+    if not userId and not userInfo:
+        return jsonify({"error": "Invalid key."}), 401
+
+    return jsonify(get_background_data())
             
 @app.route('/editor')  # Route with parameters
 def editor():
@@ -163,6 +166,43 @@ def get_background_data():
     except Exception as e:
         return {"error": str(e)}
 
+def get_objects_data():
+    result = {}
+    path = os.path.join(db.DB_MAIN_PATH,"static/images/objects")
+    for root, dirs, files in os.walk(path):
+        if root == path: continue
+        # Extract folder name
+        folder_name = os.path.basename(root)
+        # Store files in the folder
+        result[folder_name] = files
+    return result
+
+def get_npcs_data():
+    result = {}
+    path = os.path.join(db.DB_MAIN_PATH,"static/images/objects")
+    for root, dirs, files in os.walk(path):
+        if root == path: continue
+        # Extract folder name
+        folder_name = os.path.basename(root)
+        # Store files in the folder
+        result[folder_name] = files
+    return result
+
+@app.route("/saveCharacter", methods=["POST"])
+def save_character():
+    try:
+        data: dict = request.get_json()
+        if data is None:
+            return jsonify({"error": "Invalid JSON data."}), 400
+        charId = data.get("charId")
+        if not charId:
+            pass
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def main():
+    socketio.run(app, host='127.0.0.1', port=5000, debug=True)
 
 if __name__ == '__main__':
-    socketio.run(app, host='127.0.0.1', port=5000, debug=True)
+    main()
+    
