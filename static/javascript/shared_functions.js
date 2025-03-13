@@ -50,10 +50,10 @@ function compareWithDb(arr1, arr2) {
 function userAskQuestion(title, question, {
     buttons = ['Ok'], 
     callback = null, 
-    input = false, 
     inputPlaceholder = null, 
-    inputType = 'text',
-    blocking = false
+    inputType = null,
+    defaultValue = null,
+    blocking = false,
 } = {}) {
     return new Promise((resolve) => {
         // Create the overlay if blocking is true
@@ -90,11 +90,12 @@ function userAskQuestion(title, question, {
         container.appendChild(questionElement);
 
         // Create the input if needed
-        let inputElement;
-        if (input) {
+        let inputElement = undefined;
+        if (inputType) {
             inputElement = document.createElement('textarea');
             inputElement.placeholder = inputPlaceholder;
             inputElement.type = inputType;
+            inputElement.value = defaultValue;
             container.appendChild(inputElement);
         }
 
@@ -110,7 +111,7 @@ function userAskQuestion(title, question, {
                 if (overlay) {
                     document.body.removeChild(overlay);
                 }
-                resolve({ elem: container, value: input ? inputElement.value : null });
+                resolve({ elem: container, value: inputElement ? inputElement.value : null });
             };
             container.appendChild(button);
         });

@@ -13,7 +13,7 @@ async function createAddObjectUI(){
     const [uiAddObjectTopRow, uiAddObjectSheetTitle, uiAddObjectContent, uiAddObjectCloseButton] = addUIDefaults(uiAddObject)
 
     uiAddObjectContent.innerHTML = ""; // Clear previous content
-    uiAddObjectSheetTitle.textContent = uiSelections.selected;
+    uiAddObjectSheetTitle.textContent = userInteractionData.selected;
 
     Object.entries(availableObjects).forEach(([category, items]) => {
         // Create card container for each object category
@@ -66,7 +66,7 @@ async function createAddObjectUI(){
             });
 
             objectImage.onclick = () => {
-                uiSelections.selectedObject = {
+                userInteractionData.selectedObject = {
                     id: `${category}/${objectFile}`,
                     src: objectImage.src,
                 };
@@ -177,12 +177,12 @@ async function addObject() {
     // Create a new object token
     const objectToken = document.createElement("div");
     objectToken.classList.add("background");
-    objectToken.id = uiSelections.selectedObject.id;
+    objectToken.id = userInteractionData.selectedObject.id;
     objectToken.style.left = `${sceneData.width / 2}px`;
     objectToken.style.top = `${sceneData.height / 2}px`;
     objectToken.style.width = `${sceneData.grid_size}px`;
     objectToken.draggable = true;
-    objectToken.style.backgroundImage = `url(${uiSelections.selectedObject.src})`;
+    objectToken.style.backgroundImage = `url(${userInteractionData.selectedObject.src})`;
     
     // Create a temporary image to determine the natural dimensions
     const tempImg = new Image();
@@ -193,7 +193,7 @@ async function addObject() {
         editTokenShape(objectToken);
 
     };
-    tempImg.src = uiSelections.selectedObject.src;
+    tempImg.src = userInteractionData.selectedObject.src;
 
     // Create the edit buttons container
     const editButtons = document.createElement("div");
@@ -234,41 +234,15 @@ async function addObject() {
     }
 
     // Edit Shape Button
-    const editShapeButton = document.createElement("button");
-    editShapeButton.textContent = "Shape";
-    editShapeButton.style.padding = "5px 10px";
-    editShapeButton.style.backgroundColor = "#4CAF50";
-    editShapeButton.style.color = "#fff";
-    editShapeButton.style.border = "none";
-    editShapeButton.style.borderRadius = "5px";
-    editShapeButton.style.cursor = "pointer";
+    const [editShapeButton, editPropertiesButton] = createEditButtons(objectToken, ["Shape", "Properties"])
+
     editShapeButton.addEventListener("click", () => {
         editTokenShape(objectToken);
     });
-    editButtons.appendChild(editShapeButton);
 
-    // Edit Properties Button
-    const editPropertiesButton = document.createElement("button");
-    editPropertiesButton.textContent = "Properties";
-    editPropertiesButton.style.padding = "5px 10px";
-    editPropertiesButton.style.backgroundColor = "#4CAF50";
-    editPropertiesButton.style.color = "#fff";
-    editPropertiesButton.style.border = "none";
-    editPropertiesButton.style.borderRadius = "5px";
-    editPropertiesButton.style.cursor = "pointer";
     editPropertiesButton.addEventListener("click", () => {
         editObjectProperties(objectToken);
     });
-    editButtons.appendChild(editPropertiesButton);
 
-    // Show edit buttons when hovering over objectToken
-    objectToken.addEventListener("mouseenter", showEditButtons);
-    objectToken.addEventListener("mouseleave", hideEditButtons);
-    
-    // Keep edit buttons visible when hovered over them
-    editButtons.addEventListener("mouseenter", showEditButtons);
-    editButtons.addEventListener("mouseleave", hideEditButtons);
-
-    objectToken.appendChild(editButtons);
     characterLayer.appendChild(objectToken);
 }

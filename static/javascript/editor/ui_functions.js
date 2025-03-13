@@ -87,30 +87,30 @@ function gameboardMove(token, x, y) {
 }
 
 async function getSelectedUI() {
-    if (uiSelections.selected === "Add Background") {
-        if (uiSelections.initStatuses.background === false){
+    if (userInteractionData.selected === "Add Background") {
+        if (userInteractionData.initStatuses.background === false){
             createAddBackgroundUI()
-            uiSelections.initStatuses.background = true
+            userInteractionData.initStatuses.background = true
         }else{
             uiAddBackground.style.display = "block"
         }
     }
 
-    if (uiSelections.selected === "Add Object") {
-        if (uiSelections.initStatuses.object === false){
+    if (userInteractionData.selected === "Add Object") {
+        if (userInteractionData.initStatuses.object === false){
             createAddObjectUI()
-            uiSelections.initStatuses.object = true
+            userInteractionData.initStatuses.object = true
         }else{
             uiAddObject.style.display = "block"
         }
     }
 
-    if (uiSelections.selected === "Add Npc") {
-        if (uiSelections.initStatuses.object === false){
+    if (userInteractionData.selected === "Add Npc") {
+        if (userInteractionData.initStatuses.object === false){
             createAddNpcUI()
-            uiSelections.initStatuses.object = true
+            userInteractionData.initStatuses.object = true
         }else{
-            uiAddBackground.style.display = "block"
+            uiAddNpc.style.display = "block"
         }
     }
 }
@@ -143,7 +143,7 @@ function initAddSelectionCardsInteractions(){
         setTimeout(() => {
             card.style.transform = "scale(1)";
             addSelection.style.display = "none";
-            uiSelections.selected = card.innerText;
+            userInteractionData.selected = card.innerText;
             getSelectedUI()
         }, 200);
     }

@@ -106,10 +106,12 @@
 
 .character{
     position: absolute;
-    background-color: red;
     flex-direction: column;
     align-items: center;
     display: flex;
+    background-size : cover;
+    background-position : center;
+    background-color : transparent;
 }
 
 .player-name{

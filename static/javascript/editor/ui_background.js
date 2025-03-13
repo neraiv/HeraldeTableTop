@@ -12,7 +12,7 @@ async function  createAddBackgroundUI() {
     const [uiAddBackgroundTopRow, uiAddBackgroundSheetTitle, uiAddBackgroundContent, uiAddBackgroundCloseButton] = addUIDefaults(uiAddBackground)
     
     uiAddBackgroundContent.innerHTML = ""; // Clear previous content
-    uiAddBackgroundSheetTitle.textContent = uiSelections.selected;
+    uiAddBackgroundSheetTitle.textContent = userInteractionData.selected;
 
     Object.entries(availableBackgrounds).forEach(([background, details]) => {
         // Card container for each background
@@ -88,7 +88,7 @@ async function  createAddBackgroundUI() {
                     darkButton.addEventListener("mouseenter", () => (image.src = `static/images/background/${background}/${images.dark}`));
                     darkButton.addEventListener("mouseleave", () => (image.src = lightImage || darkImage));
                     darkButton.onclick = () => {
-                        uiSelections.selectedBackground = {id: ` ${background}-${images.dark}`,src: image.src, ambiance: details.ambiance}
+                        userInteractionData.selectedBackground = {id: ` ${background}-${images.dark}`,src: image.src, ambiance: details.ambiance}
                         addBackground()
                         uiAddBackground.style.display = 'none';
                     }
@@ -109,7 +109,7 @@ async function  createAddBackgroundUI() {
                     lightButton.addEventListener("mouseleave", () => (image.src = lightImage || darkImage));
 
                     lightButton.onclick = () => {
-                        uiSelections.selectedBackground = {id: ` ${background}/${images.light}`, src: image.src, ambiance: details.ambiance}
+                        userInteractionData.selectedBackground = {id: ` ${background}/${images.light}`, src: image.src, ambiance: details.ambiance}
                         addBackground()
                         uiAddBackground.style.display = 'none';
                     }
@@ -137,84 +137,29 @@ async function  createAddBackgroundUI() {
 
 // Function to add the background
 async function addBackground() {
-    console.log(uiSelections.selectedBackground);
+    console.log(userInteractionData.selectedBackground);
 
     // Create a background token (a draggable element representing the background)
     const backgroundToken = document.createElement("div");
     backgroundToken.classList.add("background");
-    backgroundToken.id = uiSelections.selectedBackground.id;
+    backgroundToken.id = userInteractionData.selectedBackground.id;
     backgroundToken.style.left = `${sceneData.width/2}px`;
     backgroundToken.style.top = `${sceneData.height/2}px`;
     backgroundToken.style.width = `${200}px`;
     backgroundToken.style.height = `${200}px`;
     backgroundToken.draggable = true;
-    backgroundToken.style.backgroundImage = `url(${uiSelections.selectedBackground.src})`;
-    backgroundToken.ambiance = uiSelections.selectedBackground.ambiance
+    backgroundToken.style.backgroundImage = `url(${userInteractionData.selectedBackground.src})`;
+    backgroundToken.ambiance = userInteractionData.selectedBackground.ambiance
 
     editTokenShape(backgroundToken); // Call the edit function when the background is clicked
 
-     // Create the edit buttons container
-     const editButtons = document.createElement("div");
-     editButtons.style.position = "absolute";
-     editButtons.style.top = "-35px"; // Positioned above the object
-     editButtons.style.left = "50%";
-     editButtons.style.transform = "translateX(-50%)"; // Center it horizontally
-     editButtons.style.display = "none"; // Initially hidden
-     editButtons.style.flexDirection = "row";
-     editButtons.style.alignItems = "center";
-     editButtons.style.gap = "5px";
-     editButtons.style.padding = "5px";
-     editButtons.style.background = "rgba(0, 0, 0, 0.7)";
-     editButtons.style.borderRadius = "8px";
-     editButtons.style.boxShadow = "0px 2px 6px rgba(0, 0, 0, 0.2)";
-     editButtons.style.transition = "opacity 0.2s ease-in-out";
-     editButtons.style.opacity = "0"; // Invisible until hovered
-     editButtons.style.pointerEvents = "none"; // Prevent accidental hover issues
- 
-     // Function to show edit buttons
-     function showEditButtons() {
-         editButtons.style.display = "flex";
-         setTimeout(() => {
-             editButtons.style.opacity = "1";
-             editButtons.style.pointerEvents = "auto";
-         }, 10);
-     }
- 
-     // Function to hide edit buttons
-     function hideEditButtons() {
-         editButtons.style.opacity = "0";
-         editButtons.style.pointerEvents = "none";
-         setTimeout(() => {
-             if (!editButtons.matches(":hover") && !backgroundToken.matches(":hover")) {
-                 editButtons.style.display = "none";
-             }
-         }, 200);
-     }
- 
-     // Edit Shape Button
-     const editShapeButton = document.createElement("button");
-     editShapeButton.textContent = "Shape";
-     editShapeButton.style.padding = "5px 10px";
-     editShapeButton.style.backgroundColor = "#4CAF50";
-     editShapeButton.style.color = "#fff";
-     editShapeButton.style.border = "none";
-     editShapeButton.style.borderRadius = "5px";
-     editShapeButton.style.cursor = "pointer";
-     editShapeButton.addEventListener("click", () => {
-         editTokenShape(backgroundToken);
-     });
-     editButtons.appendChild(editShapeButton);
-
-    // Show edit buttons when hovering over backgroundToken
-    backgroundToken.addEventListener("mouseenter", showEditButtons);
-    backgroundToken.addEventListener("mouseleave", hideEditButtons);
+    const [editShapeButton] = createEditButtons(backgroundToken, ["Shape"])
     
-    // Keep edit buttons visible when hovered over them
-    editButtons.addEventListener("mouseenter", showEditButtons);
-    editButtons.addEventListener("mouseleave", hideEditButtons);
+    editShapeButton.addEventListener("click", () => {
+        editTokenShape(backgroundToken);
+    });
 
     // Append the background token to the background layer (or another container)
-    backgroundToken.appendChild(editButtons);
     backgroundLayer.appendChild(backgroundToken);
 }
 

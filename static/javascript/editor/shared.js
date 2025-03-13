@@ -199,3 +199,75 @@ function addUIDefaults(parent){
 
     return [topRow, sheetTitle, content, closeButton]
 }
+
+function createEditButtons(parent, options) {
+
+    let returns = []
+
+    // Create the edit buttons container
+    const editButtons = document.createElement("div");
+    editButtons.style.position = "absolute";
+    editButtons.style.top = "-35px"; // Positioned above the object
+    editButtons.style.left = "50%";
+    editButtons.style.transform = "translateX(-50%)"; // Center it horizontally
+    editButtons.style.display = "none"; // Initially hidden
+    editButtons.style.flexDirection = "row";
+    editButtons.style.alignItems = "center";
+    editButtons.style.gap = "5px";
+    editButtons.style.padding = "5px";
+    editButtons.style.background = "rgba(0, 0, 0, 0.7)";
+    editButtons.style.borderRadius = "8px";
+    editButtons.style.boxShadow = "0px 2px 6px rgba(0, 0, 0, 0.2)";
+    editButtons.style.transition = "opacity 0.2s ease-in-out";
+    editButtons.style.opacity = "0"; // Invisible until hovered
+    editButtons.style.pointerEvents = "none"; // Prevent accidental hover issues
+
+    // Function to show edit buttons
+    function showEditButtons() {
+        editButtons.style.display = "flex";
+        setTimeout(() => {
+            editButtons.style.opacity = "1";
+            editButtons.style.pointerEvents = "auto";
+        }, 10);
+    }
+
+    // Function to hide edit buttons
+    function hideEditButtons() {
+        editButtons.style.opacity = "0";
+        editButtons.style.pointerEvents = "none";
+        setTimeout(() => {
+            if (!editButtons.matches(":hover") && !parent.matches(":hover")) {
+                editButtons.style.display = "none";
+            }
+        }, 200);
+    }
+
+
+    options.forEach(option => {
+        const editButton = document.createElement("button");
+        editButton.textContent = option;
+        editButton.style.padding = "5px 10px";
+        editButton.style.backgroundColor = "#4CAF50";
+        editButton.style.color = "#fff";
+        editButton.style.border = "none";
+        editButton.style.borderRadius = "5px";
+        editButton.style.cursor = "pointer";
+
+        returns.push(editButton)
+
+        editButtons.appendChild(editButton);
+    });
+    // Edit Shape Button
+
+
+   // Show edit buttons when hovering over parent
+   parent.addEventListener("mouseenter", showEditButtons);
+   parent.addEventListener("mouseleave", hideEditButtons);
+   
+   // Keep edit buttons visible when hovered over them
+   editButtons.addEventListener("mouseenter", showEditButtons);
+   editButtons.addEventListener("mouseleave", hideEditButtons);
+
+   parent.appendChild(editButtons);
+   return returns
+}

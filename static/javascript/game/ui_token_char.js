@@ -69,9 +69,8 @@ async function addCharacter(char, width, height, x, y, img = null){
 
     if(img){
         charToken.style.backgroundImage = `url(${img})`
-        charToken.style.backgroundSize = "cover"
-        charToken.style.backgroundPosition = "center"
-        charToken.style.backgroundColor = "transparent"
+    }else{
+        charToken.style.backgroundColor = "red"
     }
 
     const buttonSize = 40

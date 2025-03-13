@@ -21,8 +21,9 @@ const boardEvent = {
     dragStartY : 0
 }
 
-const uiSelections = {
+const userInteractionData = {
     selected : "",
+    data: "",
     initStatuses: {
         background: false,
         object: false,
