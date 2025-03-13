@@ -50,9 +50,6 @@ socket.on('change', async (data) => {
     }
 });
 
-async function serverGetSceneData(){
-
-}
 
 async function sendRequest({ type, payload, timeout = 5000 }) {
     return new Promise((resolve, reject) => {

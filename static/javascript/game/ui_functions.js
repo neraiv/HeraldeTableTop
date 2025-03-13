@@ -195,7 +195,6 @@ function startSyncTimer() {
         cnt++;
         if(isUpdating === false){
             try{
-                
                 await updateRequired()
             } catch(err){
                 console.error("Failed to fetch chat data", err);

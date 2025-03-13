@@ -10,6 +10,8 @@ const userName = document.getElementById('username')
 const password = document.getElementById('password')
 const serverKey = document.getElementById('server-key')
 
+let userData = {}
+
 function sendLoginRequest(){
     fetch(
         "http://127.0.0.1:5000/login",
@@ -30,12 +32,7 @@ function sendLoginRequest(){
         if(data.error){
             alert('Login failed: '+ data.error);
         } else {
-            urlParams = new URLSearchParams();
-            urlParams.set("game_id", serverKey.value);
-            urlParams.set("userName", userName.value)
-            urlParams.set("charId", data.charId)
-            urlParams.set("key", data.key)
-            console.log(urlParams);
+            userData = data;
         }
     }).catch(error => {
         console.error('Error:', error);
@@ -51,10 +48,18 @@ loginButton.onclick = async (event) => {
 
 gameButton.onclick =  (event) =>{
     event.preventDefault();
+    urlParams = new URLSearchParams();
+    urlParams.set("game_id", serverKey.value);
+    urlParams.set("userName", userName.value)
+    urlParams.set("charId", userData.charId)
+    urlParams.set("key", userData.key)
     window.location.href = "/game?" + urlParams.toString();  // Redirect to the game page with the game ID and user information
 };
 
 editorButton.onclick = (event) =>{
     event.preventDefault();
+    urlParams = new URLSearchParams();
+    urlParams.set("userName", userName.value)
+    urlParams.set("key", userData.key)
     window.location.href = "/editor?" + urlParams.toString();  // Redirect to the editor page with the game ID and user information
 };

@@ -1,30 +1,3 @@
-const gameboardContent = document.getElementById('gameboard-content');
-const userInterface = document.getElementById('user-interface');
-const gridBackground = document.getElementById('grid-background');
-const backgroundLayer = document.getElementById('background-layer')
-const characterLayer = document.getElementById('character-layer')
-
-const uiAdder = document.getElementById('ui-adder')
-
-// /* GAMEBOARD VARIABLES */
-const boardEvent = {
-    isPanning : false,
-    startX : 0,
-    startY : 0,
-    scale : 1,
-    panX : 0,
-    panY : 0,
-    dragStartX : 0,
-    dragStartY : 0
-}
-
-const uiSelections = {
-    addSelection : "",
-}
-
-const sceneData = {grid_size: 50, width: 2000, height: 2000}
-
-
 const gridSize = sceneData.grid_size
 const width = sceneData.width
 const height = sceneData.height
@@ -70,6 +43,15 @@ const listButton = createImageButton(40, {icon: "list"})
 listButton.id = "ui-settings-button"
 listButton.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(listButton);
+
+addSpacer(leftSideBar)
+
+const logOutButton = createImageButton(40, {icon: "logout"})
+logOutButton.style.justifySelf = 'flex-end'
+logOutButton.style.marginBottom = '10px'
+logOutButton.id = "ui-forge-item-button"
+logOutButton.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(logOutButton);
 
 // Get the selection container
 const addSelection = document.getElementById("ui-add-selection");
@@ -131,56 +113,18 @@ addSelectionMovableSpace.innerText = "Add Movable Space";
 createCard(addSelectionMovableSpace)
 addSelection.appendChild(addSelectionMovableSpace)
 
-
 // Styling for the UI adder container
-uiAdder.style.position = "fixed";
-uiAdder.style.display = "none"
-uiAdder.style.top = "50%";
-uiAdder.style.left = "50%";
-uiAdder.style.transform = "translate(-50%, -50%)";
-
-const uiAdderTopRow = addDraggableRow(uiAdder);
-uiAdderTopRow.classList.add('row');
-uiAdderTopRow.classList.add("vertical")
-uiAdderTopRow.style.justifyContent = "space-between";
-uiAdderTopRow.style.width = "100%"
-
-const uiAdderSheetTitle = document.createElement('h2');
-uiAdderSheetTitle.style.textAlign = 'center';
-uiAdderSheetTitle.style.fontFamily = "'Cinzel', serif"; // DnD theme font
-uiAdderSheetTitle.style.fontSize = '20px'; // Larger font size
-uiAdderSheetTitle.style.margin = '0';
-uiAdderSheetTitle.style.padding = '5px';
-uiAdderSheetTitle.style.borderBottom = '1px solid black';
-uiAdderTopRow.appendChild(uiAdderSheetTitle);
-
-const uiAdderContent = document.createElement("div");
-uiAdderContent.style.display = "grid";
-uiAdderContent.style.gridTemplateColumns = "repeat(3, 1fr)"; // Three-column grid
-uiAdderContent.style.gap = "20px";
-uiAdderContent.style.padding = "20px";
-uiAdderContent.style.background = "rgba(0, 0, 0, 0.9)";
-uiAdderContent.style.borderRadius = "16px";
-uiAdderContent.style.boxShadow = "0px 8px 20px rgba(0, 0, 0, 0.3)";
-uiAdderContent.style.overflowY = "auto"; // Enable scrolling
-uiAdderContent.style.maxHeight = "80vh"; // Limit the height of the UI
-uiAdder.appendChild(uiAdderContent)
-
-const uiAdderSheetCloseButton = createImageButton('28', {source: 'url(static/images/menu-icons/close.png)', custom_padding: 4});
-uiAdderSheetCloseButton.style.marginRight = '5px';
-uiAdderSheetCloseButton.style.cursor = 'pointer';
-uiAdderSheetCloseButton.onclick = () => {
-    uiAdder.style.display = 'none';;
-};
-uiAdderTopRow.appendChild(uiAdderSheetCloseButton);
-
+uiAddBackground.style.position = "fixed";
+uiAddBackground.style.display = "none"
+uiAddBackground.style.top = "50%";
+uiAddBackground.style.left = "50%";
+uiAddBackground.style.transform = "translate(-50%, -50%)";
 
 const topBar = document.getElementById("ui-top-bar");
 topBar.classList.add("row");
 topBar.style.display = "flex";
 topBar.style.marginTop = "5px";
 topBar.style.gap = "5px";
-
 
 const topBarSceneInfo = document.createElement("div");
 topBarSceneInfo.classList.add("column");
@@ -248,20 +192,5 @@ const topBarCenterButton = createImageButton(36, {source:  "url(static/images/me
 topBarTools.appendChild(topBarCenterButton);
 
 const topBarLayerSelector = createInputSelector("Layer: ", ["bg", "char"], ["Background", "Character"])
-
-topBarLayerSelector.inputElement.onchange = (event) => {
-    const selectedElement = event.target.selectedOptions[0].value;
-
-    // Find the previously active element
-    if (selectedElement == "bg") {
-        backgroundLayer.className = "layer active"
-        characterLayer.className = "layer passive"
-    }
-    else if ("char") {
-        backgroundLayer.className = "layer passive"
-        characterLayer.className = "layer active"
-    }
-};
-
 
 topBarOptions.appendChild(topBarLayerSelector)

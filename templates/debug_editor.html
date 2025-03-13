@@ -9,12 +9,16 @@
     <link rel="stylesheet" href="/static/styless/gameboard.css">
     <link rel="stylesheet" href="/static/styless/ui.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined">
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
 <body>
     <div id="user-interface">
         <div id="ui-letside-bar" class="menubar"></div>
         <div id="ui-add-selection" class="menubar"></div>
         <div id="ui-adder" class="menubar"></div>
+        <div id="ui-add-background" class="menubar"></div>
+        <div id="ui-add-object" class="menubar"></div>
+        <div id="ui-add-npc" class="menubar"></div>
         <div id="ui-top-bar" class="menubar"></div>
     </div>
 
@@ -27,7 +31,17 @@
     </div>
 
     <script src="static/javascript/shared_functions.js"></script>
-    <script src="static/javascript/editor/editor_ui_bringup.js"></script>
-    <script src="static/javascript/editor/editor_ui_functions.js"></script>
+    <script src="static/javascript/editor/globals.js"></script>
+    <script src="static/javascript/editor/database.js"></script>
+
+    <script src="static/javascript/editor/shared.js"></script>
+
+    <script src="static/javascript/editor/ui_object.js"></script>
+    <script src="static/javascript/editor/ui_background.js"></script>
+    <script src="static/javascript/editor/ui_npc.js"></script>
+
+    <script src="static/javascript/editor/ui_bringup.js"></script>
+    <script src="static/javascript/editor/ui_functions.js"></script>
+
 </body>
 </html>

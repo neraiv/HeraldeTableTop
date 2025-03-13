@@ -104,7 +104,7 @@ def get_objects():
         return jsonify({"error": "Invalid key."}), 401    
     return jsonify(get_objects_data())
 
-@app.route('/getBackground', methods=['GET'])
+@app.route('/getBackgrounds', methods=['GET'])
 def get_background():
         # CONTROL KEY
     key = request.args.get('key')
@@ -114,6 +114,17 @@ def get_background():
         return jsonify({"error": "Invalid key."}), 401
 
     return jsonify(get_background_data())
+
+@app.route('/getNpcs', methods=['GET'])
+def get_npcs():
+        # CONTROL KEY
+    key = request.args.get('key')
+    userId, userInfo = db.controlKey(key)
+    
+    if not userId and not userInfo:
+        return jsonify({"error": "Invalid key."}), 401
+
+    return jsonify(get_npcs_data())
             
 @app.route('/editor')  # Route with parameters
 def editor():
@@ -123,6 +134,18 @@ def editor():
 def map_view():
     # You can pass any map-related data here
     return render_template('map_view.html')  # Render the map in this view
+
+@app.route("/saveCharacter", methods=["POST"])
+def save_character():
+    try:
+        data: dict = request.get_json()
+        if data is None:
+            return jsonify({"error": "Invalid JSON data."}), 400
+        charId = data.get("charId")
+        if not charId:
+            pass
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def get_background_data():
     backgrounds = {}
@@ -178,25 +201,16 @@ def get_objects_data():
     return result
 
 def get_npcs_data():
-    result = {}
-    path = os.path.join(db.DB_MAIN_PATH,"static/images/objects")
-    for root, dirs, files in os.walk(path):
-        if root == path: continue
-        # Extract folder name
-        folder_name = os.path.basename(root)
-        # Store files in the folder
-        result[folder_name] = files
-    return result
-
-@app.route("/saveCharacter", methods=["POST"])
-def save_character():
     try:
-        data: dict = request.get_json()
-        if data is None:
-            return jsonify({"error": "Invalid JSON data."}), 400
-        charId = data.get("charId")
-        if not charId:
-            pass
+        result = {}
+        path = os.path.join(db.DB_MAIN_PATH,"static/images/character")
+        for root, dirs, files in os.walk(path):
+            if root == path: continue
+            # Extract folder name
+            folder_name = os.path.basename(root)
+            # Store files in the folder
+            result[folder_name] = files
+        return result
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
