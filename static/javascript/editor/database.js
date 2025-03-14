@@ -13,7 +13,8 @@ socket.on('disconnect', (reason) => {
 async function sendRequest({ type, payload, timeout = 5000 }) {
     return new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
-            reject(new Error(`Request timed out after ${timeout}ms`));
+            new Error(`Request timed out after ${timeout}ms`);
+            resolve({success: false})
         }, timeout);
 
         socket.emit("request", {

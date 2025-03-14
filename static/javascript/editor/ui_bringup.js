@@ -192,5 +192,35 @@ const topBarCenterButton = createImageButton(36, {source:  "url(static/images/me
 topBarTools.appendChild(topBarCenterButton);
 
 const topBarLayerSelector = createInputSelector("Layer: ", ["bg", "char"], ["Background", "Character"])
-
 topBarOptions.appendChild(topBarLayerSelector)
+
+const uiCoordinates = document.createElement("div")
+uiCoordinates.id = "ui-coords"
+uiCoordinates.style.top = "0px";
+uiCoordinates.style.right = "0px";
+uiCoordinates.style.position = "fixed";
+uiCoordinates.style.zIndex = uiZIndex;
+uiCoordinates.style.display = "flex"
+uiCoordinates.style.flexDirection = "column";
+
+const topBarCoordinates = document.createElement("p");
+topBarCoordinates.style.padding = "10px";
+topBarCoordinates.style.fontSize = "12px";
+topBarCoordinates.style.color = "#f5f5f5";
+topBarCoordinates.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+topBarCoordinates.style.borderRadius = "5px";
+topBarCoordinates.style.fontFamily = "'Cinzel', serif";
+topBarCoordinates.textContent = "x: 0, y: 0"
+uiCoordinates.appendChild(topBarCoordinates);
+
+const topBarCoordinates2 = document.createElement("p");
+topBarCoordinates2.style.padding = "10px";
+topBarCoordinates2.style.fontSize = "12px";
+topBarCoordinates2.style.color = "#f5f5f5";
+topBarCoordinates2.style.backgroundColor = "rgba(219, 42, 42, 0.7)";
+topBarCoordinates2.style.borderRadius = "5px";
+topBarCoordinates2.style.fontFamily = "'Cinzel', serif";
+topBarCoordinates2.textContent = "x: 0, y: 0"
+uiCoordinates.appendChild(topBarCoordinates2);
+
+userInterface.appendChild(uiCoordinates);

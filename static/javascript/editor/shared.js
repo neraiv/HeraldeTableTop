@@ -201,7 +201,6 @@ function addUIDefaults(parent){
 }
 
 function createEditButtons(parent, options) {
-
     let returns = []
 
     // Create the edit buttons container
@@ -242,7 +241,6 @@ function createEditButtons(parent, options) {
         }, 200);
     }
 
-
     options.forEach(option => {
         const editButton = document.createElement("button");
         editButton.textContent = option;
@@ -257,17 +255,25 @@ function createEditButtons(parent, options) {
 
         editButtons.appendChild(editButton);
     });
-    // Edit Shape Button
 
+    // Show edit buttons when hovering over parent
+    parent.addEventListener("mouseenter", showEditButtons);
+    parent.addEventListener("mouseleave", hideEditButtons);
+    
+    // Keep edit buttons visible when hovered over them
+    editButtons.addEventListener("mouseenter", showEditButtons);
+    editButtons.addEventListener("mouseleave", hideEditButtons);
 
-   // Show edit buttons when hovering over parent
-   parent.addEventListener("mouseenter", showEditButtons);
-   parent.addEventListener("mouseleave", hideEditButtons);
-   
-   // Keep edit buttons visible when hovered over them
-   editButtons.addEventListener("mouseenter", showEditButtons);
-   editButtons.addEventListener("mouseleave", hideEditButtons);
+    // Hide edit buttons on drag start
+    parent.addEventListener("dragstart", () => {
+        hideEditButtons();
+    });
 
-   parent.appendChild(editButtons);
-   return returns
+    // Optionally, show edit buttons on drag end
+    parent.addEventListener("dragend", () => {
+        showEditButtons();
+    });
+
+    parent.appendChild(editButtons);
+    return returns;
 }

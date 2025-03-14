@@ -3,6 +3,7 @@ async function  createAddNpcUI() {
 
     if (reply.success === false) {
         alert("Can't get backgrounds data.")
+        return
     }
 
     const avaliableCharacters = reply.data
@@ -104,10 +105,27 @@ async function addNpcToken({id, src}){
     charToken.style.width = `${sceneData.grid_size}px`
     charToken.style.height = `${sceneData.grid_size}px`
     charToken.draggable = true
-
     charToken.style.backgroundImage = `url(${src})`;
-
     characterLayer.appendChild(charToken)
+
+
+    charToken.addEventListener("dragstart", (event) => {
+        charToken.classList.add('dragging');
+        boardEvent.dragStartX = event.clientX
+        boardEvent.dragStartY = event.clientY
+    })
+
+    charToken.addEventListener("drag", (event) => {
+        const rect = gameboardContent.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        charToken.style.left = `${mouseX - (boardEvent.dragStartX - boardEvent.panX) / boardEvent.scale}px`;
+        charToken.style.top = `${mouseY - (boardEvent.dragStartY - boardEvent.panY) / boardEvent.scale}px`;
+    })
+
+    charToken.addEventListener("dragend", (e) => {
+        charToken.classList.remove('dragging');
+    })
 
     editTokenShape(charToken)
 

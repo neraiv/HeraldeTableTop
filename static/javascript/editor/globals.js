@@ -1,3 +1,5 @@
+const uiZIndex = 10
+
 const gameboardContent = document.getElementById('gameboard-content');
 const userInterface = document.getElementById('user-interface');
 const gridBackground = document.getElementById('grid-background');
