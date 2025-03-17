@@ -5,12 +5,26 @@ class ChatHandler:
     def __init__(self, file_path):
         """
         Initialize the ChatHandler with the path to the CSV file.
-        :param file_path: Path to the CSV file.
+
+        Parameters:
+        file_path (str): Path to the CSV file. The file should exist and be accessible.
+
+        The ChatHandler instance will be initialized with the provided file_path, and it will ensure that the file exists with the required columns.
+        If the file does not exist, it will be created with appropriate headers. If the file exists but the 'idx' column does not start from 1,
+        the indices will be rewritten to start from 1. The highest index value from the file will be stored in the 'last_idx' attribute.
+
+        Attributes:
+        file_path (str): Path to the CSV file.
+        updated (bool): Indicates whether the chat file has been updated since the last read.
+        last_idx (int): The highest index value from the chat file.
+
+        Raises:
+        FileNotFoundError: If the file does not exist and cannot be created.
         """
         self.file_path = file_path
         self.updated = True
         self.last_idx = 0
-        
+
         # Ensure the file exists with the required columns
         try:
             df = pd.read_csv(self.file_path, sep=";")
@@ -26,19 +40,35 @@ class ChatHandler:
                 self.file_path, sep=";", index=False
             )
 
+
     def _rewrite_indices(self, df: pd.DataFrame):
         """
         Rewrite the indices in the DataFrame to start from 1.
-        :param df: The DataFrame to rewrite.
+
+        This function takes a pandas DataFrame as input, rewrites the indices to start from 1,
+        and saves the updated DataFrame back to the CSV file.
+
+        Parameters:
+        df (pd.DataFrame): The DataFrame to rewrite. The DataFrame should have a column named 'idx'.
+
+        Returns:
+        None. The function modifies the input DataFrame in-place and saves it to the CSV file.
         """
         df['idx'] = range(1, len(df) + 1)
         df.to_csv(self.file_path, sep=";", index=False)
 
+
     def addMessage(self, user, message, timestamp):
         """
         Append a message to the chat file.
-        :param user: The username of the sender.
-        :param message: The message content.
+
+        Parameters:
+        user (str): The username of the sender.
+        message (str): The message content.
+        timestamp (str): The timestamp of the message in a format compatible with pandas.to_datetime().
+
+        Returns:
+        str: "success" if the message is successfully appended to the chat file, or an error message if an exception occurs.
         """
         try:
             try:
@@ -63,6 +93,7 @@ class ChatHandler:
 
         except Exception as e:
             return f"{str(e)}"
+
 
     def getMessages(self, start_idx, length):
         """

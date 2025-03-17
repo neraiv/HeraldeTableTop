@@ -5,7 +5,7 @@ from flask_cors import CORS  # Import the CORS package
 import json
 import os
 
-from import_db_files import *
+from db_import import *
 from db_handler import wait_until_file_is_closed
 
 app = Flask(__name__)

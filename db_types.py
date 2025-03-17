@@ -21,3 +21,7 @@ class TypeQuestStatus(Enum):
     IN_PROGRESS = "in_progress"
     NOT_AVAILABLE = "not_available"
     OK = "ok"
+    
+class TypeOnlineStatus(Enum):
+    ONLINE = "online"
+    OFFLINE = "offline"

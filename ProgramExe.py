@@ -8,7 +8,7 @@ from program.page_add_char import PageAddChar
 import threading
 import sys
 import time
-from new_server import app, socketio, db, DBHandeler
+from server import app, socketio, db, DBHandeler
 
 
 class MainWindow(QMainWindow):

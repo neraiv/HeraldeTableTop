@@ -7,418 +7,86 @@ import json
 import os
 import atexit
 
-from import_db_files import *
-from db_handler_old import *
+from db_handler import DBHandeler
+from db_key_handeler import controlKey
 
-DEBUG_MODE = False
 
-db = DBHandeler(os.path.join(DB_MAIN_PATH, 'database', 'chat.csv'))
+db = DBHandeler()
 
-sync_thread = threading.Thread(target=db.start_sync_timer, daemon=True)
-sync_thread.start()
-
-atexit.register(db.on_exit)
 app = Flask(__name__)
 app.secret_key = "48c80162841c766a3bee0d888fdaeacb4e6f1792710d34e0"
 CORS(app)  # Enable CORS for all routes
+
+atexit.register(db.onExit)
+
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+@socketio.on('request')
+def handle_message(msg :dict):
+    try:
+        key = msg["key"]
+        
+        userId, userInfo = db.controlKey(key)
+        if userId and userInfo:
+            msg.pop("key")
+            socket_reply, socket_update = db.websocketHandler(msg, userId, userInfo)
+            emit("response", socket_reply, room=request.sid)
+            
+            if socket_update:
+                for item in socket_update:
+                    isAllUsers = item["all_users"]
+                    item.pop("all_users")
+                    if isAllUsers:
+                        emit("change", item)
+                    else:
+                        emit("change", item, room=request.sid)
+            
+    except json.JSONDecodeError:
+        # Send back the response
+        emit("error", jsonify({"error": f"Error decoding JSON in function {__name__}"}), room=request.sid)
+    
 @app.route('/')  # Renamed this route
 def home():
     return render_template('debug_login.html')  # Render the HTML file
 
-@socketio.on('message')
-def handle_message(msg :dict):
-    print(f'Received message: {msg}')
-    send(f'You said: {msg}', broadcast=True)
-    
-@socketio.on('custom_event')
-def handle_custom_event(input: dict):
-    key = input.get('key')
-    type = input.get('type')
-    data: dict = input.get('data')
-    
-    if key and type and data:
-        if(type == "inv_itm"):
-            response = db.check_item_transaction(data)
-    else:
-        response = "Invalid input data."
-        
-    emit('response_event', {'response': f'{response}'}, broadcast=True)
-    
-@app.route('/debug')  # Renamed this route
-def debug():
-    return render_template('debug_game.html')  # Render the HTML file
-   
-@app.route('/getSession', methods=['GET'])  # Route with parameters
-def getSession():
-    return getSession_func()
-
 @app.route('/game')  # Route with parameters
 def game():
-    key = request.args.get('key')  # Assuming key is passed as a query parameter
-    return openGamePage(key)
-
-@app.route('/requestLogin', methods=['POST'])
-def login():
-    return login_func()
-
-@app.route('/getGameInfo', methods=['GET'])
-def getGameInfo():
-    return getGameInfo_func()
-
-@app.route('/getChat', methods=['GET'])
-def getChat():
-    return getChat_func()
-
-@app.route('/sendMessage', methods=['POST'])
-def sendMessage():
-    return sendMessage_func()
-
-@app.route('/getChar', methods=['GET'])
-def getChar():
-    return getChar_func()
-
-@app.route('/registerChar', methods=['POST'])
-def registerChar():
-    return registerChar_func()
-
-@app.route('/getScene', methods=['GET'])
-def getScene():
-    return getScene_func()
-
-def getScene_func():
-    try:
-        key = request.args.get('key')  # Extract 'key' from query parameters
-        sceneName = request.args.get('sceneName')  # Extract 'scene' from query parameters
-
-        if not key or not sceneName and not DEBUG_MODE:
-            return jsonify({"error": "Key or image name is not provided."}), 400
-        
-        if not DEBUG_MODE:
-            userName, userInfo = db.controlKey(key)
-
-        successStatus = False
-
-        if userName or DEBUG_MODE:
-            all_scene_data: dict = db.scenes
-            requestedScene: dict = all_scene_data.get(sceneName)
-            if requestedScene:
-                require = requestedScene.get("requirements")
-                if require:
-                    # ---------------------- Check requirements ----------------------
-                    # Check if the user has the required item
-                    if require["type"] == "item":
-                        char = db.chars.get(userInfo["character"])
-                        if char:
-                            if require["item"] in char["inventory"] and char["inventory"][require["item"]] >= require["amount"]:
-                                if require["after"] == "remove":
-                                    del requestedScene["requirements"]
-                                successStatus = True
-                            else:
-                                return jsonify({"error": "You don't have the required item.", "required": True}), 404
-                        else:
-                            return jsonify({"error": "Character not found."}), 404
-                else:
-                    # ---------------------- No requirements ----------------------
-                    successStatus = True
-                
-                if successStatus:
-                    if requestedScene["discovered"] == False:
-                        requestedScene["discovered"] = True
-                        all_scene_data[sceneName] = requestedScene
-                        
-                        # Future: Save the updated scene data back to the file
-
-                    return jsonify({"success": "200", "scene": requestedScene}), 200
-            else:
-                return jsonify({"error": "Scene not found."}), 404
-        else:
-            return jsonify({"error": "User not found or not online."}), 404
-        
-    except json.JSONDecodeError:
-        return jsonify({
-            "error": f"Error decoding JSON in function {__name__}"
-        }), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-def templeteGetFunc():
-    try:
-        key = request.args.get('key')  # Extract 'key' from query parameters
-
-        if not key and not DEBUG_MODE:
-            return jsonify({"error": "Key is not provided."}), 400
-        
-        if not DEBUG_MODE:
-            user = db.controlKey(key)[0]
-
-        if user or DEBUG_MODE:
-            # Here
-            pass
-            # --------------------------------------------------
-        else:
-            return jsonify({"error": "User not found or not online."}), 404
-        
-    except json.JSONDecodeError:
-        return jsonify({
-            "error": f"Error decoding JSON in function {__name__}"
-        }), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    key = request.args.get('key')
+    userName, user = db.controlKey(key)
     
-def getSession_func():
     try:
-        key = request.args.get('key')  # Extract 'key' from query parameters
-
-        if not key and not DEBUG_MODE:
-            return jsonify({"error": "Key is not provided."}), 400
-        
-        if not DEBUG_MODE:
-            user = db.controlKey(key)[0]
-
-        if user or DEBUG_MODE:
-            session_data: dict = db.session_info
-            
-            # Get the current scene
-            scenes_data = db.scenes
-                        
-            if session_data and scenes_data:
-
-                for scene in scenes_data:
-                    if scenes_data[scene]["discovered"] == False:
-                        scenes_data[scene] = {"discovered": False} # Hide undiscovered scenes
-
-                return jsonify({"success": "200", "session": session_data, "scenes": scenes_data}), 200
-            else:
-                # FUTURE Find what is missing?   
-                return jsonify({"error": "Something is missing in session."}), 404
-        else:
-            return jsonify({"error": "User not found or not online."}), 404
-        
-    except json.JSONDecodeError:
-        return jsonify({
-            "error": f"Error decoding JSON in function {__name__}"
-        }), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-def sendMessage_func():
-    try:
-
-        data: dict = request.get_json()
-        if data is None:
-            return jsonify({"error": "Invalid JSON data."}), 400
-        key = data.get('key')
-        message = data.get('message')
-
-        if not key and not DEBUG_MODE:
-            return jsonify({"error": "Key is not provided."}), 400
-        
-        if not DEBUG_MODE:
-            username = db.controlKey(key)[0]
-
-        if username or DEBUG_MODE:
-            try:
-                db.addMessage(username, message)
-                return jsonify({"success": "Message sent successfully."})
-            except Exception as e:
-                return jsonify({"error": str(e)}), 500
-        else:
-            return jsonify({"error": "User not found or not online."}), 404        
-    except json.JSONDecodeError:
-        return jsonify({
-            "error": f"Error decoding JSON in function {__name__}"
-        }), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-def getChat_func():
-    try:
-        key = request.args.get('key')  # Extract 'key' from query parameters
-        idx = int(request.args.get('idx'))  # Extract 'info' from query parameters
-        len = int(request.args.get('len')) # Extract
-
-        if not key or not idx or not len and not DEBUG_MODE:
-            return jsonify({"error": "Key is not provided."}), 400
-        
-        print(len, idx , request.args.get('len'), request.args.get('idx'))
-            
-        if not DEBUG_MODE:
-            user = db.controlKey(key)[0]
-
-        if user or DEBUG_MODE:
-            chat_data = db.getMessages(idx, len)
-            print(chat_data)
-            if chat_data:
-                return jsonify({"success": "Successfully got game info file.", "data": chat_data}) 
-            else:
-                return jsonify({"error": "Game info not found."}), 404
-        else:
-            return jsonify({"error": "User not found or not online."}), 404
-        
-    except json.JSONDecodeError:
-        return jsonify({
-            "error": f"Error decoding JSON in function {__name__}"
-        }), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-def getGameInfo_func():
-    try:
-        key = request.args.get('key')  # Extract 'key' from query parameters
-        info = request.args.get('info')  # Extract 'info' from query parameters
-
-        if not key or not info:
-            return jsonify({"error": "Missing data"}), 400
-
-        if not DEBUG_MODE:
-            user = db.controlKey(key)[0]
-
-        if user or DEBUG_MODE:
-            
-            db_data = db.getDbData(info)
-            
-            if db_data:
-                return jsonify({"success": "Successfully got game info file.", "data": db_data}) 
-            else:
-                return jsonify({"error": "Game info not found."}), 404
-            
-        else:
-            return jsonify({"error": "User not found or not online."}), 404
-        
-    except json.JSONDecodeError:
-        return jsonify({
-            "error": f"Error decoding JSON in function {__name__}"
-        }), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-def registerChar_func():
-    try:
-        data: dict = request.get_json()
-        if data is None:
-            return jsonify({"error": "Invalid JSON data."}), 400
-        
-        key = data.get('key')
-    
-        if not key:
-            return jsonify({"error": "Key is not provided."}), 400
-        
-        user = db.controlKey(key)[1]
-
-        if user:
-            
-            if user.get("character") == "":
-
-                all_chars: dict = db.chars
-                
-                char = data["char"]
-                char_name = char["name"]
-                all_chars[char_name] = char
-
-                db.wait_until_file_is_closed(CHARS)
-                with open(CHARS, 'w', encoding='utf-8') as file:
-                    json.dump(all_chars, file, ensure_ascii=False)
-
-                return jsonify({"success": "Character registered.", "char_name": char_name}), 200
-            else:
-                return jsonify({"error": "Character already registered."}), 400
-        else:
-            return jsonify({"error": "User not found or not online."}), 404
-        
-    except json.JSONDecodeError:
-        return jsonify({
-            "error": f"Error decoding JSON in function {__name__}"
-        }), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-def getChar_func():
-    try:
-        key = request.args.get('key')  # Extract 'key' from query parameters
-        charId = request.args.get('char')  # Extract 'info' from query parameters
-
-        if not key or not charId:
-            return jsonify({"error": "Key is not provided."}), 400
-        
-        userName, info = db.controlKey(key)
-
-        if userName:
-            
-            all_chars: dict = db.chars
-                                
-            charInfo = all_chars.get(charId)
-
-            if db.rules["visible_inventories"] == False:
-                if info["character"] != charId:
-                    charInfo["char"]["inventory"] = None
-
-            if charInfo:
-                return jsonify({"success": "Character data retrieved.", "char": charInfo}), 200
-            else:
-                return jsonify({"error": "Character not found."}), 200
-        else:
-            return jsonify({"error": "User not found or not online."}), 404
-        
-    except json.JSONDecodeError:
-        return jsonify({
-            "error": f"Error decoding JSON in function {__name__}"
-        }), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-def openGamePage(key):
-    try:
-        if not key:
-            return jsonify({"error": "Key or username not provided."}), 400
-        
-        user = db.controlKey(key)[1]
-        
-        if user:
-            if user['type'] == "dungeon_master":
+        if userName and user:
+            if user["type"] == "dungeon_master":
                 return jsonify({"success": "Opening dungeon master page."}), 200
             elif user['type'] == "adventurer":
                 return render_template('debug_game.html')  # Render the HTML file
         else:
             return render_template("debug_login.html")
-
     except json.JSONDecodeError:
         return jsonify({
             "error": f"Error decoding JSON in function {__name__}"
         }), 500 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-def login_func():
+    
+@app.route('/login', methods=['POST'])
+def login():
     try:
-
         data: dict = request.get_json()
         if data is None:
             return jsonify({"error": "Invalid JSON data."}), 400
-        username = data.get('username')
+        
+        username = data.get('username') 
         password = data.get('password')
-  
-        # Check if the user exists and matches password if provided
-        user = db.users.get(username)
-        if user and (user["password"] == password):
-            if user["status"] == "offline":       
-                # Update last_sync to current time
-                user["last_sync"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
-                user["key"] = db.generate_key()
-                user["status"] = "online"
-
-                # Save updated last_sync and status back to the file
-                db.wait_until_file_is_closed(USERS)
-                with open(USERS, 'w') as file:
-                    json.dump(db.users, file, indent=4)
-
-                return jsonify({"success": "Successfully logged in as " + user["type"], "key": user["key"], "charId": user["character"]}), 200
+        
+        if  username and password:
+            status, newKey, charId = db.userLogin(username, password) 
+            if status == "ok":
+                return jsonify({"success": True, "key": newKey, "charId": charId}), 200
             else:
-                return jsonify({"error": "User is already logged in."}), 200
+                return jsonify({"error": status}), 200
         else:
-            return jsonify({"error": "Invalid user_id or password."}), 400
-            
+            return jsonify({"error": "Missing username or password"}), 400       
     except json.JSONDecodeError:
         return jsonify({
             "error": f"Error decoding JSON in function {__name__}"
@@ -426,5 +94,129 @@ def login_func():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/getObjects', methods=['GET'])
+def get_objects():
+    # CONTROL KEY
+    key = request.args.get('key')
+    userId, userInfo = db.controlKey(key)
+    
+    if not userId and not userInfo:
+        return jsonify({"error": "Invalid key."}), 401    
+    return jsonify(get_objects_data())
+
+@app.route('/getBackgrounds', methods=['GET'])
+def get_background():
+        # CONTROL KEY
+    key = request.args.get('key')
+    userId, userInfo = db.controlKey(key)
+    
+    if not userId and not userInfo:
+        return jsonify({"error": "Invalid key."}), 401
+
+    return jsonify(get_background_data())
+
+@app.route('/getNpcs', methods=['GET'])
+def get_npcs():
+        # CONTROL KEY
+    key = request.args.get('key')
+    userId, userInfo = db.controlKey(key)
+    
+    if not userId and not userInfo:
+        return jsonify({"error": "Invalid key."}), 401
+
+    return jsonify(get_npcs_data())
+            
+@app.route('/editor')  # Route with parameters
+def editor():
+    return render_template('debug_editor.html')
+
+@app.route('/map')  # Route to display the map
+def map_view():
+    # You can pass any map-related data here
+    return render_template('map_view.html')  # Render the map in this view
+
+@app.route("/saveCharacter", methods=["POST"])
+def save_character():
+    try:
+        data: dict = request.get_json()
+        if data is None:
+            return jsonify({"error": "Invalid JSON data."}), 400
+        charId = data.get("charId")
+        if not charId:
+            pass
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def get_background_data():
+    backgrounds = {}
+
+    try:
+        # Iterate over directories in ROOT_DIR
+        backgrounds_path = os.path.join(db.DB_MAIN_PATH, "static/images/background")
+        for folder in os.listdir(backgrounds_path):
+            folder_path = os.path.join(backgrounds_path, folder)
+
+            if os.path.isdir(folder_path):
+                background_data = {
+                    "layers": {}
+                }
+
+                # Iterate over files inside the folder
+                for file in os.listdir(folder_path):
+                    file_path = os.path.join(folder_path, file)
+
+                    # Identify ambiance (MP3 file)
+                    if file.endswith(".mp3"):
+                        background_data["ambiance"] = file
+                    
+                    # Identify image layers
+                    elif file.endswith((".jpg", ".png", ".jpeg", ".webp")):
+                        parts = file.split("_")
+                        if len(parts) == 2 and parts[1].split(".")[0].isdigit():
+                            layer_number = parts[1].split(".")[0]
+                            layer_type = "dark" if "dark" in file.lower() else "light"
+
+                            if layer_number not in background_data["layers"]:
+                                background_data["layers"][layer_number] = {}
+
+                            background_data["layers"][layer_number][layer_type] = file
+                
+                # Store structured data in the main dictionary
+                backgrounds[folder] = background_data
+
+        return backgrounds
+
+    except Exception as e:
+        return {"error": str(e)}
+
+def get_objects_data():
+    result = {}
+    path = os.path.join(db.DB_MAIN_PATH,"static/images/objects")
+    for root, dirs, files in os.walk(path):
+        if root == path: continue
+        # Extract folder name
+        folder_name = os.path.basename(root)
+        # Store files in the folder
+        result[folder_name] = files
+    return result
+
+def get_npcs_data():
+    try:
+        result = {}
+        path = os.path.join(db.DB_MAIN_PATH,"static/images/character")
+        for root, dirs, files in os.walk(path):
+            if root == path: continue
+            # Extract folder name
+            folder_name = os.path.basename(root)
+            # Store files in the folder
+            result[folder_name] = files
+        return result
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def main():
+    socketio.run(app, host='127.0.0.1', port=5000, debug=True)
+
 if __name__ == '__main__':
-    socketio.run(app, debug=True)  # Run the app in debug mode
+    main()
+    

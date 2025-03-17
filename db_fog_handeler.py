@@ -20,7 +20,7 @@ def get_fog_type(string) -> FogType:
     else:
         return FogType.NONE
     
-def calc_visible_areas(locations: dict, fog_type: FogType, chars: dict) -> dict:
+def calcVisibleAreas(locations: dict, fog_type: FogType, chars: dict) -> dict:
     visableAreas = []
     
     char_locations = locations["chars"]
@@ -76,7 +76,7 @@ def calc_visible_areas(locations: dict, fog_type: FogType, chars: dict) -> dict:
     return visableAreas
 
 
-def apply_mask(locations: dict, visableAreas: list) -> dict:
+def applyMask(locations: dict, visableAreas: list) -> dict:
     """
     Applies fog to given locations
     

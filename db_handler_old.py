@@ -2,11 +2,11 @@ import threading
 import time
 import json
 from datetime import datetime, timezone
-from import_db_files import *  # Ensure this has the USERS path or constants
+from db_import import *  # Ensure this has the USERS path or constants
 import secrets
-from chat_handler import ChatHandler
-from images_handler import ImagesHandeler
-from permission_handeler import PermissonHandeler
+from db_chat_handler import ChatHandler
+from db_images_handler import ImagesHandeler
+from db_permission_handeler import PermissonHandeler 
 
 class DBHandeler(ChatHandler, ImagesHandeler, PermissonHandeler):
     def __init__(self, file_path):
