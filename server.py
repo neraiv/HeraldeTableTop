@@ -7,11 +7,11 @@ import json
 import os
 import atexit
 
-from db_handler import DBHandeler
+from db_handler import DBHandler
 from db_key_handeler import controlKey
 
 
-db = DBHandeler()
+db = DBHandler()
 
 app = Flask(__name__)
 app.secret_key = "48c80162841c766a3bee0d888fdaeacb4e6f1792710d34e0"

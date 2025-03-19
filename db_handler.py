@@ -9,16 +9,18 @@ import threading
 
 import numpy as np
 
+from db_action_handler import actionCharMove, actionPortal
 from db_chat_handler import ChatHandler
-from db_key_handeler import controlKey, generate_key
-from db_fog_handeler import FogType, applyMask, calcVisibleAreas
+from db_mask_functions import FogType, applyMask, calcAcceptedAreas
 from db_event_handler import EventHandler
 from db_consts import *
 from db_types import *
 
+from db_shared_func import get_currentTime
+
 DEBUG_PRINT = True
         
-class DBHandeler():
+class DBHandler():
     """Handler for database operations.
 
     Returns:
@@ -26,6 +28,15 @@ class DBHandeler():
     """
     DB_MAIN_PATH = os.path.dirname(os.path.abspath(__file__))
     DB_GAMES_PATH = os.path.join(DB_MAIN_PATH, 'database', 'games')
+    
+    _instance = None  # Private class attribute to hold the instance
+    
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+            # You can add initialization logic here if needed, but typically in __init__
+            print("Singleton instance created for the first time.")
+        return cls._instance
     
     def __init__(self):  
         self.server_info : dict   = self.getGameFile("server_info.json", DatabaseWhere.FROM_ROOT)
@@ -67,10 +78,10 @@ class DBHandeler():
         self.sync_thread.start()
         
         ## Chat 
-        self.chat = ChatHandler(os.path.join(DBHandeler.DB_GAMES_PATH, active_session, "chat.csv"))
+        self.chat = ChatHandler(os.path.join(DBHandler.DB_GAMES_PATH, active_session, "chat.csv"))
         
         ## Event handler
-        self.event_handler = EventHandler(self.session_info["current_turn"], os.path.join(DBHandeler.DB_GAMES_PATH, active_session, "events.csv"),
+        self.event_handler = EventHandler(self.session_info["current_turn"], os.path.join(DBHandler.DB_GAMES_PATH, active_session, "events.csv"),
                                           {
                                             "action" : self.handle_action,  
                                           })
@@ -90,7 +101,7 @@ class DBHandeler():
         The server information is stored in the self.server_info dictionary.
         """
         self.server_info["status"] = "online"
-        self.server_info["time"] = self.get_currentTime()
+        self.server_info["time"] = get_currentTime()
 
     
     def init_users(self):
@@ -111,53 +122,7 @@ class DBHandeler():
                                      userId)
 
         
-    def get_currentTime(self) -> str:
-        """
-        Returns the current time in UTC format.
 
-        Parameters:
-        None
-
-        Returns:
-        str: The current time in the format "YYYY-MM-DD HH:MM:SS Z".
-        """
-        return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
-
-
-    def checkDistance(self, target1: dict, target2: dict, distance: float) -> bool:
-        """
-        Checks if the distance between two points is less than a given distance.
-
-        Parameters:
-        target1 (dict): A dictionary containing 'x' and 'y' coordinates of the first point.
-        target2 (dict): A dictionary containing 'x' and 'y' coordinates of the second point.
-        distance (float): The maximum distance between the two points.
-
-        Returns:
-        bool: True if the distance between the two points is less than the given distance, False otherwise.
-        """
-        distance_x = target1["x"] - target2["x"]
-        distance_y = target1["y"] - target2["y"]
-
-        return np.sqrt(distance_x**2 + distance_y**2) < distance
-
-    
-    def checkReqirement(self, rquirement, charId):
-        type = rquirement["type"]
-        if type == "scene":
-            return self.session_info["locations"][charId]["currentScene"]["name"] == rquirement["target"]
-        elif "quest" in type:
-            questFullId = rquirement["target"]
-            questGiver, questId = questFullId.split("-")
-            
-            if "completed" in type:
-                return self.quests[questGiver]["quests"][questId]["status"] == TypeQuestStatus.COMPLETED.value
-            elif "ok" in type:
-                return self.quests[questGiver]["quests"][questId]["status"] == TypeQuestStatus.OK.value
-            else:
-                return False
-        else:
-            return False
     #%% 
     ########################################################################
     ######################## Periodic Checks ###############################
@@ -193,7 +158,7 @@ class DBHandeler():
         Returns:
         None
         """
-        self.server_info["time"] = self.get_currentTime()
+        self.server_info["time"] = get_currentTime()
         self.server_info["status"] = "online"
         self.syncFile(server_info=True)
 
@@ -230,41 +195,7 @@ class DBHandeler():
     #%%
     ########################################################################
     #########################  USER RELATED ################################
-    ########################################################################    
-    def userLogin(self, username, password):
-        """Logs in the user. Creates a key and updates last_seen time.
-
-        Args:
-            username (str): username to login
-            password (password): password to login
-
-        Returns:
-            response: login resposne, key, character of user
-        """
-        if username in self.users and self.users[username]["password"] == password:
-            if self.users[username]["status"] == "offline":
-                self.users[username]["last_seen"] = self.get_currentTime()
-                self.users[username]["status"] = "online"
-                self.users[username]["key"] = generate_key(self.users)
-                self.syncFile(users=True)
-                return "ok", self.users[username]["key"], self.users[username]["character"]
-            else: 
-                return "user online", None, None ## User is alerady online
-        return "invalid username password", None, None ## Invalid username and password
-    
-    def controlKey(self, key):
-        """Tries to find user with the provided key and returns user data.
-
-        Args:
-            key (str): Key of the user. Provided with userLogin()
-
-        Returns:
-            tuple: (id_of_user, userInfo)
-        """
-        userId, userInfo = controlKey(self.users, key)
-
-        return userId, userInfo
-    
+    ########################################################################        
     def handleUser(self, userId, type):
         """handles user profile related actions.
 
@@ -282,7 +213,7 @@ class DBHandeler():
         
         if type == "sync":
             if userId in self.users:
-                self.users[userId]["last_seen"] = self.get_currentTime()
+                self.users[userId]["last_seen"] = get_currentTime()
                 self.syncFile(users=True)
                 socketReply = {
                     "success" : True
@@ -299,17 +230,6 @@ class DBHandeler():
             }
         return socketReply, socketUpdate
             
-        
-    def userSetOnlineStatus(self, status: TypeOnlineStatus, id: str):
-        """Sets a user or all users to offline
-
-        Args:
-            id (str, optional): Give id to set an user online. None to set all users offline. Defaults to None.
-        """
-        if id in self.users:
-            self.users[id]["status"] = status.value
-            self.syncFile(users=True)
-            return
     #%%
     ########################################################################
     #########################  FILES RELATED ###############################
@@ -355,11 +275,11 @@ class DBHandeler():
         path = ""
         if where == DatabaseWhere.FROM_SESSION:
             active_session = self.server_info["active_session"]       
-            path = os.path.join(DBHandeler.DB_GAMES_PATH, active_session, name)
+            path = os.path.join(DBHandler.DB_GAMES_PATH, active_session, name)
         elif where == DatabaseWhere.FROM_DEFAULTS:
-            path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", "defaults", name)
+            path = os.path.join(DBHandler.DB_MAIN_PATH,"database", "defaults", name)
         else:
-            path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", name)
+            path = os.path.join(DBHandler.DB_MAIN_PATH,"database", name)
 
         with open(path, 'r', encoding="utf-8") as file:
             return json.load(file)
@@ -375,11 +295,11 @@ class DBHandeler():
         path = ""
         if where == DatabaseWhere.FROM_SESSION:
             active_session = self.server_info["active_session"]       
-            path = os.path.join(DBHandeler.DB_GAMES_PATH, active_session, name)
+            path = os.path.join(DBHandler.DB_GAMES_PATH, active_session, name)
         elif where == DatabaseWhere.FROM_DEFAULTS:
-            path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", "defaults", name)
+            path = os.path.join(DBHandler.DB_MAIN_PATH,"database", "defaults", name)
         else:
-            path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", name)
+            path = os.path.join(DBHandler.DB_MAIN_PATH,"database", name)
         
         with open(path, 'w', encoding="utf-8") as file:
             json.dump(data, file)
@@ -388,7 +308,7 @@ class DBHandeler():
     ########################################################################  
     #########################  SCENE RELATED ###############################
     ########################################################################  
-    def sceneCalcVisibleAreas(self, scene_name, layer):
+    def sceneCalcVisibleArea(self, scene_name, layer):
         """Calculates visible areas in a scene in self.scenes.
 
         Args:
@@ -398,7 +318,7 @@ class DBHandeler():
         Returns:
             dict: VisibleAreas
         """
-        return calcVisibleAreas(self.scenes[scene_name]["layers"][layer]["locations"],
+        return calcAcceptedAreas(self.scenes[scene_name]["layers"][layer]["locations"],
                                 self.rules["fogType"], self.chars)
         
     def init_activeArea(self, scene_name, layer, visible_areas= True, events= True):
@@ -427,171 +347,18 @@ class DBHandeler():
                     self.event_handler.addEvent("scene", -1, {"type": "env", "payload": {"action": "move", "id": npcId, "info": movement}})
 
             self.activeAreas[sceneFullName] = {
-                "visibleAreas" : self.sceneCalcVisibleAreas(scene_name, layer) if visible_areas else self.activeAreas[sceneFullName]["visibleAreas"],
+                "visibleAreas" : self.sceneCalcVisibleArea(scene_name, layer) if visible_areas else self.activeAreas[sceneFullName]["visibleAreas"],
                 "events" : {} if events else self.activeAreas[sceneFullName]["events"]
             }
 
         return self.activeAreas[sceneFullName]
 
-        
-    def sceneGetCharScene(self, charId: str):
-        """Finds the current scene of the char and returns it scene data with visible areas
-
-        Args:
-            charId (str): Id of the char
-
-        Returns:
-            dict: maskedScene. The visible part of the game to user.
-        """
-        
-        current_scene = self.session_info["locations"][charId]["currentScene"]
-        scene_name = current_scene["name"]
-        layer = current_scene["layer"]
-        
-        currentSceneName = scene_name + "-" + layer
-              
-        masked_scene = {
-            'discovered': self.scenes[scene_name]['discovered'], 
-            'width'     : self.scenes[scene_name]['width'     ], 
-            'height'    : self.scenes[scene_name]['height'    ], 
-            'grid_size' : self.scenes[scene_name]['grid_size' ],
-            "layer"     : copy.deepcopy(self.scenes[scene_name]["layers"][layer])
-        }
-        
-        for location_key in self.scenes[scene_name]["layers"][layer]["locations"].keys():
-            masked_scene["layer"]["locations"][location_key] = applyMask(self.scenes[scene_name]["layers"][layer]["locations"][location_key],
-                                                                        self.activeAreas[currentSceneName]["visibleAreas"])
-
-        masked_scene["visibleAreas"] = self.activeAreas[currentSceneName]["visibleAreas"]
-        
-        return masked_scene
     
     #%%
     ########################################################################  
     ######################  CHAR ACTIONS RELATED ###########################
     ########################################################################  
-    def actionPortal(self, charId: str, payload: dict):
-        """Handles portal reletad actions
-
-        Args:
-            charId (_type_): _description_
-            data (_type_): _description_
-            portalId (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
-        charId
-        
-        data = payload.get("data")
-        portalId = payload.get("id")
-        
-        if not portalId or not data:
-            return {"success": False, "error": TypeError.INSUFFİCENT_DATA.value+ " in paylaod (action_portal)"}, None
-        
-        destinationSceneName, destinationLayer = data.split('-')
-        
-        if not destinationSceneName and not destinationLayer: 
-            return {"success": False, "error": TypeError.INSUFFİCENT_DATA.value+ " in data (action_portal)"}, None
-        
-        # Remove char from current scene
-        currentSceneName = self.session_info["locations"][charId]["currentScene"]["name"]
-        currentLayerName = self.session_info["locations"][charId]["currentScene"]["layer"]
-         
-        if not self.checkDistance(
-            self.scenes[currentSceneName]["layers"][currentLayerName]["locations"]["chars"][charId],
-            self.scenes[currentSceneName]["layers"][currentLayerName]["locations"]["portals"][portalId],
-            PORTAL_PASS_DISTANCE
-        ):
-            return {"success": False, "error": "It's too far away. (action_portal)"}, None
-        
-        self.scenes[currentSceneName]["layers"][currentLayerName]["locations"]["chars"].pop(charId) 
-        
-        if destinationLayer:
-            self.session_info["locations"][charId]["currentScene"]["layer"] = destinationLayer
-        if destinationSceneName:
-            self.session_info["locations"][charId]["currentScene"]["name"] = destinationSceneName
-            
-        # Add char to new scene
-        currentSceneName = self.session_info["locations"][charId]["currentScene"]["name"]
-        currentLayerName = self.session_info["locations"][charId]["currentScene"]["layer"]
-
-        self.scenes[currentSceneName]["layers"][currentLayerName]["locations"]["chars"][charId] = {"x": 200, "y": 200} # FUTURE char start location belirlenmeli
-        
-        if not (currentSceneName in self.activeAreas):
-            self.activeAreas[currentSceneName]["visibleAreas"] = self.sceneCalcVisibleAreas(self.session_info["locations"][charId]["currentScene"]["name"], 
-                                                                                                self.session_info["locations"][charId]["currentScene"]["layer"])
-        
-        self.syncFile(session_info=True, scenes=True)
-        
-        return {"success": True}, [{"type": "update_scene", "prior": SocketUpdatePrior.IMMEDIATELY}]
-            
-    def actionCharMove(self, charId: str, payload: dict):
-        """Moves character to specifed location
-
-        Args:
-            charId (str): _description_
-            x (_type_): _description_
-            y (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
-        
-        x = payload.get("x")
-        y = payload.get("y")
-        
-        if not x or not y:
-            return {"success": False, "error": TypeError.INSUFFİCENT_DATA.value+ " in paylaod (action_char_move)"}, None
-        
-        currentScene: dict = self.session_info["locations"].get(charId).get("currentScene")
-
-        sceneInfo: dict = self.scenes.get(currentScene["name"])
-        
-        layerInfo: dict = sceneInfo.get("layers").get(currentScene["layer"])
-        
-        movableAreas = layerInfo["movableAreas"]
-    
-        socketReply = {}
-        socketUpdate = None
-        moved = False
-        
-        def update():
-            charInfo = self.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"][charId]
-            charInfo["x"] = x
-            charInfo["y"] = y
-            self.syncFile(scenes=True)
-        
-        if movableAreas["type"] == "limitless":
-            update()
-            moved = True
-            
-        else: 
-            maskedMove: dict = applyMask({"x": x, "y": y}, movableAreas["shapes"])
-            
-            if len(maskedMove.keys()) != 0:  #If its not masked it means movable.
-                update()
-                moved = True
-            else:
-                socketReply, socketUpdate = {"success": False, "error": f"Cant move to the x:{x}, y:{y}"}, None
-            
-        if moved:    
-            self.init_activeArea(currentScene["name"], currentScene["layer"], events=False)
-            
-            new_scene_data = self.sceneGetCharScene(charId)
-            socketReply, socketUpdate = {"success": True}, [{"type": "change_scene_layer_locations", 
-                                                                "data": new_scene_data["layer"]["locations"], 
-                                                                "prior": SocketUpdatePrior.IMMEDIATELY.value, "all_users": False},
-                                                                {"type": "change_scene_visibleAreas", 
-                                                                 "data" : new_scene_data["visibleAreas"],
-                                                                "prior": SocketUpdatePrior.IMMEDIATELY.value, 
-                                                                "all_users": False}
-                                                                ]
-        else:
-            socketReply, socketUpdate = {"success": False, "error": "Invalid move."}, None
-                 
-        return socketReply, socketUpdate
-            
+          
     def handle_action(self, payload: dict, userID: str, userInfo: dict):
         """
         Handles character actions such as moving, using portals, etc.
@@ -613,7 +380,7 @@ class DBHandeler():
         if action == "move":
             id = payload.get("id")      
             if charId == id or userInfo.get("type") == "dungeon_master":
-                socketReply, socketUpdate = self.actionCharMove(charId, payload)
+                socketReply, socketUpdate = actionCharMove(charId, payload)
             else:
                 socketReply = {
                     "success": False,
@@ -626,7 +393,7 @@ class DBHandeler():
                 }]
 
         elif "portal" in action:
-            socketReply, socketUpdate = self.actionPortal(charId, payload)
+            socketReply, socketUpdate = actionPortal(charId, payload)
 
         return socketReply, socketUpdate
 
@@ -928,7 +695,7 @@ class DBHandeler():
 
             elif "chat" in type:
                 if "send" in type:
-                    state = self.chat.addMessage(userID, payload["message"], self.get_currentTime())
+                    state = self.chat.addMessage(userID, payload["message"], get_currentTime())
                     if state == "success":
                         self.session_info["chat_idx"] = self.chat.last_idx
                         self.syncFile(session_info=True)
