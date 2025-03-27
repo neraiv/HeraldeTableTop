@@ -7,8 +7,8 @@ import json
 import os
 import atexit
 
-from db_handler import DBHandler
-from db_key_handeler import controlKey
+from _db_main import DBHandler
+from db_user_func import generate_key, controlKey
 
 
 db = DBHandler()

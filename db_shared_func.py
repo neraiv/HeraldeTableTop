@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 
+import numpy as np
+
 from db_types import TypeQuestStatus
-from db_handler import DBHandler
+from _db_main import DBHandler
 
 
 db = DBHandler()

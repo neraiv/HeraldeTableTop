@@ -1,6 +1,6 @@
 from db_types import *
 from db_consts import *
-from db_handler import DBHandler
+from _db_main import DBHandler
 from db_mask_functions import applyMask, calcAcceptedAreas
 from db_shared_func import checkDistance, checkReqirement
 

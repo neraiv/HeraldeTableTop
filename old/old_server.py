@@ -6,7 +6,7 @@ import json
 import os
 
 from db_import import *
-from db_handler import wait_until_file_is_closed
+from _db_main import wait_until_file_is_closed
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes

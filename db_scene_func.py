@@ -1,6 +1,6 @@
 import copy
 from db_mask_functions import applyMask
-from .db_handler import DBHandler
+from ._db_main import DBHandler
 
 db = DBHandler()
 
