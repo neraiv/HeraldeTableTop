@@ -95,7 +95,8 @@ const targetTypes = Object.freeze({
     CLOSEST_ANY: 6,
     ATTACKER: 7,
     GROUND_NO_OVERLAP: 8,
-    GROUND: 9
+    GROUND: 9,
+    LAST_TARGET: 10
 });
 
 const durationTypes = Object.freeze({
@@ -103,6 +104,7 @@ const durationTypes = Object.freeze({
     AFTER_SHORT_REST: 2,
     AFTER_LONG_REST: 3, 
     INSTANT: 4,
+    UNTIL_NEXT_CAST: 5
 });
 
 
@@ -116,7 +118,8 @@ const effectTypes = Object.freeze({
     HEAL: 7,
     DEFENSE: 8,
     VISION_RANGE_BONUS: 9,   // Adjusted to be in sequential order
-    TAKE_DAMAGE: 10
+    TAKE_DAMAGE: 10,
+    HASTE: 11
 });
 
 const actionTypes = Object.freeze({
@@ -430,11 +433,11 @@ class Character {
 
 class SpellPattern  {
     constructor({
-        pattern = spellPatterns.CIRCULAR,
-        range = 300,
-        area = 100,
-        castType = castTypes.ON_LOCATION,
-        canTarget = [targetTypes.ENEMY]} = {}) {
+        pattern,
+        range,
+        area,
+        castType,
+        canTarget}) {
         this.pattern = pattern; // SpellPattern enum
         this.range = range;
         this.area = area;
@@ -444,20 +447,23 @@ class SpellPattern  {
 }
 
 class BuffDebuff {
-    constructor({effectType, value, duration = null} = {}) {
+    constructor({effectType, value, duration = null, triggerActions= characterActions.TURN_START}) {
         this.type = additionalEffectTypes.BUFF;
         this.effectType = effectType;
         this.value = value;
         this.duration = duration;
+        this.triggerActions = triggerActions;
     }
 }
 
 class Aura {
-    constructor({area, effectType, value, targetList = [targetTypes.ALLY], canSpread = false} = {}) {
+    constructor({area, effectType, value, duration = new Duration(), triggerActions, targetList = [targetTypes.ALLY], canSpread = false} = {}) {
         this.type = additionalEffectTypes.AURA;
         this.area = area;
         this.effectType = effectType;
         this.value = value
+        this.duration = duration;
+        this.triggerActions = triggerActions;  // CharacterAction enum
         this.targetList = targetList;  // Array of TargetType enum 0: ALLY, 1: ENEMY
         this.canSpread = canSpread
     }
@@ -465,12 +471,12 @@ class Aura {
 
 
 class Cast {
-    constructor({spellName, spellLevel, mana, targetListInOrder} = {}) {
+    constructor({spellName, mana, targetListInOrder, castTimes= 1} = {}) {
         this.type = additionalEffectTypes.CAST;
         this.spellName = spellName;  // Spell object
-        this.spellLevel = spellLevel;
         this.mana = mana;
         this.targetListInOrder = targetListInOrder;
+        this.castTimes = castTimes;
     }
 }
 
@@ -484,14 +490,26 @@ class AdditionalEffect {
     }
 }
 
+class StatMultiplier{
+    constructor({type, multipler}){
+        this.type = type;
+        this.multiplier = multipler;
+    }
+}
+class Damage{
+    constructor({type, value}){
+        this.type = type;
+        this.value = value;
+    }
+}
 class Spell{
     constructor(
         name = "",
         type = spellTypes.SPELL,
         classess = [classTypes.ALL],
         spellLevel = 1,
-        statType,
-        damageType,
+        statType = [StatMultiplier],
+        damageType = damageTypes.PURE,
         damage = "1d1",
         description = "",
         castDuration = Duration,
@@ -527,4 +545,85 @@ class Item {
         this.spells = spells;
         this.lore = lore;
     }
+}
+
+const diceTypes = Object.freeze({
+    D6: 6,
+    D20: 20,
+    D12: 12,
+    D10: 10,
+    D8: 8,
+    D6: 6,
+    D4: 4,
+    D3: 3,
+    D100: 100
+})
+class Roll{
+    constructor(diceType, rollType, target){
+        this.diceType = diceType;
+        this.rollType = rollType;
+        this.target = target;
+    }
+}
+const spells = {
+    "fireBolt" : new Spell("Fire Bolt", spellTypes.SPELL, 
+        [classTypes.DRUID, classTypes.PALADIN, classTypes.WARLOCK, classTypes.SORCERER, classTypes.WIZARD], 
+        1, [new StatMultiplier({type: statTypes.INT, multipler: 2}), new StatMultiplier({type: statTypes.WIS, multipler: 1.5})],
+        [damageTypes.FIRE], "1d8", "Conjure a fire bolt.", new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
+        {
+            "1": null,
+            "2": {caster: [new Cast("fireBolt", "1", [targetTypes.LAST_TARGET])]},
+            "3": {caster: [new Cast("fireBolt", "1", [targetTypes.LAST_TARGET], 2)],
+                  target: [
+                    new BuffDebuff({effectType: effectTypes.TAKE_DAMAGE, 
+                                    value: new Damage({type: damageTypes.FIRE, value: "1d2"}), 
+                                    duration: new Duration({type: durationTypes.TURN_BASED, value: 5}),
+                                    triggerActions: [characterActions.TURN_START]})
+                    ]}
+        },
+        new SpellPattern({pattern: spellPatterns.BOX, range: 200, area: 50, castType: castTypes.FROM_CASTER, canTarget: [targetTypes.ANY]}),
+        [new Roll(diceTypes.D20, rollTypes.ABILITY_THROW, 10)], [new Roll(diceTypes.D20, rollTypes.SAVING_THROW, 20)]
+    ),
+    "lightningTrident" : new Spell("Lightning Trident", spellTypes.SPELL, 
+        [classTypes.DRUID, classTypes.SORCERER, classTypes.WIZARD], 
+        4, [new StatMultiplier({type: statTypes.INT, multipler: 3}), new StatMultiplier({type: statTypes.WIS, multipler: 1.5})],
+        [damageTypes.LIGHTNING], "3d8", "Conjure a fire bolt.", new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
+        {
+            "5": {caster: [ new BuffDebuff({effectType: effectTypes.ATTACK_DAMAGE_BONUS, value: "1d8", 
+                            duration: new Duration({type: durationTypes.UNTIL_NEXT_CAST, value: 1}), triggerActions: [characterActions.CASTING]})],
+                  target: []}
+        },
+        new SpellPattern({pattern: spellPatterns.CONE_UPWARD, range: 150, area: 100, castType: castTypes.FROM_CASTER, canTarget: [targetTypes.ANY]}),
+        [new Roll(diceTypes.D20, rollTypes.ABILITY_THROW, 10)], [new Roll(diceTypes.D20, rollTypes.SAVING_THROW, 20)]
+    ),
+    "conjureSlave" : new Spell("Conjure Your Slave", spellTypes.CONJURE, [classTypes.WARLOCK, classTypes.WIZARD, classTypes.DRUID],
+        2, [new StatMultiplier({type: statTypes.CHA, multipler: 2})], [damageTypes.NONE], "Conjure your beloved slave.", "slave", 
+        new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
+        {
+            "3" : { caster: [new BuffDebuff({effectType: effectTypes.HASTE, value: 1, 
+                            duration: new Duration({type: durationTypes.TURN_BASED, value: 5})})], 
+                    target: []}
+        }
+    ),
+    "conjureWorm" : new Spell("Conjure Dweller Worm", spellTypes.CONJURE, [classTypes.WARLOCK, classTypes.WIZARD, classTypes.DRUID],
+        2, [new StatMultiplier({type: statTypes.CHA, multipler: 2})], [damageTypes.NONE], "Conjure a dweller worm.", "worm", 
+        new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
+        {
+            "3" : { caster: [new BuffDebuff({effectType: effectTypes.HASTE, value: 1, 
+                            duration: new Duration({type: durationTypes.TURN_BASED, value: 5})})], 
+                    target: []}
+        }
+    ),
+    "emergencyHeal": new Spell("Emergency Heal", spellTypes.CANTRIP, [classTypes.PALADIN, classTypes.CLERIC], 2, [new StatMultiplier({type: statTypes.WIS, multipler: 2})],
+        [damageTypes.HEALING], "2d8", "Heals around instantly.", new Duration({type: durationTypes.INSTANT}), [actionTypes.BONUS], {}, 
+        new SpellPattern({pattern: spellPatterns.CIRCULAR, range: 200, area: 200, castType: castTypes.AROUND_CASTER, canTarget: [targetTypes.ALLY]}),
+        [], [] ),
+    "holyAura" : new Spell("Holy Aura", spellTypes.SPELL, [classTypes.CLERIC, classTypes.PALADIN], 1, [new StatMultiplier({type: statTypes.DEX, multipler: 1.8})],
+        [damageTypes.NONE], "0", "Apply holy aura to target.", new Duration({type: durationTypes.INSTANT}), [actionTypes.MAIN], 
+        {
+            "1" : { caster: [], 
+                    target: [new Aura({area: 250, effectType: effectTypes.HEAL, 
+                                value: new Damage({type: damageTypes.HEALING, value: "1d8"}), duration: new Duration({type: durationTypes.TURN_BASED, value: 10}),
+                                triggerActions: [characterActions.TURN_END] ,targetList: [targetTypes.ALLY], canSpread: false})]}
+        })
 }

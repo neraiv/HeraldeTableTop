@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spell Creation UI</title>
+    <style>
+        .spell-creator {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .section {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .multi-select {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .array-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="spell-creator">
+        <h1>Spell Creator</h1>
+        
+        <!-- Basic Information Section -->
+        <div class="section">
+            <h2>Basic Information</h2>
+            <div class="form-group">
+                <label>Spell Name:</label>
+                <input type="text" id="spellName" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Spell Type:</label>
+                <select id="spellType"></select>
+            </div>
+
+            <div class="form-group">
+                <label>Available Classes:</label>
+                <div class="multi-select" id="classSelect"></div>
+            </div>
+        </div>
+
+        <!-- Stats and Damage Section -->
+        <div class="section">
+            <h2>Stats & Damage</h2>
+            <div class="form-group">
+                <label>Spell Level:</label>
+                <input type="number" id="spellLevel" min="1" value="1">
+            </div>
+
+            <div id="statMultipliers">
+                <h4>Stat Multipliers</h4>
+                <button type="button" onclick="addStatMultiplier()">Add Multiplier</button>
+            </div>
+
+            <div class="form-group">
+                <label>Damage Type:</label>
+                <select id="damageType"></select>
+            </div>
+
+            <div class="form-group">
+                <label>Damage Formula:</label>
+                <input type="text" id="damage" pattern="\d+d\d+">
+            </div>
+        </div>
+
+        <!-- Duration and Actions Section -->
+        <div class="section">
+            <h2>Duration & Actions</h2>
+            <div class="array-item">
+                <select id="durationType"></select>
+                <input type="number" id="durationValue" min="1" value="1">
+            </div>
+
+            <div class="form-group">
+                <label>Action Costs:</label>
+                <div class="multi-select" id="actionCosts"></div>
+            </div>
+        </div>
+
+        <!-- Spell Pattern Section -->
+        <div class="section">
+            <h2>Spell Pattern</h2>
+            <div class="form-group">
+                <select id="spellPattern"></select>
+            </div>
+            
+            <div class="form-group">
+                <label>Range:</label>
+                <input type="number" id="spellRange">
+            </div>
+
+            <div class="form-group">
+                <label>Area:</label>
+                <input type="number" id="spellArea">
+            </div>
+
+            <div class="form-group">
+                <label>Cast Type:</label>
+                <select id="castType"></select>
+            </div>
+
+            <div class="form-group">
+                <label>Valid Targets:</label>
+                <div class="multi-select" id="targetTypes"></div>
+            </div>
+        </div>
+
+        <button type="button" onclick="saveSpell()">Create Spell</button>
+    </div>
+
+    <script>
+        // Enum mapping functions
+        function populateSelect(selectId, enumObj, names) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = Object.entries(enumObj)
+                .map(([key, value]) => 
+                    `<option value="${value}">${names?.[value] || key}</option>`
+                ).join('');
+        }
+
+        function populateMultiSelect(containerId, enumObj, names) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = Object.entries(enumObj)
+                .filter(([key]) => key !== 'ALL' && key !== 'NONE')
+                .map(([key, value]) => `
+                    <label>
+                        <input type="checkbox" value="${value}">
+                        ${names?.[value] || key}
+                    </label>
+                `).join('');
+        }
+
+        // Initialize form controls
+        function initForm() {
+            // Populate dropdowns
+            populateSelect('spellType', spellTypes, {
+                1: 'Weapon', 2: 'Cantrip', 3: 'Spell', 4: 'Conjure'
+            });
+            
+            populateMultiSelect('classSelect', classTypes, {
+                1: 'Wizard', 2: 'Cleric', 3: 'Rogue', /*...*/
+            });
+
+            populateSelect('damageType', damageTypes, {
+                99: 'Healing', 1: 'Psychic', 2: 'Fire', /*...*/
+            });
+
+            // Initialize other controls similarly...
+        }
+
+        // Dynamic form sections
+        function addStatMultiplier() {
+            const div = document.createElement('div');
+            div.className = 'array-item';
+            div.innerHTML = `
+                <select class="statType">
+                    ${Object.entries(statTypes).map(([k,v]) => 
+                        v > 0 ? `<option value="${v}">${k}</option>` : ''
+                    ).join('')}
+                </select>
+                <input type="number" step="0.1" min="0" placeholder="Multiplier">
+                <button onclick="this.parentElement.remove()">X</button>
+            `;
+            document.getElementById('statMultipliers').appendChild(div);
+        }
+
+        // Save handler
+        function saveSpell() {
+            const spell = new Spell({
+                name: document.getElementById('spellName').value,
+                type: parseInt(document.getElementById('spellType').value),
+                classess: Array.from(document.querySelectorAll('#classSelect input:checked'))
+                    .map(c => parseInt(c.value)),
+                // Collect other values similarly...
+            });
+
+            console.log('Created Spell:', spell);
+            alert('Spell created! Check console for details');
+        }
+
+        // Initialize form on load
+        initForm();
+    </script>
+</body>
+</html>

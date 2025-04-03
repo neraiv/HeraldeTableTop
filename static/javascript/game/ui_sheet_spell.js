@@ -139,7 +139,7 @@ function displaySpellCreate(initalSpell = null) {
     rowSpellSelect.appendChild(spellTypeConfirmation);
 
     spellTypeConfirmation.onclick = () => {
-        userAskQuestion("Careful?", "Are you sure you want to change the spell type and level?",{
+        userAskQuestion("Careful?", "Are you sure you want to change the spell type and level? This may cause lost of previous changes.",{
             buttons: ['Yes', 'No'],
             callback: (buttonText) => {
                 if(buttonText === 'Yes'){
@@ -174,19 +174,43 @@ function displaySpellCreate(initalSpell = null) {
     formClasses.style.backgroundColor = formColor;
     form.appendChild(formClasses);
 
-    const formModifierStat = createInputSelector('Modifier Stat: ', Object.values(statTypes), Object.keys(statTypes),{
-        id:  id +'-modifier-stats',
-        multiple: true,
-    });
-
-    formModifierStat.classList.add('box-circular-border');
-    formModifierStat.style.height = '100px';
+    const formModifierStat = document.createElement('div');
+    formModifierStat.classList.add('form-group')
+    formModifierStat.classList.add('row')
+    formModifierStat.classList.add('centered');
     formModifierStat.style.backgroundColor = formColor;
-    form.appendChild(formModifierStat);
+    form.appendChild(formModifierStat)
 
-    const formBaseDamageType = createInputSelector('Base Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
+    const formModifierStatLabel = document.createElement('label');
+    formModifierStatLabel.setAttribute('for', id); // Associate label with input via id
+    formModifierStatLabel.classList.add('label-element');
+    formModifierStatLabel.textContent = "Modifier Stats:";
+    formModifierStatLabel.style.alignContent = 'center';
+    formModifierStatLabel.style.textAlign = 'center';
+    formModifierStat.appendChild(formModifierStatLabel);
+
+    addSpacer(formModifierStat)
+
+    const formModifierStatChangeColumn = document.createElement('div');
+    formModifierStatChangeColumn.classList.add('form-group')
+    formModifierStatChangeColumn.classList.add('column')
+    formModifierStatChangeColumn.classList.add('centered');
+    formModifierStat.appendChild(formModifierStatChangeColumn)
+
+    const formModifierStatAddSelection = createSelector("none", Object.values(statTypes), Object.keys(statTypes), {
+        defaultValue: "Select stat type...",
+    })
+    formModifierStatChangeColumn.appendChild(formModifierStatAddSelection)
+
+    const formModifierStatList = document.createElement('div');
+    formModifierStatList.className = 'column vertical box-circular-border input-element';
+    formModifierStatList.style.height = '98%';
+    formModifierStatList.style.gap = '10px';
+    formModifierStatChangeColumn.appendChild(formModifierStatList);
+
+    const formBaseDamageType = createInputSelector('Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
         id:  id +'-base-damage-type',
-        multiple: false,
+        multiple: true,
     });
     formBaseDamageType.classList.add('box-circular-border');
     formBaseDamageType.style.backgroundColor = formColor;

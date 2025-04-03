@@ -350,3 +350,10 @@
 }
 
 /* Child Creators END */
+
+.input-element{
+    width: 60%;
+    height: 98%;
+    padding: 8px;
+    text-align: left;
+}
