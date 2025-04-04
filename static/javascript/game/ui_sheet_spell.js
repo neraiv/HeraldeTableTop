@@ -1,6 +1,6 @@
-function displaySpellCreate(initalSpell = null) {
-    const formColor = 'rgba(255, 255, 255, 0.8)';   
-    const backgroundColor = 'rgba(0, 0, 0, 0.8)';
+function displaySpellCreate(spell = new Spell()) {
+
+    const isInitialSpellGivenFlag = spell.name != ""
 
     // random 4 digit number
     const id = Math.floor(Math.random() * 9000) + 1000;
@@ -11,7 +11,6 @@ function displaySpellCreate(initalSpell = null) {
     spellCreateSheet.classList.add('column');
     spellCreateSheet.classList.add('vertical');
     spellCreateSheet.id = id;
-    spellCreateSheet.spell = initalSpell;
     spellCreateSheet.style.backgroundColor = 'green';
 
     const topBar = addDraggableRow(spellCreateSheet);
@@ -106,37 +105,38 @@ function displaySpellCreate(initalSpell = null) {
 
     let maxSpellLevel = serverRules.spells.max;
 
-    const rowSpellSelect = document.createElement('div');
-    rowSpellSelect.classList.add('row');
-    rowSpellSelect.classList.add('vertical');
-    rowSpellSelect.classList.add('form-group')
-    rowSpellSelect.classList.add('box-circular-border');
-    rowSpellSelect.style.backgroundColor = formColor;
-    rowSpellSelect.style.gap = '10px';
-    form.appendChild(rowSpellSelect);
+    const rowSpellTypeLevel = document.createElement('div');
+    rowSpellTypeLevel.classList.add('row');
+    rowSpellTypeLevel.classList.add('vertical');
+    rowSpellTypeLevel.classList.add('form-group')
+    rowSpellTypeLevel.classList.add('box-circular-border');
+    rowSpellTypeLevel.style.backgroundColor = formColor;
+    rowSpellTypeLevel.style.gap = '10px';
+    form.appendChild(rowSpellTypeLevel);
 
     const selectSpellType = createInputSelector('Spell Type: ', Object.values(spellTypes), Object.keys(spellTypes), {
-        id: id + '-type'
+        id: id + '-type',
+        defaultValue: isInitialSpellGivenFlag ? spell.type : null
     });
-    selectSpellType.style.backgroundColor = "transparent";
-    rowSpellSelect.appendChild(selectSpellType);
+    selectSpellType.classList.remove("form-group")
+    rowSpellTypeLevel.appendChild(selectSpellType);
 
     const serverRulesSpellsRange = [];
     for (let level = serverRules.spells.min; level < serverRules.spells.max; level++){
         serverRulesSpellsRange.push(level);
     }
     const selectSpellLevel = createInputSelector('Spell Level: ', serverRulesSpellsRange, serverRulesSpellsRange, {
-        id: id +'-level'
+        id: id +'-level',
+        defaultValue: isInitialSpellGivenFlag ? spell.level : null
     }); 
-
-    selectSpellLevel.style.backgroundColor = "transparent";
-    rowSpellSelect.appendChild(selectSpellLevel);
+    selectSpellLevel.classList.remove("form-group")
+    rowSpellTypeLevel.appendChild(selectSpellLevel);
 
     const spellTypeConfirmation = createImageButton(40, {icon: "check_circle_outline"});
     spellTypeConfirmation.id = "ui-spellbook-close-button";
     spellTypeConfirmation.style.fontFamily = 'Material Icons Outlined';
     spellTypeConfirmation.style.backgroundColor = "green"
-    rowSpellSelect.appendChild(spellTypeConfirmation);
+    rowSpellTypeLevel.appendChild(spellTypeConfirmation);
 
     spellTypeConfirmation.onclick = () => {
         userAskQuestion("Careful?", "Are you sure you want to change the spell type and level? This may cause lost of previous changes.",{
@@ -150,23 +150,23 @@ function displaySpellCreate(initalSpell = null) {
 
     }
 
-    const formName = createInputString('Name: ', id + '-name' );
+    const formName = createInputString('Name: ', id + '-name', {
+        defaultValue: isInitialSpellGivenFlag ? spell.name : null
+    });
     formName.classList.add('box-circular-border');
     formName.style.backgroundColor = formColor;
     form.appendChild(formName);
 
-    if(initalSpell == null){
-        spellCreateSheet.spell = new Spell();
-    }else{
-        spellCreateSheet.spell = initalSpell;
-        spellCreateSheetTitle.textContent = "Editing - " + spellCreateSheet.spell.name
-        formName.querySelector(".input-element").value = spellCreateSheet.spell.name
+    if(isInitialSpellGivenFlag){
+        spellCreateSheetTitle.textContent = "Editing - " + spell.name
+        formName.querySelector(".input-element").value = spell.name
     }
 
     const formClasses = createInputSelector('Usable By Class:', Object.values(classTypes), Object.keys(classTypes), {
         id:  id +'-clasess',
         multiple: true,
-        custom_func: selectorChekmarkOptionFunction
+        custom_func: selectorChekmarkOptionFunction,
+        defaultValue: isInitialSpellGivenFlag ? spell.classess : null
     });
 
     formClasses.classList.add('box-circular-border');
@@ -174,49 +174,24 @@ function displaySpellCreate(initalSpell = null) {
     formClasses.style.backgroundColor = formColor;
     form.appendChild(formClasses);
 
-    const formModifierStat = document.createElement('div');
-    formModifierStat.classList.add('form-group')
-    formModifierStat.classList.add('row')
-    formModifierStat.classList.add('centered');
-    formModifierStat.style.backgroundColor = formColor;
-    form.appendChild(formModifierStat)
-
-    const formModifierStatLabel = document.createElement('label');
-    formModifierStatLabel.setAttribute('for', id); // Associate label with input via id
-    formModifierStatLabel.classList.add('label-element');
-    formModifierStatLabel.textContent = "Modifier Stats:";
-    formModifierStatLabel.style.alignContent = 'center';
-    formModifierStatLabel.style.textAlign = 'center';
-    formModifierStat.appendChild(formModifierStatLabel);
-
-    addSpacer(formModifierStat)
-
-    const formModifierStatChangeColumn = document.createElement('div');
-    formModifierStatChangeColumn.classList.add('form-group')
-    formModifierStatChangeColumn.classList.add('column')
-    formModifierStatChangeColumn.classList.add('centered');
-    formModifierStat.appendChild(formModifierStatChangeColumn)
-
-    const formModifierStatAddSelection = createSelector("none", Object.values(statTypes), Object.keys(statTypes), {
-        defaultValue: "Select stat type...",
+    const formModifierStat = createInputModifier("Modifer Stat: ", id+"-modifier", Object.values(statTypes), Object.keys(statTypes), {
+        defaultValue: isInitialSpellGivenFlag ? spell.modifiers : null
     })
-    formModifierStatChangeColumn.appendChild(formModifierStatAddSelection)
+    formModifierStat.style.backgroundColor = formColor;
+    form.appendChild(formModifierStat);
 
-    const formModifierStatList = document.createElement('div');
-    formModifierStatList.className = 'column vertical box-circular-border input-element';
-    formModifierStatList.style.height = '98%';
-    formModifierStatList.style.gap = '10px';
-    formModifierStatChangeColumn.appendChild(formModifierStatList);
-
-    const formBaseDamageType = createInputSelector('Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
-        id:  id +'-base-damage-type',
+    const formBaseDamageType = createInputSelector('Damage Type: ', Object.values(damageElements), Object.keys(damageElements), {
+        id:  id +'-damage-type',
         multiple: true,
+        defaultValue: isInitialSpellGivenFlag ? spell.damageType : null
     });
     formBaseDamageType.classList.add('box-circular-border');
     formBaseDamageType.style.backgroundColor = formColor;
     form.appendChild(formBaseDamageType);
 
-    const formBaseDamage = createInputDamage("Damage: ", id+ '-base-damage')
+    const formBaseDamage = createInputDamage("Damage: ", id+ '-base-damage', {
+        defaultValue: isInitialSpellGivenFlag ? spell.damage : null
+    })
     formBaseDamage.style.display = "none"
     formBaseDamage.classList.add('box-circular-border');
     formBaseDamage.style.backgroundColor = formColor;
@@ -224,25 +199,32 @@ function displaySpellCreate(initalSpell = null) {
     
     formBaseDamageType.inputElement.onchange =  (event) => {
         const value = event.target.value
-        if(value != damageTypes.NONE){
+        if(value != damageElements.NONE){
             formBaseDamage.style.display = "flex"
         }else{
             formBaseDamage.style.display = "none"
         }
     }
 
-    const formDescription = createInputString('Description: ', {id: 'create-spell-description',isTextArea: true});
+    const formDescription = createInputString('Description: ', {
+        id: 'create-spell-description',
+        isTextArea: true, 
+        defaultValue: isInitialSpellGivenFlag ? spell.description : null
+    });
     formDescription.classList.add('box-circular-border');
     formDescription.style.height = '150px';
     formDescription.style.backgroundColor = formColor;
     form.appendChild(formDescription);
  
-    const formSpellCastDuration = createInputDuration("Cast Duration: ",id +'-duration');
+    const formSpellCastDuration = createInputDuration("Cast Duration: ",id +'-duration', {
+        defaultValue: isInitialSpellGivenFlag ? spell.castDuration : null
+    });
     form.appendChild(formSpellCastDuration);
 
     const formActionCost = createInputSelector('Action Cost: ', Object.values(actionTypes), Object.keys(actionTypes),{
         id: 'create-spell-pattern-cast-type',
-        defaultValue: initalSpell ?  spellCreateSheet.spell.actionCost : null, 
+        defaultValue: isInitialSpellGivenFlag ?  spell.actionCost : null, 
+        multiple: true
     })
     formActionCost.classList.add('box-circular-border');
     formActionCost.style.backgroundColor = formColor;
@@ -278,8 +260,8 @@ function displaySpellCreate(initalSpell = null) {
         tabContent.innerHTML = '';
         const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
         const formTargetEffects = createAdditionalEffectListContainer(tabContent.id + '-additional-effect-target-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
-        if(initalSpell && spellCreateSheet.spell.spendManaEffects && spellCreateSheet.spell.spendManaEffects[index] && spellCreateSheet.spell.spendManaEffects[index].target){
-            for(let additionalEffect of spellCreateSheet.spell.spendManaEffects[index].target){
+        if(spell && spell.spendManaEffects && spell.spendManaEffects[index] && spell.spendManaEffects[index].target){
+            for(let additionalEffect of spell.spendManaEffects[index].target){
                 const listElement = createAdditionalEffectListElement(additionalEffect)
                 formTargetEffects.elementsList.appendChild(listElement);
             }
@@ -320,8 +302,8 @@ function displaySpellCreate(initalSpell = null) {
         tabContent.innerHTML = '';
         const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
         const casterEffects = createAdditionalEffectListContainer(tabContent.id + '-additional-effect-caster-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
-        if(initalSpell && spellCreateSheet.spell.spendManaEffects &&spellCreateSheet.spell.spendManaEffects[index] && spellCreateSheet.spell.spendManaEffects[index].caster){
-            for(let additionalEffect of spellCreateSheet.spell.spendManaEffects[index].caster){
+        if(spell && spell.spendManaEffects &&spell.spendManaEffects[index] && spell.spendManaEffects[index].caster){
+            for(let additionalEffect of spell.spendManaEffects[index].caster){
                 const listElement = createAdditionalEffectListElement(additionalEffect)
                 casterEffects.elementsList.appendChild(listElement);
             }
@@ -350,25 +332,25 @@ function displaySpellCreate(initalSpell = null) {
 
     const spellPatternSelect = createInputSelector('Spell Pattern: ', Object.values(spellPatterns), Object.keys(spellPatterns),{
         id: 'create-spell-pattern-select',
-        defaultValue: initalSpell ? [initalSpell.spellPattern.pattern] : null, 
+        defaultValue: spell ? [spell.spellPattern.pattern] : null, 
     })
     spellPatternSelect.classList.add('box-circular-border');
     spellPatternSelect.style.backgroundColor = formColor;
     formCastPatternContainer.appendChild(spellPatternSelect);
 
-    const spellCastArea = createInputNumber("Cast Range:", "create-spell-pattern-cast-area", 9999, 0, false, false, initalSpell ? initalSpell.spellPattern.range : null)
+    const spellCastArea = createInputNumber("Cast Range:", "create-spell-pattern-cast-area", 9999, 0, false, false, spell ? spell.spellPattern.range : null)
     spellCastArea.classList.add('box-circular-border');
     spellCastArea.style.backgroundColor = formColor;
     formCastPatternContainer.appendChild(spellCastArea);
 
-    const spellCastWidth = createInputNumber("Cast Area:", "create-spell-pattern-cast-area", 500, 0, false, false, initalSpell ? initalSpell.spellPattern.area : null)
+    const spellCastWidth = createInputNumber("Cast Area:", "create-spell-pattern-cast-area", 500, 0, false, false, spell ? spell.spellPattern.area : null)
     spellCastWidth.classList.add('box-circular-border');
     spellCastWidth.style.backgroundColor = formColor;
     formCastPatternContainer.appendChild(spellCastWidth);
 
     const spellCastType = createInputSelector('Spell Cast Type: ', Object.values(castTypes), Object.keys(castTypes),{
         id: 'create-spell-pattern-cast-type',
-        defaultValue: initalSpell ? [initalSpell.spellPattern.castType] : null, 
+        defaultValue: spell ? [spell.spellPattern.castType] : null, 
     })
     spellCastType.classList.add('box-circular-border');
     spellCastType.style.backgroundColor = formColor;
@@ -376,7 +358,7 @@ function displaySpellCreate(initalSpell = null) {
 
     const spellCanTarget = createInputSelector('Can Target: ', Object.values(targetTypes), Object.keys(targetTypes),{
         id: 'create-spell-pattern-can-target',
-        defaultValue: initalSpell ? initalSpell.spellPattern.canTarget : null, 
+        defaultValue: spell ? spell.spellPattern.canTarget : null, 
         multiple: true,
         custom_func: selectorIndexedOptionFunctionWithTransparency
     })
@@ -387,7 +369,7 @@ function displaySpellCreate(initalSpell = null) {
 
     const spellCasterRolls = createInputSelector('Caster Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
         id: 'create-spell-caster-rolls',
-        defaultValue: initalSpell ? initalSpell.casterRolls : null, 
+        defaultValue: spell ? spell.casterRolls : null, 
         multiple: true,
     })
     spellCasterRolls.classList.add('box-circular-border');
@@ -396,7 +378,7 @@ function displaySpellCreate(initalSpell = null) {
 
     const spellTargetRolls = createInputSelector('Target Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
         id: 'create-spell-target-rolls',
-        defaultValue: initalSpell ? initalSpell.targetRolls : null, 
+        defaultValue: spell ? spell.targetRolls : null, 
         multiple: true,
     })
     spellTargetRolls.classList.add('box-circular-border');

@@ -89,6 +89,10 @@ spellBookButton.onclick = () => {
     }
 }
 
+spellBookCloseButton.onclick = () =>{
+    spellBook.style.display = "none";
+}
+
 infoButton.onclick = async (event) => {
     const sheet = await createQuestSheet("sari-01")
     sheet.style.left = event.clientX + "px";

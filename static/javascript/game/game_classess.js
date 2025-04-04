@@ -204,7 +204,6 @@ const encounterStatTypes = Object.freeze({
 
 // Enum for damage types
 const statTypes = Object.freeze({
-    NONE:0,
     STR: 1,
     DEX: 2,
     CON: 3,
@@ -507,10 +506,9 @@ class Spell{
         name = "",
         type = spellTypes.SPELL,
         classess = [classTypes.ALL],
-        spellLevel = 1,
-        statType = [StatMultiplier],
-        damageType = damageTypes.PURE,
-        damage = "1d1",
+        level = 1,
+        modifiers = [new StatMultiplier()],
+        damage = new Damage(),
         description = "",
         castDuration = Duration,
         actionCost = [actionTypes.MAIN],
@@ -522,9 +520,8 @@ class Spell{
         this.name = name;
         this.classess = classess;  // Array of ClassType enum 0: ALL, 1: WARRIOR, 2: ROGUE, 3: MAGE, 4: PRIEST, 5: DRUID, 6: PALADIN
         this.type = type;
-        this.spellLevel = spellLevel;
-        this.statType = statType;
-        this.damageType = damageType;
+        this.level = level;
+        this.modifiers = modifiers;
         this.damage = damage;
         this.description = description;
         this.castDuration = castDuration;
@@ -547,6 +544,8 @@ class Item {
     }
 }
 
+
+
 const diceTypes = Object.freeze({
     D6: 6,
     D20: 20,
@@ -558,6 +557,7 @@ const diceTypes = Object.freeze({
     D3: 3,
     D100: 100
 })
+
 class Roll{
     constructor(diceType, rollType, target){
         this.diceType = diceType;
@@ -569,14 +569,14 @@ const spells = {
     "fireBolt" : new Spell("Fire Bolt", spellTypes.SPELL, 
         [classTypes.DRUID, classTypes.PALADIN, classTypes.WARLOCK, classTypes.SORCERER, classTypes.WIZARD], 
         1, [new StatMultiplier({type: statTypes.INT, multipler: 2}), new StatMultiplier({type: statTypes.WIS, multipler: 1.5})],
-        [damageTypes.FIRE], "1d8", "Conjure a fire bolt.", new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
+        [damageElements.FIRE], "1d8", "Conjure a fire bolt.", new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
         {
             "1": null,
             "2": {caster: [new Cast("fireBolt", "1", [targetTypes.LAST_TARGET])]},
             "3": {caster: [new Cast("fireBolt", "1", [targetTypes.LAST_TARGET], 2)],
                   target: [
                     new BuffDebuff({effectType: effectTypes.TAKE_DAMAGE, 
-                                    value: new Damage({type: damageTypes.FIRE, value: "1d2"}), 
+                                    value: new Damage({type: damageElements.FIRE, value: "1d2"}), 
                                     duration: new Duration({type: durationTypes.TURN_BASED, value: 5}),
                                     triggerActions: [characterActions.TURN_START]})
                     ]}
@@ -587,7 +587,7 @@ const spells = {
     "lightningTrident" : new Spell("Lightning Trident", spellTypes.SPELL, 
         [classTypes.DRUID, classTypes.SORCERER, classTypes.WIZARD], 
         4, [new StatMultiplier({type: statTypes.INT, multipler: 3}), new StatMultiplier({type: statTypes.WIS, multipler: 1.5})],
-        [damageTypes.LIGHTNING], "3d8", "Conjure a fire bolt.", new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
+        [damageElements.LIGHTNING], "3d8", "Conjure a fire bolt.", new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
         {
             "5": {caster: [ new BuffDebuff({effectType: effectTypes.ATTACK_DAMAGE_BONUS, value: "1d8", 
                             duration: new Duration({type: durationTypes.UNTIL_NEXT_CAST, value: 1}), triggerActions: [characterActions.CASTING]})],
@@ -597,7 +597,7 @@ const spells = {
         [new Roll(diceTypes.D20, rollTypes.ABILITY_THROW, 10)], [new Roll(diceTypes.D20, rollTypes.SAVING_THROW, 20)]
     ),
     "conjureSlave" : new Spell("Conjure Your Slave", spellTypes.CONJURE, [classTypes.WARLOCK, classTypes.WIZARD, classTypes.DRUID],
-        2, [new StatMultiplier({type: statTypes.CHA, multipler: 2})], [damageTypes.NONE], "Conjure your beloved slave.", "slave", 
+        2, [new StatMultiplier({type: statTypes.CHA, multipler: 2})], [damageElements.NONE], "Conjure your beloved slave.", "slave", 
         new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
         {
             "3" : { caster: [new BuffDebuff({effectType: effectTypes.HASTE, value: 1, 
@@ -606,7 +606,7 @@ const spells = {
         }
     ),
     "conjureWorm" : new Spell("Conjure Dweller Worm", spellTypes.CONJURE, [classTypes.WARLOCK, classTypes.WIZARD, classTypes.DRUID],
-        2, [new StatMultiplier({type: statTypes.CHA, multipler: 2})], [damageTypes.NONE], "Conjure a dweller worm.", "worm", 
+        2, [new StatMultiplier({type: statTypes.CHA, multipler: 2})], [damageElements.NONE], "Conjure a dweller worm.", "worm", 
         new Duration({type: durationTypes.TURN_BASED, value: 1}), [actionTypes.MAIN], 
         {
             "3" : { caster: [new BuffDebuff({effectType: effectTypes.HASTE, value: 1, 
@@ -615,15 +615,15 @@ const spells = {
         }
     ),
     "emergencyHeal": new Spell("Emergency Heal", spellTypes.CANTRIP, [classTypes.PALADIN, classTypes.CLERIC], 2, [new StatMultiplier({type: statTypes.WIS, multipler: 2})],
-        [damageTypes.HEALING], "2d8", "Heals around instantly.", new Duration({type: durationTypes.INSTANT}), [actionTypes.BONUS], {}, 
+        [damageElements.HEALING], "2d8", "Heals around instantly.", new Duration({type: durationTypes.INSTANT}), [actionTypes.BONUS], {}, 
         new SpellPattern({pattern: spellPatterns.CIRCULAR, range: 200, area: 200, castType: castTypes.AROUND_CASTER, canTarget: [targetTypes.ALLY]}),
         [], [] ),
     "holyAura" : new Spell("Holy Aura", spellTypes.SPELL, [classTypes.CLERIC, classTypes.PALADIN], 1, [new StatMultiplier({type: statTypes.DEX, multipler: 1.8})],
-        [damageTypes.NONE], "0", "Apply holy aura to target.", new Duration({type: durationTypes.INSTANT}), [actionTypes.MAIN], 
+        [damageElements.NONE], "0", "Apply holy aura to target.", new Duration({type: durationTypes.INSTANT}), [actionTypes.MAIN], 
         {
             "1" : { caster: [], 
                     target: [new Aura({area: 250, effectType: effectTypes.HEAL, 
-                                value: new Damage({type: damageTypes.HEALING, value: "1d8"}), duration: new Duration({type: durationTypes.TURN_BASED, value: 10}),
+                                value: new Damage({type: damageElements.HEALING, value: "1d8"}), duration: new Duration({type: durationTypes.TURN_BASED, value: 10}),
                                 triggerActions: [characterActions.TURN_END] ,targetList: [targetTypes.ALLY], canSpread: false})]}
         })
 }

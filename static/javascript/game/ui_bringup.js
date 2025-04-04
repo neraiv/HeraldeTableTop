@@ -304,9 +304,7 @@ spellBookName.style.padding = "5px"; // Padding to keep text off the edges
 spellBookName.style.margin = "0px"; // No margin
 spellBookTopBar.appendChild(spellBookName);
 
-const spellBookCloseButton = createImageButton(40, {icon: "arrow_circle_right"});
-spellBookCloseButton.id = "ui-spellbook-close-button";
-spellBookCloseButton.style.fontFamily = 'Material Icons Outlined';
+const spellBookCloseButton = createImageButton('28', {source: "url(static/images/menu-icons/close.png)", custom_padding: 4});
 spellBookTopBar.appendChild(spellBookCloseButton);
 
 
@@ -321,3 +319,6 @@ contentYourSpells.style.flexDirection = "column";
 
 const contentAllSpells = getContentContainer(spellBookTabs, "All Spells")
 contentAllSpells.innerHTML = ""
+
+
+const warnPopup = document.getElementById("ui-warn-popup");

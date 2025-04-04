@@ -46,6 +46,18 @@ function compareWithDb(arr1, arr2) {
     return result;
 }
 
+function userWarn(description) {
+    const warnPopup = document.createElement('div');
+    warnPopup.className = "warn-popup show"
+    warnPopup.style.zIndex = "9998";
+    warnPopup.textContent = description;
+    userInterface.appendChild(warnPopup);
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        warnPopup.classList.remove("show");
+    }, 3000);
+}
 
 function userAskQuestion(title, question, {
     buttons = ['Ok'], 
@@ -72,7 +84,7 @@ function userAskQuestion(title, question, {
 
         // Create the container
         const container = document.createElement('div');
-        container.className = 'ask-question-container';
+        container.className = 'ask-question-container row centered';
         container.classList.add('box-circular-border')
         container.style.zIndex = '9999'; // Ensure it is above the overlay
 
@@ -147,53 +159,174 @@ function createInputNumber(label, id, {maxValue=99, minValue=1, isReadOnly = fal
     labelElement.setAttribute('for', label);
     labelElement.classList.add('label-element');
     labelElement.textContent = label;
+    formGroup.appendChild(labelElement);
 
+    addSpacer(formGroup);
+
+    const inputElementsHolder = document.createElement('div');
+    inputElementsHolder.classList.add('row');
+    inputElementsHolder.style.width = "60%"
+    formGroup.appendChild(inputElementsHolder);
+    
     const inputElement = document.createElement('input');
     inputElement.type = 'number';
     inputElement.classList.add('input-element');
+    inputElement.style.width = "100%";
     inputElement.id = id;
     inputElement.name = label;
-    inputElement.value = defaultValue; 
+    inputElement.value = parseFloat(defaultValue ? defaultValue : minValue); 
     inputElement.readOnly = isReadOnly;
+    inputElementsHolder.appendChild(inputElement)
     
+    formGroup.inputElement = inputElement;
 
     inputElement.onchange = () =>{
-        keepValueInBetween(inputElement.value )
+        keepValueInBetween(inputElement.value)
     }
-
-    formGroup.appendChild(labelElement);
-    addSpacer(formGroup);
-    formGroup.appendChild(inputElement);
-
-    formGroup.inputElement = inputElement;
 
     if(addIncrementButtons){
         const controls = document.createElement('div');
         controls.className = 'number-controls';
     
-        const buttonUp = createImageButton(19, {icon: '&#9650;'});  
+        const buttonUp = createImageButton(18, {icon: '&#9650;'});  
         buttonUp.classList.add('button-up')
         buttonUp.onclick = function(event){
             event.preventDefault();
             if(inputElement.value < maxValue){
-                inputElement.value = parseInt(inputElement.value) + 1;
+                inputElement.value = parseFloat(inputElement.value) + 1;
             }
         }
-        const buttonDown = createImageButton(19, {icon: '&#9660;'});  
+        const buttonDown = createImageButton(18, {icon: '&#9660;'});  
         buttonDown.classList.add('button-down')
         buttonDown.onclick = function(event){
             event.preventDefault();
             if(inputElement.value > minValue){
-                inputElement.value = parseInt(inputElement.value) - 1;
+                inputElement.value = parseFloat(inputElement.value) - 1;
             }
         }
     
         controls.appendChild(buttonUp);
         controls.appendChild(buttonDown);
-        formGroup.appendChild(controls);
+        inputElementsHolder.appendChild(controls);
     }
    
     return formGroup
+}
+
+function createInputModifier(label, id, modiferTextList, modifierValueList, {
+    defaultValue = null
+}){
+    const formModifierStat = document.createElement('div');
+    formModifierStat.classList.add('form-group')
+    formModifierStat.classList.add('row')
+    formModifierStat.classList.add('centered');
+    formModifierStat.classList.add("box-circular-border")
+    formModifierStat.value = {}
+
+    const formModifierStatLabel = document.createElement('label');
+    formModifierStatLabel.setAttribute('for', id); // Associate label with input via id
+    formModifierStatLabel.classList.add('label-element');
+    formModifierStatLabel.textContent = label;
+    formModifierStatLabel.style.alignContent = 'center';
+    formModifierStatLabel.style.textAlign = 'center';
+    formModifierStat.appendChild(formModifierStatLabel);
+
+    addSpacer(formModifierStat)
+
+    const formModifierStatChangeColumn = document.createElement('div');
+    formModifierStatChangeColumn.classList.add('column')
+    formModifierStatChangeColumn.classList.add('centered');
+    formModifierStatChangeColumn.style.width = '60%';
+    formModifierStatChangeColumn.style.gap = "1rem"
+    formModifierStat.appendChild(formModifierStatChangeColumn)
+
+    const formModifierStatAddSelection = createInputSelector("Modifier:", modiferTextList, modifierValueList, {
+        defaultValue: "Select stat type...",
+    })
+    formModifierStatAddSelection.classList.remove("form-group")
+    formModifierStatAddSelection.style.width = "100%"
+    formModifierStatChangeColumn.appendChild(formModifierStatAddSelection)
+
+    const formModifierValue =  createInputNumber("Multiplier:", id+"-multiplier", {
+        maxValue: 9999,
+        minValue: 0,
+        defaultValue: 1,
+    })
+    formModifierValue.classList.remove("form-group")
+    formModifierValue.style.width = "100%"
+    formModifierStatChangeColumn.appendChild(formModifierValue)
+
+    const formModifierStatListButtons = document.createElement("div")
+    formModifierStatListButtons.classList.add('row', 'centered');
+    formModifierStatListButtons.style.width = '60%';
+    formModifierStatListButtons.style.gap = '10px';
+    formModifierStatChangeColumn.appendChild(formModifierStatListButtons);
+
+    const formModifierStatList = document.createElement('div');
+    formModifierStatList.className = 'box-circular-border input-element';
+    formModifierStatList.style.width = "95%"
+    formModifierStatList.style.gap = '10px';
+    formModifierStatList.style.flexWrap = "wrap";
+    formModifierStatList.style.display = "flex"
+    formModifierStatChangeColumn.appendChild(formModifierStatList);
+
+    function createModifierListElement(label){
+        // Future additnal effect create bağlanacak
+        const listElement = document.createElement('div');
+        listElement.classList.add("list-item")
+        listElement.classList.add('box-circular-border');
+        listElement.classList.add('row');
+        listElement.classList.add('centered');
+        listElement.style.gap = '0.5rem';
+        
+
+        const labelElement = document.createElement('label');
+        labelElement.style.textAlign = 'center';
+        labelElement.style.fontSize = '14px';
+        labelElement.style.paddingLeft = '5px';
+        labelElement.textContent = label;
+        listElement.appendChild(labelElement)
+
+        addSpacer(listElement);
+
+        const removeButton = createImageButton('26', {source: `url(static/images/menu-icons/close.png)`, custom_padding: 3});
+        listElement.appendChild(removeButton);
+        removeButton.onclick = () => {
+            listElement.remove()
+        }
+
+        return listElement;
+    }
+
+    if(defaultValue != null) {
+        for(let element in defaultValue) {
+            const newRow = createModifierListElement(`${element.type} x ${element.multiplier}`)
+            formModifierStatList.appendChild(newRow);
+        }
+    }
+
+    const buttonAdd = document.createElement('button');
+    buttonAdd.textContent = 'Add Modifier';
+    buttonAdd.classList.add('button-add');
+    buttonAdd.onclick = function(event) {
+        event.preventDefault();
+        if (parseFloat(formModifierValue.inputElement.value) > 0){
+            const selectedModifier = formModifierStatAddSelection.inputElement.options[formModifierStatAddSelection.inputElement.selectedIndex].text
+            if (selectedModifier in formModifierStat.value){
+                userWarn("This modifier already added!")
+            }else{
+                const newRow = createModifierListElement(`${selectedModifier} x ${formModifierValue.inputElement.value}`)
+                formModifierStatList.appendChild(newRow);
+
+                formModifierStat.value[selectedModifier] = formModifierValue.inputElement.value
+            }
+        }else{
+            userWarn("Please select multiplier value greater than 0!")
+        }
+    };
+    formModifierStatListButtons.appendChild(buttonAdd);
+
+    return formModifierStat
 }
 
 function createInputString(label, id, {
@@ -282,13 +415,14 @@ function createInputBoolean(label, id, defaultValue = false) {
     return formGroup;
 }
 
-function createInputDice(label, id){
+function createInputDice(label, id, {
+    defaultValue = "0d0"
+}){
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
     formGroup.classList.add('vertical');
     formGroup.style.gap = '10px';
-
 
     const labelElement = document.createElement('label');
     labelElement.setAttribute('for', id);
@@ -296,26 +430,30 @@ function createInputDice(label, id){
     labelElement.textContent = label;
     formGroup.appendChild(labelElement);
 
+    addSpacer(formGroup)
+
+    const inputElementsHolder = document.createElement('div');
+    inputElementsHolder.classList.add('row');
+    inputElementsHolder.classList.add('centered');
+    inputElementsHolder.style.width = "60%"
+    formGroup.appendChild(inputElementsHolder);
+
     const inputElementDiceRollTimes = document.createElement('input');
     inputElementDiceRollTimes.type = 'number';
     inputElementDiceRollTimes.id = id;
-    inputElementDiceRollTimes.value = 0;
-    inputElementDiceRollTimes.style.height = "25px";
-    inputElementDiceRollTimes.style.marginRight = "2px"
-    formGroup.appendChild(inputElementDiceRollTimes);
+    inputElementDiceRollTimes.value = defaultValue.split('d')[0];
+    inputElementsHolder.appendChild(inputElementDiceRollTimes);
 
     const labelD = document.createElement('label');
-
     labelD.textContent = 'd';
-    formGroup.appendChild(labelD);
+    labelD.style.marginInline = '5px';
+    inputElementsHolder.appendChild(labelD);
 
     const inputElementDice = document.createElement('input');
     inputElementDice.type = 'number';
     inputElementDice.id = id;
-    inputElementDice.value = 0;
-    inputElementDice.style.height = "25px";
-    inputElementDice.style.marginLeft = "2px"
-    formGroup.appendChild(inputElementDice);
+    inputElementDice.value = defaultValue.split('d')[1];
+    inputElementsHolder.appendChild(inputElementDice);
 
     formGroup.inputElement = {
         dice: inputElementDice, 
@@ -341,37 +479,37 @@ function setDiceValue(diceInputElement, value){
     diceInputElement.dice.value = values[1];
 }
 
-function createInputDamage(label, id){
+function createInputDamage(label, id, {
+    defaultValue = null,
+}){
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
-    formGroup.classList.add('row');
+    formGroup.classList.add('column');
     formGroup.classList.add('vertical');
-    formGroup.style.minHeight = '50px';
 
-    const formColumn = document.createElement('div');
-    formColumn.classList.add('column');
-    formGroup.appendChild(formColumn)
+    const isIntialDamageRaw = defaultValue ? (defaultValue && !defaultValue.includes("d")) : false
 
-    const damageRow = document.createElement('div');
-    damageRow.classList.add('row');
-    damageRow.classList.add('centered');
-    formColumn.appendChild(damageRow)
+    if(defaultValue == null){
+        defaultValue = new Damage({type: damageTypes.PURE, value: "0d0"})
+    }
 
-    const numberInput = createInputNumber(label, id + "-number-input", {
+    const formRawDamageInput = createInputNumber(label, id + "-number-input", {
         maxValue: 9999, 
-        minValue: -9999, 
+        minValue: 0, 
         addIncrementButtons : true, 
-        defaultValue: 0
+        defaultValue: isIntialDamageRaw ? defaultValue : null
     });
-    numberInput.style.backgroundColor = 'transparent';
-    numberInput.style.width = "100%"
-    numberInput.style.display = 'none';
-    damageRow.appendChild(numberInput);
+    formRawDamageInput.classList.remove('form-group');
+    formRawDamageInput.style.width = "100%"
+    formRawDamageInput.style.display = 'none';
+    formGroup.appendChild(formRawDamageInput);
     
-    const diceInput = createInputDice(label, id + '-dice-input');
-    diceInput.style.backgroundColor = 'transparent';
+    const diceInput = createInputDice(label, id + '-dice-input', {
+        defaultValue : isIntialDamageRaw ? null : defaultValue
+    });
+    diceInput.classList.remove('form-group');
     diceInput.style.width = "100%"
-    damageRow.appendChild(diceInput)
+    formGroup.appendChild(diceInput)
 
     //Check box
     const checkboxRow = document.createElement('div'); // Create a container
@@ -389,22 +527,22 @@ function createInputDamage(label, id){
     checkboxLabel.htmlFor = id+"-checkbox"; // Associate label with the checkbox
     checkboxLabel.textContent = "Raw"; // Set the label text
     checkboxRow.appendChild(checkboxLabel); // Add the label to the container
-    formColumn.appendChild(checkboxRow)
+    formGroup.appendChild(checkboxRow)
 
     checkbox.addEventListener('change', event => {
         if (checkbox.checked) {
-            numberInput.style.display = 'flex';
+            formRawDamageInput.style.display = 'flex';
             diceInput.style.display = 'none';
-            formGroup.value = numberInput.querySelector('.input-element').value
+            formGroup.value = formRawDamageInput.querySelector('.input-element').value
         } else {
-            numberInput.style.display = 'none';
+            formRawDamageInput.style.display = 'none';
             diceInput.style.display = 'flex';
             formGroup.value = diceInput.value;
         }
     });
 
     formGroup.inputElement = {
-        number: numberInput.inputElement,
+        number: formRawDamageInput.inputElement,
         dice: diceInput.inputElement,
         isNumberInput: checkbox
     }
@@ -429,62 +567,6 @@ function setDamageValue(damageInputElement, value){
         damageInputElement.number.value = value;
         damageInputElement.isNumberInput.checked = true;
     }
-}
-
-function createInputDuration(label = "Duration", id, {
-    initalDuration = new Duration(durationTypes.TURN_BASED, 0),
-    avaliableDurationTypes = durationTypes} = {}) {
-    
-    const formGroup = document.createElement('div');
-    formGroup.classList.add('form-group')
-    formGroup.classList.add('row')
-    formGroup.classList.add('centered');
-
-    const durationSelector = createInputSelector(label, Object.values(avaliableDurationTypes), Object.keys(avaliableDurationTypes), {
-        id:  id,
-        defaultValue: [initalDuration.type],
-    });
-    durationSelector.style.backgroundColor = 'transparent';
-    durationSelector.style.width = "100%"
-    formGroup.appendChild(durationSelector);
-
-    const durationValue = createInputNumber("Value: ", id+'-value', 50, 1, false, false)
-    durationValue.style.backgroundColor = 'transparent';
-    durationValue.style.width = "100%"
-    durationValue.style.display = "none"
-    formGroup.appendChild(durationValue);
-
-    durationValue.querySelector('.input-element').value = initalDuration.value 
-
-    durationSelector.querySelector('.input-element').onchange =  (event) => {     
-        displayPart(event.target.value)
-    }
-
-    function displayPart(type){
-        if(type == durationTypes.TURN_BASED){
-            durationValue.style.display = "flex"
-        }else{
-            durationValue.style.display = "none"
-        }
-    }
-
-    displayPart(initalDuration.type)
-
-    formGroup.inputElement = {
-        type: durationSelector.inputElement,
-        value: durationValue.inputElement
-    }
-
-    return formGroup
-}
-
-function getDurationValue(durationInputElement){
-    return new Duration(durationInputElement.type.value, durationInputElement.value.value)
-}
-
-function setDurationValue(durationInputElement, value){
-    durationInputElement.type.value = value.type;
-    durationInputElement.value.value = value.value;
 }
 
 function createInputSelector(label, valueList, textList, 
@@ -680,6 +762,65 @@ function getOrderedSelectedOptions(selectElement) {
 
     return orderedValues;
 }
+//----------------------------- Duration Input Element -------------------------------------------
+
+function createInputDuration(label = "Duration", id, {
+    initalDuration: defaultValue = new Duration({type: durationTypes.TURN_BASED, value: 1}),
+    avaliableDurationTypes = durationTypes} = {}) {
+    
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group')
+    formGroup.classList.add('column')
+    formGroup.classList.add('centered');
+    formGroup.classList.add("box-circular-border")
+    formGroup.style.gap = "1rem"
+    
+
+    const durationSelector = createInputSelector(label, Object.values(avaliableDurationTypes), Object.keys(avaliableDurationTypes))
+    durationSelector.classList.remove('form-group')
+    durationSelector.style.width = "100%"
+    formGroup.appendChild(durationSelector)
+    
+    durationSelector.inputElement.onchange =  (event) => {     
+        displayPart(event.target.value)
+    }
+
+    const durationValue = createInputNumber("Value: ", id+'-value', {
+        maxValue: 10,
+        minValue: 1,
+        addIncrementButtons: true
+    })
+
+    durationValue.style.backgroundColor = 'transparent';
+    durationValue.style.display = "flex"
+    durationValue.classList.remove("form-group")
+    durationValue.style.width = "100%"
+    formGroup.appendChild(durationValue);
+
+    durationValue.querySelector('.input-element').value = defaultValue.value 
+
+    function displayPart(type){
+        if(type == durationTypes.TURN_BASED || type == durationTypes.UNTIL_NEXT_CAST){
+            durationValue.style.display = "flex"
+        }else{
+            durationValue.style.display = "none"
+        }
+    }
+
+    displayPart(defaultValue.type)
+
+    return formGroup
+}
+
+function getDurationValue(durationInputElement){
+    return new Duration(durationInputElement.type.value, durationInputElement.value.value)
+}
+
+function setDurationValue(durationInputElement, value){
+    durationInputElement.type.value = value.type;
+    durationInputElement.value.value = value.value;
+}
+//------------------------------------------------------------------------------------------------
 
 function createInputSpellSelect(id, {initalLevel: level = null, initialSpellName = null, availableSpells = null}) {
     const itemId = id + '-spell-select-container';
