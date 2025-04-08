@@ -6,7 +6,6 @@ let serverInfo = {}
 let sessionInfo = {}
 let sceneData = {}
 
-let listSpells = null
 let listSpellNames = null
 
 // UI 

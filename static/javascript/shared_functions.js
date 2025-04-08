@@ -123,7 +123,7 @@ function userAskQuestion(title, question, {
                 if (overlay) {
                     document.body.removeChild(overlay);
                 }
-                resolve({ elem: container, value: inputElement ? inputElement.value : null });
+                resolve({ elem: container, value: inputElement ? inputElement.value : null, buttonText: buttonText});
             };
             container.appendChild(button);
         });
@@ -218,9 +218,10 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
 }){
     const formModifierStat = document.createElement('div');
     formModifierStat.classList.add('form-group')
-    formModifierStat.classList.add('row')
+    formModifierStat.classList.add('column')
     formModifierStat.classList.add('centered');
     formModifierStat.classList.add("box-circular-border")
+    formModifierStat.style.gap = "1rem"
     formModifierStat.value = {}
 
     const formModifierStatLabel = document.createElement('label');
@@ -231,20 +232,17 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
     formModifierStatLabel.style.textAlign = 'center';
     formModifierStat.appendChild(formModifierStatLabel);
 
-    addSpacer(formModifierStat)
-
     const formModifierStatChangeColumn = document.createElement('div');
-    formModifierStatChangeColumn.classList.add('column')
+    formModifierStatChangeColumn.classList.add('column');
     formModifierStatChangeColumn.classList.add('centered');
-    formModifierStatChangeColumn.style.width = '60%';
-    formModifierStatChangeColumn.style.gap = "1rem"
+    formModifierStatChangeColumn.style.width = '100%'
+    formModifierStatChangeColumn.style.gap = "1rem 1rem"
     formModifierStat.appendChild(formModifierStatChangeColumn)
 
     const formModifierStatAddSelection = createInputSelector("Modifier:", modiferTextList, modifierValueList, {
         defaultValue: "Select stat type...",
     })
-    formModifierStatAddSelection.classList.remove("form-group")
-    formModifierStatAddSelection.style.width = "100%"
+    formModifierStatAddSelection.classList.add("box-circular-border")
     formModifierStatChangeColumn.appendChild(formModifierStatAddSelection)
 
     const formModifierValue =  createInputNumber("Multiplier:", id+"-multiplier", {
@@ -252,8 +250,7 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
         minValue: 0,
         defaultValue: 1,
     })
-    formModifierValue.classList.remove("form-group")
-    formModifierValue.style.width = "100%"
+    formModifierValue.classList.add("box-circular-border")
     formModifierStatChangeColumn.appendChild(formModifierValue)
 
     const formModifierStatListButtons = document.createElement("div")
@@ -268,31 +265,33 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
     formModifierStatList.style.gap = '10px';
     formModifierStatList.style.flexWrap = "wrap";
     formModifierStatList.style.display = "flex"
-    formModifierStatChangeColumn.appendChild(formModifierStatList);
+    formModifierStatList.style.backgroundColor = formColor
+    formModifierStat.appendChild(formModifierStatList);
 
-    function createModifierListElement(label){
+    function createModifierListElement(modfier_type, modifer_multiplier) {
         // Future additnal effect create bağlanacak
         const listElement = document.createElement('div');
         listElement.classList.add("list-item")
         listElement.classList.add('box-circular-border');
         listElement.classList.add('row');
         listElement.classList.add('centered');
+        listElement.style.backgroundColor = formColor
         listElement.style.gap = '0.5rem';
         
-
         const labelElement = document.createElement('label');
         labelElement.style.textAlign = 'center';
         labelElement.style.fontSize = '14px';
         labelElement.style.paddingLeft = '5px';
-        labelElement.textContent = label;
+        labelElement.textContent = `${modfier_type} x ${modifer_multiplier}`;
         listElement.appendChild(labelElement)
 
         addSpacer(listElement);
 
-        const removeButton = createImageButton('26', {source: `url(static/images/menu-icons/close.png)`, custom_padding: 3});
+        const removeButton = createImageButton('26', {source: `url(static/images/menu-icons/close.png)`, custom_padding: 3, toolTip: "Remove"});
         listElement.appendChild(removeButton);
         removeButton.onclick = () => {
             listElement.remove()
+            delete formModifierStat.value[modfier_type]    
         }
 
         return listElement;
@@ -300,7 +299,7 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
 
     if(defaultValue != null) {
         for(let element in defaultValue) {
-            const newRow = createModifierListElement(`${element.type} x ${element.multiplier}`)
+            const newRow = createModifierListElement(element.type, element.multipler)
             formModifierStatList.appendChild(newRow);
         }
     }
@@ -315,7 +314,7 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
             if (selectedModifier in formModifierStat.value){
                 userWarn("This modifier already added!")
             }else{
-                const newRow = createModifierListElement(`${selectedModifier} x ${formModifierValue.inputElement.value}`)
+                const newRow = createModifierListElement(selectedModifier, formModifierValue.inputElement.value)
                 formModifierStatList.appendChild(newRow);
 
                 formModifierStat.value[selectedModifier] = formModifierValue.inputElement.value
@@ -505,7 +504,7 @@ function createInputDamage(label, id, {
     formGroup.appendChild(formRawDamageInput);
     
     const diceInput = createInputDice(label, id + '-dice-input', {
-        defaultValue : isIntialDamageRaw ? null : defaultValue
+        defaultValue : isIntialDamageRaw ? null : defaultValue.value
     });
     diceInput.classList.remove('form-group');
     diceInput.style.width = "100%"
@@ -831,24 +830,50 @@ function createInputSpellSelect(id, {initalLevel: level = null, initialSpellName
     spellSelectContainer.classList.add('vertical');
 
     let selectedSpellLevelList = 1;
-    const spellLevelSelector = createInputSelector('Spell Level:', serverRules.spells.levels, serverRules.spells.levels, {
+
+    const spellLevelSelector = createInputSelector('Spell Level:', Object.keys(database.spells), Object.keys(database.spells), {
         nonSelectableDefault: 'select', 
         id: itemId + '-spell-level',
         defaultValue: level ? [level] : null});
-    spellLevelSelector.style.width = "100%";
-    spellLevelSelector.style.backgroundColor = 'transparent';
+    spellSelectContainer.appendChild(spellLevelSelector);
 
-    const spellNameSelect = createInputSelector('Spell:', Object.keys(availableSpells[selectedSpellLevelList]), availableSpells[selectedSpellLevelList], {
+    const spellNameSelect = createInputSelector('Spell:', Object.keys(database.spells[selectedSpellLevelList]), database.spells[selectedSpellLevelList], {
         nonSelectableDefault: 'select', 
         id: itemId + '-spell-level',
         defaultValue: initialSpellName ? [initialSpellName] : null});
-    spellNameSelect.style.width = "100%";
-    spellNameSelect.style.backgroundColor = 'transparent';
+    spellSelectContainer.appendChild(spellNameSelect);
+
+    const spellSelectedButtonsContainer = document.createElement("div")
+    spellSelectedButtonsContainer.classList.add("column")
+    spellSelectedButtonsContainer.classList.add("centered")
+    spellSelectedButtonsContainer.style.gap = "5px"
+    spellSelectContainer.appendChild(spellSelectedButtonsContainer)
+
+    const spellEditButton = createImageButton(20, {source: `url(static/images/menu-icons/edit.png)`, custom_padding: 3});
+    spellSelectedButtonsContainer.appendChild(spellEditButton)
+    spellEditButton.onclick = () => {
+        if(spellLevelSelector.inputElement.selectedOptions[0].value && spellNameSelect.inputElement.selectedOptions[0].value){
+            displaySpellCreate(database.spells[spellLevelSelector.inputElement.selectedOptions[0].value][spellNameSelect.inputElement.selectedOptions[0].value])
+        }else {
+            userWarn("Please select a Spell first by selecting level then spell name!")
+        }
+    }
+    
+    const spellInfoButton = createImageButton(20, {icon: "settings", custom_padding: 1})
+    spellInfoButton.style.fontFamily = 'Material Icons Outlined'
+    spellSelectedButtonsContainer.appendChild(spellInfoButton)
+    spellInfoButton.onclick = () => {
+        if(spellLevelSelector.inputElement.selectedOptions[0].value && spellNameSelect.inputElement.selectedOptions[0].value){
+            displaySpellDescription(database.spells[spellLevelSelector.inputElement.selectedOptions[0].value][spellNameSelect.inputElement.selectedOptions[0].value])
+        }else {
+            userWarn("Please select a Spell first by selecting level then spell name!")
+        }
+    }
 
     spellLevelSelector.inputElement.onchange = function(event){
         selectedSpellLevelList = event.target.value;
         spellSelectContainer.spellLevel = spellLevelSelector.inputElement.selectedOptions[0].value;
-        updateSelector(availableSpells[selectedSpellLevelList], availableSpells[selectedSpellLevelList],spellNameSelect.inputElement, null, 'select');
+        updateSelector(Object.keys(database.spells[selectedSpellLevelList]), database.spells[selectedSpellLevelList], spellNameSelect.inputElement, null, 'select');
     }
 
     spellNameSelect.inputElement.onchange = () => {
@@ -859,9 +884,6 @@ function createInputSpellSelect(id, {initalLevel: level = null, initialSpellName
         level: spellLevelSelector.inputElement,
         name: spellNameSelect.inputElement
     }
-
-    spellSelectContainer.appendChild(spellLevelSelector);
-    spellSelectContainer.appendChild(spellNameSelect);
 
     return spellSelectContainer;
 }
@@ -878,7 +900,7 @@ function setSpellSelectValue(spellSelectContainer, value){
     spellSelectContainer.inputElement.name.value = value.name;
 }
 
-function createImageButton(fontSize, {icon=null, source=null, custom_padding = 8}) {
+function createImageButton(fontSize, {icon=null, source=null, custom_padding = 8, toolTip=null}) {
     const button = document.createElement('button');
     button.className = 'image-button';
 
@@ -905,6 +927,9 @@ function createImageButton(fontSize, {icon=null, source=null, custom_padding = 8
         button.innerHTML = icon;
     }
     button.draggable = false;
+    if (toolTip){
+        button.title = toolTip;
+    }
     return button;
 }
 
@@ -1371,7 +1396,12 @@ function getMissingArrayValues(inputArray, searchArray) {
 }
 
 
-
+// *****************************************************************************************************
+// *****************************************************************************************************
+// *****************************************************************************************************
+// ********************************** TAB Containers ***************************************************
+// *****************************************************************************************************
+// *****************************************************************************************************
 function createTabbedContainer(tabCount, tabNames = null, id = null, isGrowable = false, tabMainName = null) {
     // Create a parent container for both tab and content containers
     tabMainName = tabMainName != null ? tabMainName : 'Tab';
@@ -1417,14 +1447,13 @@ function createTabs(tabContainer, contentContainer, tabCount, tabNames = null, i
 
     tabMainName = tabMainName != null ? tabMainName : 'Tab';
 
-    for (let i = 1; i <= tabCount; i++) {
+    for (let i = 0; i < tabCount; i++) {
         // Create tab button
-        const tabName = tabNames ? tabNames[i - 1] : `${tabMainName} ${i}`;
+        const tabName = tabNames ? tabNames[i] : `${tabMainName} ${i}`;
         const tabButton = document.createElement('button');
         tabButton.innerText = tabName;
         tabButton.className = 'tablinks';
-        tabButton.setAttribute('data-index', i);
-        tabButton.setAttribute('data-name', tabName);
+        tabButton.dataset.index = i
         tabButton.onclick = function(event) { openTab(event, `tab${i}`, contentContainer); };
         tabContainer.appendChild(tabButton);
 
@@ -1474,35 +1503,26 @@ function getActiveTabIndex(tabContainer){
 
 // Function to get contentContainer by tab index or name (scoped to parent container)
 function getContentContainer(tabbedWindowContainer, identifier) {
-    const tabContainer = tabbedWindowContainer.querySelector('.tab-container')
+    const tabContainer = tabbedWindowContainer.querySelector('.tab-container');
+    const contentContainer = tabbedWindowContainer.querySelector('.tab-content-container'); // Corrected line
 
     let tabButton;
 
-    // If no identifier is provided, get the last tab button
     if (identifier === undefined) {
         const tabButtons = tabContainer.getElementsByClassName('tablinks');
-        tabButton = tabButtons[tabButtons.length - 1]; // Get the last tab button
+        tabButton = tabButtons[tabButtons.length - 1];
+    } else {
+        tabButton = tabContainer.querySelector(`[data-index="${String(identifier)}"]`);
     } 
-    // If the identifier is a number, treat it as an index
-    else if (typeof identifier === 'number') {
-        tabButton = tabContainer.querySelector(`[data-index="${identifier}"]`);
-    } 
-    // If the identifier is a string, treat it as a tab name
-    else if (typeof identifier === 'string') {
-        tabButton = tabContainer.querySelector(`[data-name="${identifier}"]`);
-    }
 
     if (tabButton) {
         const tabIndex = tabButton.getAttribute('data-index');
-        const contentContainer = tabContainer.nextElementSibling; // Get the content container within the same parent
-
-        return contentContainer.querySelector(`#tab${tabIndex}`); // Search only within the content container
+        return contentContainer.querySelector(`#tab${tabIndex}`);
     } else {
-        console.error("Tab not found with the given identifier:", identifier);
+        console.error("Tab not found with the given identifier:", identifier, typeof identifier);
         return null;
     }
 }
-
 
 function addNewTab(tabbedWindowContainer, name, tabMainName= 'Tab') {
     const tabContainer = tabbedWindowContainer.querySelector('.tab-container')
@@ -1517,7 +1537,6 @@ function addNewTab(tabbedWindowContainer, name, tabMainName= 'Tab') {
     newTabButton.innerText = newTabName;
     newTabButton.className = 'tablinks';
     newTabButton.setAttribute('data-index', newTabIndex);
-    newTabButton.setAttribute('data-name', newTabName);
     newTabButton.onclick = function(event) { openTab(event, `tab${newTabIndex}`, contentContainer); };
 
     // Insert before the "Add Tab" button if it exists
@@ -1550,20 +1569,11 @@ function addNewTab(tabbedWindowContainer, name, tabMainName= 'Tab') {
     return newTabContent;
 }
 
-function changeVisibiltyOfTab(tabbedWindowContainer, identifier, state) {
+function changeVisibiltyOfTab(tabbedWindowContainer, index, state) {
     const tabContainer = tabbedWindowContainer.querySelector('.tab-container')
 
-    let tabButton;
-
-    // If the identifier is a number, treat it as an index
-    if (typeof identifier === 'number') {
-        tabButton = tabContainer.querySelector(`[data-index="${identifier}"]`);
-    } 
-    // If the identifier is a string, treat it as a tab name
-    else if (typeof identifier === 'string') {
-        tabButton = tabContainer.querySelector(`[data-name="${identifier}"]`);
-    }
-
+    const tabButton = tabContainer.querySelector(`[data-index="${index}"]`);
+    
     if (tabButton) {
         const tabIndex = tabButton.getAttribute('data-index');
 
@@ -1582,7 +1592,7 @@ function changeVisibiltyOfTab(tabbedWindowContainer, identifier, state) {
         }
 
     } else {
-        console.error("Tab not found with the given identifier:", identifier);
+        console.error("Tab not found with the given identifier:", index);
         return null;
     }
 }
@@ -1590,20 +1600,10 @@ function changeVisibiltyOfTab(tabbedWindowContainer, identifier, state) {
 function activateTab(tabbedWindowContainer, identifier) {
     const tabContainer = tabbedWindowContainer.querySelector('.tab-container')
 
-    let tabButton;
-
-    // If the identifier is a number, treat it as an index
-    if (typeof identifier === 'number') {
-        tabButton = tabContainer.querySelector(`[data-index="${identifier}"]`);
-    } 
-    // If the identifier is a string, treat it as a tab name
-    else if (typeof identifier === 'string') {
-        tabButton = tabContainer.querySelector(`[data-name="${identifier}"]`);
-    }
+    const tabButton = tabContainer.querySelector(`[data-index="${String(identifier)}"]`);
+    
 
     if (tabButton) {
-        tabButton.getAttribute('data-index');
-
         tabButton.click();
     } else {
         console.error("Tab not found with the given identifier:", identifier);

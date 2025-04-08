@@ -41,9 +41,9 @@ async function  initDatabase(initStates){
 async function initSpells(){
     const _listSpells = await sendRequest({type: "update", payload: "spells"})
     if (_listSpells.success === true){
-        listSpells = _listSpells.data
+        database.spells = _listSpells.data
 
-        for(const spellLevel of Object.keys(listSpells)){
+        for(const spellLevel of Object.keys(database.spells)){
             const spellContainer = document.createElement('div');
             spellContainer.classList.add('spell-container');
         
@@ -56,8 +56,8 @@ async function initSpells(){
             spellContent.classList.add('spell-content');
             spellContent.style.display = 'none'; // Initially hidden
         
-            for (const spellName of Object.keys(listSpells[spellLevel])) {
-                const spell = listSpells[spellLevel][spellName];
+            for (const spellName of Object.keys(database.spells[spellLevel])) {
+                const spell = database.spells[spellLevel][spellName];
                 const spellInfo = document.createElement('div');
                 spellInfo.classList.add('spell-info');
                 spellInfo.innerHTML = `

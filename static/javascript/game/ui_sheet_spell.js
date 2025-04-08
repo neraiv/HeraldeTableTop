@@ -58,10 +58,10 @@ function displaySpellCreate(spell = new Spell()) {
             const casterEffectList = targetEffectsTabbedWindowContainer.querySelector('.additional-effect-list-container');
             
             for(let targetEffect of targetEffectList.elementsList.children){
-                target.push(new AdditionalEffect(targetEffect.additionalEffect))
+                target.push(new Effect(targetEffect.effect))
             }
             for(let casterEffect of casterEffectList.elementsList.children){
-                caster.push(new AdditionalEffect(casterEffect.additionalEffect))
+                caster.push(new Effect(casterEffect.effect))
             }
             if(target.length > 0 || caster.length > 0){
                 spell.spendManaEffects[index] = {target, caster}
@@ -119,6 +119,7 @@ function displaySpellCreate(spell = new Spell()) {
         defaultValue: isInitialSpellGivenFlag ? spell.type : null
     });
     selectSpellType.classList.remove("form-group")
+    selectSpellType.style.width = '100%';
     rowSpellTypeLevel.appendChild(selectSpellType);
 
     const serverRulesSpellsRange = [];
@@ -130,6 +131,7 @@ function displaySpellCreate(spell = new Spell()) {
         defaultValue: isInitialSpellGivenFlag ? spell.level : null
     }); 
     selectSpellLevel.classList.remove("form-group")
+    selectSpellLevel.style.width = '100%';
     rowSpellTypeLevel.appendChild(selectSpellLevel);
 
     const spellTypeConfirmation = createImageButton(40, {icon: "check_circle_outline"});
@@ -174,28 +176,37 @@ function displaySpellCreate(spell = new Spell()) {
     formClasses.style.backgroundColor = formColor;
     form.appendChild(formClasses);
 
-    const formModifierStat = createInputModifier("Modifer Stat: ", id+"-modifier", Object.values(statTypes), Object.keys(statTypes), {
+    const formModifierStat = createInputModifier("Spell Modifiers", id+"-modifier", Object.values(statTypes), Object.keys(statTypes), {
         defaultValue: isInitialSpellGivenFlag ? spell.modifiers : null
     })
     formModifierStat.style.backgroundColor = formColor;
     form.appendChild(formModifierStat);
 
-    const formBaseDamageType = createInputSelector('Damage Type: ', Object.values(damageElements), Object.keys(damageElements), {
+    const formDamage = document.createElement("div");
+    formDamage.classList.add('column');
+    formDamage.classList.add('vertical');
+    formDamage.classList.add('form-group');
+    formDamage.classList.add("box-circular-border")
+    formDamage.style.gap = '1rem';
+    formDamage.style.backgroundColor = formColor;
+    form.appendChild(formDamage);
+
+    const formBaseDamageType = createInputSelector('Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
         id:  id +'-damage-type',
-        multiple: true,
-        defaultValue: isInitialSpellGivenFlag ? spell.damageType : null
+        multiple: false,
+        defaultValue: isInitialSpellGivenFlag ? spell.damage.type : null
     });
-    formBaseDamageType.classList.add('box-circular-border');
-    formBaseDamageType.style.backgroundColor = formColor;
-    form.appendChild(formBaseDamageType);
+    formBaseDamageType.classList.remove('form-group');
+    formBaseDamageType.style.width = "100%"
+    formDamage.appendChild(formBaseDamageType);
 
     const formBaseDamage = createInputDamage("Damage: ", id+ '-base-damage', {
         defaultValue: isInitialSpellGivenFlag ? spell.damage : null
     })
+    formBaseDamage.classList.remove('form-group');
+    formBaseDamage.style.width = "100%"
     formBaseDamage.style.display = "none"
-    formBaseDamage.classList.add('box-circular-border');
-    formBaseDamage.style.backgroundColor = formColor;
-    form.appendChild(formBaseDamage);
+    formDamage.appendChild(formBaseDamage);
     
     formBaseDamageType.inputElement.onchange =  (event) => {
         const value = event.target.value
@@ -255,19 +266,20 @@ function displaySpellCreate(spell = new Spell()) {
     form.appendChild(formTargetEffects);
 
     for(let i = 0; i < selectableSpellLevels.length; i++){
-        const index = parseInt(selectableSpellLevels[i])
-        const tabContent = getContentContainer(targetEffectsTabbedWindowContainer, selectableSpellLevels[i])
+        const index = selectableSpellLevels[i]
+        const tabContent = getContentContainer(targetEffectsTabbedWindowContainer, parseInt(selectableSpellLevels[i]))
         tabContent.innerHTML = '';
         const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
-        const formTargetEffects = createAdditionalEffectListContainer(tabContent.id + '-additional-effect-target-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
+        const formTargetEffects = createeffectListContainer(tabContent.id + '-additional-effect-target-effect-list-container',
+            `Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
         if(spell && spell.spendManaEffects && spell.spendManaEffects[index] && spell.spendManaEffects[index].target){
-            for(let additionalEffect of spell.spendManaEffects[index].target){
-                const listElement = createAdditionalEffectListElement(additionalEffect)
+            for(let effect of spell.spendManaEffects[index].target){
+                const listElement = createeffectListElement(effect)
                 formTargetEffects.elementsList.appendChild(listElement);
             }
         }
         formTargetEffects.buttons[buttonNames[1]].onclick = () =>{
-            const listElement = createAdditionalEffectListElement()
+            const listElement = createeffectListElement()
             formTargetEffects.elementsList.appendChild(listElement);
         }
         formTargetEffects.style.height = '150px';
@@ -301,15 +313,15 @@ function displaySpellCreate(spell = new Spell()) {
         const tabContent = getContentContainer(casterEffectsTabbedWindowContainer, selectableSpellLevels[i])
         tabContent.innerHTML = '';
         const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
-        const casterEffects = createAdditionalEffectListContainer(tabContent.id + '-additional-effect-caster-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
+        const casterEffects = createeffectListContainer(tabContent.id + '-additional-effect-caster-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
         if(spell && spell.spendManaEffects &&spell.spendManaEffects[index] && spell.spendManaEffects[index].caster){
-            for(let additionalEffect of spell.spendManaEffects[index].caster){
-                const listElement = createAdditionalEffectListElement(additionalEffect)
+            for(let effect of spell.spendManaEffects[index].caster){
+                const listElement = createeffectListElement(effect)
                 casterEffects.elementsList.appendChild(listElement);
             }
         }
         casterEffects.buttons[buttonNames[1]].onclick = () =>{
-            const listElement = createAdditionalEffectListElement()
+            const listElement = createeffectListElement()
             casterEffects.elementsList.appendChild(listElement);
         }
         casterEffects.style.height = '150px';
@@ -360,7 +372,7 @@ function displaySpellCreate(spell = new Spell()) {
         id: 'create-spell-pattern-can-target',
         defaultValue: spell ? spell.spellPattern.canTarget : null, 
         multiple: true,
-        custom_func: selectorIndexedOptionFunctionWithTransparency
+        custom_func: selectorChekmarkOptionFunction
     })
     spellCanTarget.classList.add('box-circular-border');
     spellCanTarget.style.backgroundColor = formColor;
@@ -388,433 +400,6 @@ function displaySpellCreate(spell = new Spell()) {
     updateElements();
     userInterface.appendChild(spellCreateSheet);
 
-    function createAdditionalEffectListContainer(id, titleStr = null, buttonNames = []){
- 
-        const additionalElementListContainer = document.createElement('div');
-        additionalElementListContainer.classList.add('additional-effect-list-container');
-        additionalElementListContainer.classList.add('form-group');
-        additionalElementListContainer.classList.add('column');
-        additionalElementListContainer.classList.add('vertical');
-        additionalElementListContainer.id = id;
-    
-        const title = document.createElement('label');
-        title.textContent = titleStr ? titleStr : 'Create a New';
-    
-        const row = document.createElement('div');
-        row.classList.add('row');
-        row.style.gap = '10px';
-        row.style.width = '98%';
-        row.style.height = '98%';
-    
-        const elementsListColumn = document.createElement('div')
-        elementsListColumn.classList.add('column');
-        elementsListColumn.classList.add('vertical');
-        elementsListColumn.classList.add('box-circular-border');
-        elementsListColumn.style.backgroundColor = 'white';
-        elementsListColumn.style.paddingTop = '3px'
-        elementsListColumn.style.gap = '5px';
-        elementsListColumn.style.overflowY = 'scroll';
-        elementsListColumn.style.width = '70%';
-        elementsListColumn.style.height = '90%';
-    
-        const buttonsList =document.createElement('div')
-        buttonsList.classList.add('column');
-        buttonsList.classList.add('horizantal');
-        buttonsList.style.gap = '5px';
-        buttonsList.style.display = 'flex';
-        buttonsList.style.flexGrow = '1';
-    
-        
-        additionalElementListContainer.buttons = {};
-        additionalElementListContainer.elementsList = elementsListColumn;
-        for(let buttonName of buttonNames) {
-            const button = document.createElement('button')
-            button.textContent = buttonName;
-            button.style.textAlign = 'center';
-            button.style.display = 'flex';
-            additionalElementListContainer.buttons[buttonName] = button;
-            buttonsList.appendChild(button)
-        }
-    
-        row.appendChild(elementsListColumn)
-        row.appendChild(buttonsList)
-        additionalElementListContainer.appendChild(title);
-        additionalElementListContainer.appendChild(row)
-    
-        return additionalElementListContainer;
-    }
-
-    function createAdditionalEffectListElement(additionalEffect, edit_icon = 'edit.png', close_icon = 'close.png'){ 
-        
-        // Future additnal effect create bağlanacak
-        const listElement = document.createElement('div');
-        listElement.classList.add('additiona-effect-container');
-        listElement.classList.add('list-element'); // 30px 
-        listElement.classList.add('box-circular-border');
-        listElement.classList.add('row');
-        listElement.classList.add('vertical');
-
-        listElement.additionalEffect = additionalEffect ? additionalEffect : new AdditionalEffect()
-    
-        const labeledElement = document.createElement('div');
-        labeledElement.classList.add('row');
-        labeledElement.classList.add('centered');
-        labeledElement.style.gap = '5px';
-        listElement.appendChild(labeledElement);
-
-        addSpacer(listElement);
-
-        const label = document.createElement('label');
-        label.style.textAlign = 'center';
-        label.style.fontSize = '14px';
-        label.style.paddingLeft = '5px';
-        label.textContent = "New Additional Effect";
-        labeledElement.appendChild(label)
-    
-        if(additionalEffect){
-            label.textContent = additionalEffect.name;
-            let effectImageList = new Set();
-            for(const effect of additionalEffect.effects){
-                switch (effect.type) {
-                    case additionalEffectTypes.BUFF:
-                        // Code to run if expression === value1
-                        effectImageList.add("buff_debuff.png")
-                        break;
-                    
-                    case additionalEffectTypes.AURA:
-                        // Code to run if expression === value2
-                        effectImageList.add("aura.png");
-                        break;
-                    
-                    case additionalEffectTypes.CAST:
-                        // Code to run if expression === value3
-                        effectImageList.add("cast.png");
-                        break;
-                }
-            }
-            for(const effectImage of effectImageList){
-                const effectImg = document.createElement('img');
-                effectImg.classList.add('icon');
-                effectImg.style.width = '23px';
-                effectImg.style.height = '23px';
-                effectImg.style.marginRight = '10px';
-                effectImg.src = "static/images/menu-icons/" + effectImage;
-                labeledElement.appendChild(effectImg);
-            }     
-        }
-    
-        const editButton = createImageButton('26', {source: `url(static/images/menu-icons/${edit_icon})`, custom_padding: 3});
-        listElement.appendChild(editButton);
-        editButton.onclick = () => {
-            additionalEffectBuilder(Date.now(), listElement);
-        }
-        
-
-        const removeButton = createImageButton('26', {source: `url(static/images/menu-icons/${close_icon})`, custom_padding: 3});
-        listElement.appendChild(removeButton);
-        removeButton.onclick = () => {
-            listElement.remove()
-        }
-
-        return listElement;
-    }
-
-    function additionalEffectBuilder(id, listElement) {
-
-        const itemId = id;
-
-        const additionalEffectBuildSheet = document.createElement('div');
-        additionalEffectBuildSheet.style.display = 'flex';
-        additionalEffectBuildSheet.classList.add('aditional-effect-create-sheet');
-        additionalEffectBuildSheet.classList.add('box-circular-border');
-        additionalEffectBuildSheet.classList.add('column');
-        additionalEffectBuildSheet.classList.add('vertical');
-        additionalEffectBuildSheet.style.gap = '10px';
-        additionalEffectBuildSheet.id = itemId;
-        additionalEffectBuildSheet.style.backgroundColor = backgroundColor
-        userInterface.appendChild(additionalEffectBuildSheet);
-        
-        const topBar = addDraggableRow(additionalEffectBuildSheet);
-        topBar.classList.add('row');
-        topBar.classList.add("vertical");
-        topBar.style.justifyContent = "space-between";
-        topBar.style.width = "100%"
-
-        const additionalEffectBuildTitle = document.createElement('h2');
-        additionalEffectBuildTitle.textContent = listElement.additionalEffect.name ? "Editing " + listElement.additionalEffect.name : 'Create Additional Effect';
-        additionalEffectBuildTitle.style.textAlign = 'center';
-        topBar.appendChild(additionalEffectBuildTitle);
-
-        addSpacer(topBar);
-
-        const additionalEffectSaveButton = createImageButton('28', {source: 'url(static/images/menu-icons/save.png)', custom_padding: 4});
-        additionalEffectSaveButton.style.marginRight = '5px';
-        additionalEffectSaveButton.style.cursor = 'pointer';
-        topBar.appendChild(additionalEffectSaveButton);
-        additionalEffectSaveButton.onclick = () => {
-            const additionalEffect = getEffectChanges();
-            if(additionalEffect){
-                console.log(additionalEffect);
-                listElement.additionalEffect = additionalEffect;
-            }
-        }
-
-        const additionalEffectCloseButton = createImageButton('28', {source: 'url(static/images/menu-icons/close.png)', custom_padding: 4});
-        additionalEffectCloseButton.style.marginRight = '5px';
-        additionalEffectCloseButton.style.cursor = 'pointer';
-        topBar.appendChild(additionalEffectCloseButton);
-        additionalEffectCloseButton.onclick = () => {
-            additionalEffectBuildSheet.remove();
-        }
-
-        const additionalEffectBuilderForm = document.createElement('div');
-        additionalEffectBuilderForm.classList.add('column');
-        additionalEffectBuilderForm.classList.add('vertical');
-        additionalEffectBuilderForm.style.width = '100%';
-        additionalEffectBuilderForm.style.height = '100%';
-        additionalEffectBuilderForm.style.backgroundColor = formColor;
-        additionalEffectBuilderForm.style.overflowY = 'scroll';
-        additionalEffectBuilderForm.style.gap = '5px';
-        additionalEffectBuildSheet.appendChild(additionalEffectBuilderForm);
-        
-        const nameForm = createInputString('Name: ', itemId + '-name');
-        nameForm.classList.add('box-circular-border');
-        nameForm.style.backgroundColor = formColor;
-        additionalEffectBuilderForm.appendChild(nameForm);
-        const formDescription = createInputString('Description: ', itemId + '-description', {isTextArea: true});
-        formDescription.classList.add('box-circular-border');
-        formDescription.style.height = '150px';
-        formDescription.style.backgroundColor = formColor;
-        additionalEffectBuilderForm.appendChild(formDescription);
-        
-        const triggerActions = createInputSelector('Triggered With Action:',  Object.values(characterActions), Object.keys(characterActions),{
-            nonSelectableDefault: 'select', 
-            id: itemId +'-aditional-effect-craracter-actions', 
-            multiple: true, 
-            defaultValue: listElement.characterAction
-        });
-        triggerActions.classList.add('box-circular-border');
-        triggerActions.style.minHeight = '100px';
-        triggerActions.style.height = '100px';
-        triggerActions.style.backgroundColor = formColor;
-        additionalEffectBuilderForm.appendChild(triggerActions);
-        
-        const effectsContainer = document.createElement('div');
-        effectsContainer.classList.add('column');
-        effectsContainer.classList.add('vertical');
-        effectsContainer.classList.add('box-circular-border');
-        effectsContainer.style.width = '95%';
-        effectsContainer.style.padding = '5px';
-        effectsContainer.style.gap = '10px';
-        effectsContainer.style.backgroundColor = formColor;
-        additionalEffectBuilderForm.appendChild(effectsContainer);
-
-        const effectsTitle = document.createElement('label');
-        effectsTitle.textContent = 'Effects';
-        effectsTitle.style.fontWeight = 'bold';
-        effectsContainer.appendChild(effectsTitle);
-
-        const effectsTabWindow = createTabbedContainer(0, [], Date.now(), true, "Effect");
-        effectsTabWindow.style.width = '100%';
-        effectsTabWindow.style.backgroundColor = formColor;
-        effectsContainer.appendChild(effectsTabWindow);
-        
-        function createEffectContainer(id, effect = null){
-            const itemId = id;
-            
-            const effectContainerSheet = document.createElement('div');
-            effectContainerSheet.classList.add('effect-container');
-            effectContainerSheet.classList.add('box-circular-border');
-            effectContainerSheet.classList.add('column');
-            effectContainerSheet.classList.add('vertical');
-            effectContainerSheet.style.width = '95%';
-            effectContainerSheet.style.padding = '5px';
-
-            const effectTypeSelector = createInputSelector('Additional Effect Type:',  Object.values(additionalEffectTypes), Object.keys(additionalEffectTypes),{
-                nonSelectableDefault: 'select', 
-                id: itemId +'-aditional-effect-type', 
-                defaultValue: effect ? [effect.type] : null
-            });
-            effectTypeSelector.classList.add('box-circular-border');
-            effectTypeSelector.style.backgroundColor = formColor;
-            effectContainerSheet.appendChild(effectTypeSelector);
-            
-            const effectPropertiesContainer = document.createElement('div');
-            effectPropertiesContainer.classList.add('column');
-            effectPropertiesContainer.classList.add('vertical');
-            effectPropertiesContainer.style.width = '100%';
-            effectPropertiesContainer.style.height = '100%';
-            effectPropertiesContainer.style.gap = '5px';
-            effectPropertiesContainer.style.backgroundColor = formColor;
-            effectContainerSheet.appendChild(effectPropertiesContainer);
-
-            effectTypeSelector.onchange = function(event){
-                effectPropertiesContainer.innerHTML = '';
-                const effectContainer = conjureEffectCreator(event.target.value)
-                effectPropertiesContainer.appendChild(effectContainer)
-            }
-
-            function conjureEffectCreator(type){
-                const effectContainer = document.createElement('div');
-                effectContainer.classList.add('effect-container');
-                effectContainer.classList.add('box-circular-border');
-                effectContainer.classList.add('column');
-                effectContainer.classList.add('vertical');
-                effectContainer.style.width = '95%';
-                effectContainer.style.padding = '5px';
-                effectContainer.style.backgroundColor = formColor;
-
-                if(type == additionalEffectTypes.BUFF){
-                    const effectTypeSelector = createInputSelector('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes),{
-                        nonSelectableDefault: 'select',
-                        id: itemId +'-aditional-effect-buff-type',
-                        defaultValue: effect ? [effect.effectType] : null
-                    });
-                    effectTypeSelector.classList.add('box-circular-border');
-                    effectTypeSelector.style.backgroundColor = formColor;
-                    effectContainer.appendChild(effectTypeSelector);
-
-                    const effectValue = createInputNumber("Value: ", itemId + '-aditional-effect-buff-value', 50, 1, false, false, effect ? effect.value : null)
-                    effectContainer.appendChild(effectValue);
-
-                    const effectDuration = createInputDuration("Duration: ", itemId + '-aditional-effect-buff-duration')
-                    effectContainer.appendChild(effectDuration);
-
-                    effectContainer.inputElement = {
-                        type: effectTypeSelector,
-                        value: effectValue,
-                        duration: effectDuration
-                    }
-
-                }else if(type == additionalEffectTypes.AURA){
-                    const effectArea = createInputNumber("Area: ", itemId + '-aditional-effect-aura-area', 500, 0, false, false, effect ? effect.area : null)
-                    effectContainer.appendChild(effectArea);
-
-                    const effectDuration = createInputDuration("Duration: ", itemId + '-aditional-effect-aura-duration')
-                    effectContainer.appendChild(effectDuration);
-
-                    const effectTypeSelector = createInputSelector('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes),{
-                        nonSelectableDefault: 'select',
-                        id: itemId +'-aditional-effect-aura-type',
-                        defaultValue: effect ? [effect.auraType] : null
-                    });
-                    effectTypeSelector.classList.add('box-circular-border');
-                    effectTypeSelector.style.backgroundColor = formColor;
-                    effectContainer.appendChild(effectTypeSelector);
-
-                    const effectValue = createInputNumber("Value: ", itemId + '-aditional-effect-aura-value', 50, 1, false, false, effect ? effect.value : null)   
-                    effectContainer.appendChild(effectValue);
-
-                    const effectTargetSelector = createInputSelector('Target Type:',  Object.values(targetTypes), Object.keys(targetTypes),{
-                        nonSelectableDefault: 'select',
-                        id: itemId +'-aditional-effect-aura-target',
-                        defaultValue: effect ? [effect.target] : null
-                    });
-                    effectTargetSelector.classList.add('box-circular-border');
-                    effectTargetSelector.style.backgroundColor = formColor;
-                    effectContainer.appendChild(effectTargetSelector);
-
-                    const effectCanSpread = createInputBoolean("Can Spread: ", itemId + '-aditional-effect-aura-spread', effect ? effect.canSpread : null)
-                    effectContainer.appendChild(effectCanSpread);
-
-                    effectContainer.inputElement = {
-                        area: effectArea,
-                        duration: effectDuration,
-                        type: effectTypeSelector,
-                        value: effectValue,
-                        target: effectTargetSelector,
-                        canSpread: effectCanSpread
-                    }
-                    
-                }else if(type == additionalEffectTypes.CAST){
-                    const effectSpellSelect = createInputSpellSelect(itemId + '-aditional-effect-cast-spell-name', serverRules.spells.min, null)
-                    effectContainer.appendChild(effectSpellSelect);
-                    
-                    const effectTargetList = createInputSelector('Target List:',  Object.values(targetTypes), Object.keys(targetTypes),{
-                        nonSelectableDefault: 'select',
-                        id: itemId +'-aditional-effect-cast-target-list',
-                        multiple: true,
-                        defaultValue: effect ? effect.targetList : null,
-                        custom_func : selectorIndexedOptionFunctionWithTransparency
-                    });
-                    effectTargetList.classList.add('box-circular-border');
-                    effectTargetList.style.backgroundColor = formColor;
-                    effectContainer.appendChild(effectTargetList);  
-                    
-                    effectContainer.inputElement = {
-                        spell: effectSpellSelect,
-                        targetList: effectTargetList
-                    }
-                }
-
-                return effectContainer
-            }
-
-            effectContainerSheet.inputElement = {
-                effectType: effectTypeSelector,
-                effectProperties: effectPropertiesContainer
-            }
-
-            return effectContainerSheet
-        }
-
-
-        listElement.additionalEffect.effects.forEach((effect, index) => {
-            const contentContainer = createEffectContainer(Date.now(), effect)
-            const newTabContent =  addNewTab(effectsTabWindow, `Effect ${index + 1}`)
-            contentContainer.innerHTML = ""
-            contentContainer.appendChild(newTabContent)
-        });
-        
-        effectsTabWindow.addEventListener('onNewTabAdded', (e) => {
-            const contentContainer = getContentContainer(effectsTabWindow, e.detail.tabId);
-            const effectContainer = createEffectContainer(Date.now(), null);
-            contentContainer.innerHTML = ""
-            contentContainer.appendChild(effectContainer)
-        });
-
-        function getEffectChanges(){
-            const contentAddtiionalEffect = new AdditionalEffect();
-            contentAddtiionalEffect.name = nameForm.inputElement.value;
-            contentAddtiionalEffect.description = formDescription.inputElement.value;
-            contentAddtiionalEffect.characterAction = getOrderedSelectedOptions(triggerActions.inputElement);
-            contentAddtiionalEffect.effects = [];
-            for(let i = 0; i < effectsTabWindow.tabList.length; i++){
-                const tabContent = getContentContainer(effectsTabWindow, effectsTabWindow.tabList[i]);
-                const effectType = tabContent.inputElement.effectType.inputElement.selectedOptions[0].value;
-                let effectProperties = {}
-                let contenteEffect = null;
-                if(effectType == additionalEffectTypes.BUFF){
-                    effectProperties = {
-                        type: tabContent.inputElement.effectProperties.inputElement.type.inputElement.selectedOptions[0].value,
-                        value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
-                        duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value
-                    }
-                    contenteEffect = new BuffDebuff(effectProperties)
-                }else if(effectType == additionalEffectTypes.AURA){
-                    effectProperties = {
-                        area: tabContent.inputElement.effectProperties.inputElement.area.inputElement.value,
-                        duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value,
-                        auraType: tabContent.inputElement.effectProperties.inputElement.type.inputElement.selectedOptions[0].value,
-                        value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
-                        target: tabContent.inputElement.effectProperties.inputElement.target.inputElement.selectedOptions[0].value,
-                        canSpread: tabContent.inputElement.effectProperties.inputElement.canSpread.inputElement.checked
-                    }
-                    contenteEffect = new Aura(effectProperties)
-                }else if(effectType == additionalEffectTypes.CAST){
-                    effectProperties = {
-                        spell: tabContent.inputElement.effectProperties.inputElement.spell.inputElement.selectedOptions[0].value,
-                        targetList: getOrderedSelectedOptions(tabContent.inputElement.effectProperties.inputElement.targetList.inputElement)
-                    }
-                    contenteEffect = new Cast(effectProperties)
-                }
-                      
-                contentAddtiionalEffect.effects.push(contenteEffect)
-            }
-            return contentAddtiionalEffect;
-        }
-    }
-
     function updateElements(){ //Future seviye görünümleri değiştirielcek
         const spellType = selectSpellType.inputElement.selectedOptions[0].value;
         const spellLevel = parseInt(selectSpellLevel.inputElement.selectedOptions[0].value);
@@ -836,7 +421,7 @@ function displaySpellCreate(spell = new Spell()) {
         let displayedLevels = []
 
         for(let i = spellLevel; i < serverRules.spells.max; i++){
-            displayedLevels.push(i.toString())
+            displayedLevels.push(i)
         }
 
         // // Filter out any selectableSpellLevels lower than initialSpell.spellLvl
@@ -854,6 +439,447 @@ function displaySpellCreate(spell = new Spell()) {
         activateTab(targetEffectsTabbedWindowContainer, displayedLevels[0])
         activateTab(casterEffectsTabbedWindowContainer, displayedLevels[0])
     }
+}
+
+function createeffectListContainer(id, titleStr = null, buttonNames = []){
+ 
+    const additionalElementListContainer = document.createElement('div');
+    additionalElementListContainer.classList.add('additional-effect-list-container');
+    additionalElementListContainer.classList.add('form-group');
+    additionalElementListContainer.classList.add('column');
+    additionalElementListContainer.classList.add('vertical');
+    additionalElementListContainer.id = id;
+
+    const title = document.createElement('label');
+    title.textContent = titleStr ? titleStr : 'Create a New';
+
+    const row = document.createElement('div');
+    row.classList.add('row');
+    row.style.gap = '10px';
+    row.style.width = '98%';
+    row.style.height = '98%';
+
+    const elementsListColumn = document.createElement('div')
+    elementsListColumn.classList.add('column');
+    elementsListColumn.classList.add('vertical');
+    elementsListColumn.classList.add('box-circular-border');
+    elementsListColumn.style.backgroundColor = 'white';
+    elementsListColumn.style.paddingTop = '3px'
+    elementsListColumn.style.gap = '5px';
+    elementsListColumn.style.overflowY = 'scroll';
+    elementsListColumn.style.width = '70%';
+    elementsListColumn.style.height = '90%';
+
+    const buttonsList =document.createElement('div')
+    buttonsList.classList.add('column');
+    buttonsList.classList.add('horizantal');
+    buttonsList.style.gap = '5px';
+    buttonsList.style.display = 'flex';
+    buttonsList.style.flexGrow = '1';
+
+    
+    additionalElementListContainer.buttons = {};
+    additionalElementListContainer.elementsList = elementsListColumn;
+    for(let buttonName of buttonNames) {
+        const button = document.createElement('button')
+        button.textContent = buttonName;
+        button.style.textAlign = 'center';
+        button.style.display = 'flex';
+        additionalElementListContainer.buttons[buttonName] = button;
+        buttonsList.appendChild(button)
+    }
+
+    row.appendChild(elementsListColumn)
+    row.appendChild(buttonsList)
+    additionalElementListContainer.appendChild(title);
+    additionalElementListContainer.appendChild(row)
+
+    return additionalElementListContainer;
+}
+
+function createeffectListElement(effect, edit_icon = 'edit.png', close_icon = 'close.png'){ 
+    
+    // Future additnal effect create bağlanacak
+    const listElement = document.createElement('div');
+    listElement.classList.add('additiona-effect-container');
+    listElement.classList.add('list-element'); // 30px 
+    listElement.classList.add('box-circular-border');
+    listElement.classList.add('row');
+    listElement.classList.add('vertical');
+
+    listElement.effect = effect ? effect : new Effect()
+
+    const labeledElement = document.createElement('div');
+    labeledElement.classList.add('row');
+    labeledElement.classList.add('centered');
+    labeledElement.style.gap = '5px';
+    listElement.appendChild(labeledElement);
+
+    addSpacer(listElement);
+
+    const label = document.createElement('label');
+    label.style.textAlign = 'center';
+    label.style.fontSize = '14px';
+    label.style.paddingLeft = '5px';
+    label.textContent = "New Additional Effect";
+    labeledElement.appendChild(label)
+
+    if(effect){
+        label.textContent = effect.name;
+        let effectImageList = new Set();
+        for(const effect of effect.effects){
+            switch (effect.type) {
+                case effectTypes.BUFF:
+                    // Code to run if expression === value1
+                    effectImageList.add("buff_debuff.png")
+                    break;
+                
+                case effectTypes.AURA:
+                    // Code to run if expression === value2
+                    effectImageList.add("aura.png");
+                    break;
+                
+                case effectTypes.CAST:
+                    // Code to run if expression === value3
+                    effectImageList.add("cast.png");
+                    break;
+            }
+        }
+        for(const effectImage of effectImageList){
+            const effectImg = document.createElement('img');
+            effectImg.classList.add('icon');
+            effectImg.style.width = '23px';
+            effectImg.style.height = '23px';
+            effectImg.style.marginRight = '10px';
+            effectImg.src = "static/images/menu-icons/" + effectImage;
+            labeledElement.appendChild(effectImg);
+        }     
+    }
+
+    const editButton = createImageButton('26', {source: `url(static/images/menu-icons/${edit_icon})`, custom_padding: 3});
+    listElement.appendChild(editButton);
+    editButton.onclick = () => {
+        effectBuilder(Date.now(), listElement);
+    }
+    
+
+    const removeButton = createImageButton('26', {source: `url(static/images/menu-icons/${close_icon})`, custom_padding: 3});
+    listElement.appendChild(removeButton);
+    removeButton.onclick = () => {
+        listElement.remove()
+    }
+
+    return listElement;
+}
+
+function effectBuilder(id, initalEffect = null) {
+
+    const itemId = id;
+
+    const effectBuildSheet = document.createElement('div');
+    effectBuildSheet.style.display = 'flex';
+    effectBuildSheet.classList.add('aditional-effect-create-sheet');
+    effectBuildSheet.classList.add('box-circular-border');
+    effectBuildSheet.classList.add('column');
+    effectBuildSheet.classList.add('vertical');
+    effectBuildSheet.style.gap = '10px';
+    effectBuildSheet.id = itemId;
+    effectBuildSheet.style.backgroundColor = backgroundColor
+    userInterface.appendChild(effectBuildSheet);
+    
+    const topBar = addDraggableRow(effectBuildSheet);
+    topBar.classList.add('row');
+    topBar.classList.add("vertical");
+    topBar.style.justifyContent = "space-between";
+    topBar.style.width = "100%"
+
+    const effectBuildTitle = document.createElement('h2');
+    effectBuildTitle.textContent = name ? "Editing " + name : 'Create Additional Effect';
+    effectBuildTitle.style.textAlign = 'center';
+    topBar.appendChild(effectBuildTitle);
+
+    addSpacer(topBar);
+
+    const effectSaveButton = createImageButton('28', {source: 'url(static/images/menu-icons/save.png)', custom_padding: 4});
+    effectSaveButton.style.marginRight = '5px';
+    effectSaveButton.style.cursor = 'pointer';
+    topBar.appendChild(effectSaveButton);
+
+    effectSaveButton.onclick = () => {
+        const effect = getEffectChanges();
+        if(effect){
+            console.log(effect);
+        }
+    }
+
+    const effectCloseButton = createImageButton('28', {source: 'url(static/images/menu-icons/close.png)', custom_padding: 4});
+    effectCloseButton.style.marginRight = '5px';
+    effectCloseButton.style.cursor = 'pointer';
+    topBar.appendChild(effectCloseButton);
+    effectCloseButton.onclick = () => {
+        effectBuildSheet.remove();
+    }
+
+    const effectBuilderForm = document.createElement('div');
+    effectBuilderForm.classList.add('column');
+    effectBuilderForm.classList.add('vertical');
+    effectBuilderForm.style.width = '100%';
+    effectBuilderForm.style.height = '100%';
+    effectBuilderForm.style.backgroundColor = formColor;
+    effectBuilderForm.style.overflowY = 'scroll';
+    effectBuilderForm.style.gap = '5px';
+    effectBuildSheet.appendChild(effectBuilderForm);
+    
+    const formName = createInputString('Name: ', itemId + '-name');
+    formName.classList.add('box-circular-border');
+    formName.style.backgroundColor = formColor;
+    effectBuilderForm.appendChild(formName);
+
+    const formDescription = createInputString('Description: ', itemId + '-description', {isTextArea: true});
+    formDescription.classList.add('box-circular-border');
+    formDescription.style.height = '150px';
+    formDescription.style.backgroundColor = formColor;
+    effectBuilderForm.appendChild(formDescription);
+
+    const effectTypeSelections = ["Aura", "Buff or Debuff", "Make Cast"]
+    const formType = createInputSelector("Effect Type: ", effectTypeSelections, effectTypeSelections, {
+        id: itemId + "-type"
+    })
+    formType.classList.add('box-circular-border');
+    formType.style.backgroundColor = formColor;
+    effectBuilderForm.appendChild(formType)
+
+    const effectContainer = document.createElement('div');
+    effectContainer.classList.add('column');
+    effectContainer.classList.add('vertical');
+    effectContainer.classList.add('box-circular-border');
+    effectContainer.classList.add('form-group');
+    effectContainer.style.backgroundColor = formColor;
+    effectBuilderForm.appendChild(effectContainer);
+
+    const effectTitle = document.createElement('label');
+    effectTitle.textContent = 'Effect Settings';
+    effectTitle.style.fontWeight = 'bold';
+    effectContainer.appendChild(effectTitle);
+
+    const effectData = document.createElement('div');
+    effectData.classList.add('column');
+    effectData.classList.add('vertical');
+    effectData.style.width = "100%"
+    effectData.style.backgroundColor = formColor;
+    effectContainer.appendChild(effectData);
+
+    const formTypeChangeHandler = async (event) => {
+        if (effectData.innerHTML !== "") {
+            const data = await userAskQuestion(
+                "Careful!",
+                "Changing the type of the spell may remove already set effects. Create a new one if needed!",
+                {
+                    buttons: ["Continue", "Abort"],
+                    blocking: true
+                }
+            );
+    
+            if (data.buttonText === "Abort") {
+                // ⛔ Temporarily remove listener
+                formType.inputElement.removeEventListener("change", formTypeChangeHandler);
+    
+                // 🧠 Set old value without triggering handler again
+                formType.inputElement.value = previousFormTypeValue;
+    
+                // ✅ Re-attach listener after a short delay
+                setTimeout(() => {
+                    formType.inputElement.addEventListener("change", formTypeChangeHandler);
+                }, 0);
+    
+                return;
+            }
+        }
+    
+        // Save new value as previous
+        previousFormTypeValue = event.target.value;
+    
+        // Replace content
+        effectData.innerHTML = "";
+    
+        let newContent;
+        if (event.target.value === "Buff or Debuff") {
+            newContent = createBuffDebuffForm(itemId);
+        } else if (event.target.value === "Aura") {
+            newContent = createAuraForm(itemId);
+        } else if (event.target.value === "Make Cast") {
+            newContent = createMakeCastForm(itemId);
+        }
+    
+        if (newContent) {
+            effectData.appendChild(newContent);
+        }
+    };
+    
+    // 👇 Attach once
+    formType.inputElement.addEventListener("change", formTypeChangeHandler);
+    
+    let previousFormTypeValue = formType.inputElement.value;    
+
+    function getEffectChanges(){
+        const contentAddtiionalEffect = new Effect();
+        contentAddtiionalEffect.name = formName.inputElement.value;
+        contentAddtiionalEffect.description = formDescription.inputElement.value;
+        contentAddtiionalEffect.characterAction = getOrderedSelectedOptions(triggerActions.inputElement);
+        contentAddtiionalEffect.effects = [];
+        for(let i = 0; i < effectsTabWindow.tabList.length; i++){
+            const tabContent = getContentContainer(effectsTabWindow, effectsTabWindow.tabList[i]);
+            const effectType = tabContent.inputElement.effectType.inputElement.selectedOptions[0].value;
+            let effectProperties = {}
+            let contenteEffect = null;
+            if(effectType == effectTypes.BUFF){
+                effectProperties = {
+                    type: tabContent.inputElement.effectProperties.inputElement.type.inputElement.selectedOptions[0].value,
+                    value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
+                    duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value
+                }
+                contenteEffect = new BuffDebuff(effectProperties)
+            }else if(effectType == effectTypes.AURA){
+                effectProperties = {
+                    area: tabContent.inputElement.effectProperties.inputElement.area.inputElement.value,
+                    duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value,
+                    auraType: tabContent.inputElement.effectProperties.inputElement.type.inputElement.selectedOptions[0].value,
+                    value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
+                    target: tabContent.inputElement.effectProperties.inputElement.target.inputElement.selectedOptions[0].value,
+                    canSpread: tabContent.inputElement.effectProperties.inputElement.canSpread.inputElement.checked
+                }
+                contenteEffect = new Aura(effectProperties)
+            }else if(effectType == effectTypes.CAST){
+                effectProperties = {
+                    spell: tabContent.inputElement.effectProperties.inputElement.spell.inputElement.selectedOptions[0].value,
+                    targetList: getOrderedSelectedOptions(tabContent.inputElement.effectProperties.inputElement.targetList.inputElement)
+                }
+                contenteEffect = new Cast(effectProperties)
+            }
+                  
+            contentAddtiionalEffect.effects.push(contenteEffect)
+        }
+        return contentAddtiionalEffect;
+    }
+}
+
+function createBuffDebuffForm(parentId, initial = null){
+    const form = document.createElement("div")
+    form.classList.add('column');
+    form.classList.add('vertical');
+    form.classList.add('form-group');
+    form.style.gap = "1rem"
+    form.style.backgroundColor = formColor;
+
+    const effectTypeSelector = createInputSelector('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes),{
+        nonSelectableDefault: 'select',
+        id: parentId +'-aditional-effect-buff-type'
+    });
+    effectTypeSelector.classList.add('box-circular-border');
+    form.appendChild(effectTypeSelector);
+
+    const effectValue = createInputDamage("Value :", parentId + "-value", {
+        defaultValue: "1d1"
+    })
+    effectValue.classList.add('box-circular-border');
+    form.appendChild(effectValue);
+
+    const effectDuration = createInputDuration("Duration: ", parentId + '-aditional-effect-buff-duration')
+    form.appendChild(effectDuration);
+
+    const effectTrigerActions = createInputSelector("Trigger Actions:", Object.values(characterActions), Object.keys(characterActions), {
+        multiple: true,
+        custom_func: selectorChekmarkOptionFunction
+    })
+    form.appendChild(effectTrigerActions)
+
+    form.inputElement = {
+        type: effectTypeSelector,
+        value: effectValue,
+        duration: effectDuration,
+        triggerActions : effectTrigerActions
+    }
+
+    return form
+}
+
+function createAuraForm(parentId, initial = null) {
+    const form = document.createElement("div")
+    form.classList.add('column');
+    form.classList.add('vertical');
+    form.classList.add('form-group');
+    form.style.gap = "1rem"
+
+    const effectArea = createInputNumber("Area: ", parentId + '-aditional-effect-aura-area', 500, 0, false, false, effect ? effect.area : null)
+    form.appendChild(effectArea);
+
+    const effectDuration = createInputDuration("Duration: ", parentId + '-aditional-effect-aura-duration')
+    form.appendChild(effectDuration);
+
+    const effectTypeSelector = createInputSelector('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes),{
+        nonSelectableDefault: 'select',
+        id: parentId +'-aditional-effect-aura-type',
+        defaultValue: effect ? [effect.auraType] : null
+    });
+    effectTypeSelector.classList.add('box-circular-border');
+    form.appendChild(effectTypeSelector);
+
+    const effectValue = createInputNumber("Value: ", parentId + '-aditional-effect-aura-value', 50, 1, false, false, effect ? effect.value : null)   
+    form.appendChild(effectValue);
+
+    const effectTargetSelector = createInputSelector('Target Type:',  Object.values(targetTypes), Object.keys(targetTypes),{
+        nonSelectableDefault: 'select',
+        id: parentId +'-aditional-effect-aura-target',
+        defaultValue: effect ? [effect.target] : null
+    });
+    effectTargetSelector.classList.add('box-circular-border');
+    form.appendChild(effectTargetSelector);
+
+    const effectCanSpread = createInputBoolean("Can Spread: ", parentId + '-aditional-effect-aura-spread', effect ? effect.canSpread : null)
+    form.appendChild(effectCanSpread);
+
+    form.inputElement = {
+        area: effectArea,
+        duration: effectDuration,
+        type: effectTypeSelector,
+        value: effectValue,
+        target: effectTargetSelector,
+        canSpread: effectCanSpread
+    }
+
+    return form
+}
+
+function createMakeCastForm(parentId, intial = null){
+    const form = document.createElement("div")
+    form.classList.add('column');
+    form.classList.add('vertical');
+    form.classList.add('form-group');
+    form.style.width = "100%"
+    form.style.gap = "1rem"
+    form.style.backgroundColor = formColor;
+
+    const effectSpellSelect = createInputSpellSelect(parentId + '-aditional-effect-cast-spell-name', {
+        initalLevel: serverRules.spells.min
+    })
+    effectSpellSelect.classList.add('box-circular-border');
+    form.appendChild(effectSpellSelect);
+    
+    const effectTargetList = createInputSelector('Target List:',  Object.values(targetOrderList), Object.keys(targetOrderList),{
+        nonSelectableDefault: 'select',
+        id: parentId +'-aditional-effect-cast-target-list',
+        multiple: true,
+        custom_func : selectorIndexedOptionFunctionWithTransparency
+    });
+    effectTargetList.classList.add('box-circular-border');
+    form.appendChild(effectTargetList);  
+    
+    form.inputElement = {
+        spell: effectSpellSelect,
+        targetList: effectTargetList
+    }
+
+    return form
 }
 
 function createSpellCard(spell) {
@@ -885,6 +911,10 @@ function createSpellCard(spell) {
     spellCardName.style.fontFamily = "'Cinzel', serif"; // DnD theme font
     spellCardName.style.fontSize = '16px'; // Larger font size
     spellCardHeader.appendChild(spellCardName);
+}
+
+function displaySpellDescription(spell){
+    console.log(spell)
 }
 
 createSpellButton.onclick = () => {

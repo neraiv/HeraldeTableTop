@@ -3,33 +3,33 @@
 let userSpells = {};
 
 let listCreatedAdditionalEffects = Object.freeze({
-    'burningEffect' : new AdditionalEffect("Holy Burn", [characterActions.TURN_END], 
+    'burningEffect' : new Effect("Holy Burn", [characterActions.TURN_END], 
                             [new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageTypes.FIRE,'1d8']), [targetTypes.SELF], true)], 
                             noDescription, [durationTypes.TURN_BASED, 10]),
-    'attackRadiusBonus_50' : new AdditionalEffect("Spell Shoot", [characterActions.ATTACKING],
+    'attackRadiusBonus_50' : new Effect("Spell Shoot", [characterActions.ATTACKING],
                           [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 50)], noDescription, [durationTypes.INSTANT]),
                           
-    'attackRadiusBonus_100' : new AdditionalEffect("Spell Shoot", [characterActions.ATTACKING],
+    'attackRadiusBonus_100' : new Effect("Spell Shoot", [characterActions.ATTACKING],
                               [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], noDescription, [durationTypes.INSTANT]),
 
-    'attackRangeBonus_100' : new AdditionalEffect("Eagle Spell Shoot", [characterActions.ATTACKING],
+    'attackRangeBonus_100' : new Effect("Eagle Spell Shoot", [characterActions.ATTACKING],
                                   [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 100)], noDescription, [durationTypes.INSTANT]),
 
-    'attackRangeBonus_200' : new AdditionalEffect("Eagle Spell Shoot", [characterActions.ATTACKING],
+    'attackRangeBonus_200' : new Effect("Eagle Spell Shoot", [characterActions.ATTACKING],
                                       [new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 200)], noDescription, [durationTypes.INSTANT]),
                                         
-    'counterSpellEffect' : new AdditionalEffect('Anti-Mage Shield', [characterActions.ATTACKED], 
+    'counterSpellEffect' : new Effect('Anti-Mage Shield', [characterActions.ATTACKED], 
                                       [new Cast('Fireball', 1, 2[targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.INSTANT]),
 
-    'counterMirrorSpell' : new AdditionalEffect('Dont Attack Ur Self', [characterActions.ATTACKED], 
+    'counterMirrorSpell' : new Effect('Dont Attack Ur Self', [characterActions.ATTACKED], 
                           [new Cast(attackerSpellMana, attackerSpellLevel, attackerSpellName , [targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY])], noDescription, [durationTypes.INSTANT]),
 
-    'holyAura' :    new AdditionalEffect("Holy Aura", [characterActions.TURN_END], 
+    'holyAura' :    new Effect("Holy Aura", [characterActions.TURN_END], 
                       [new Aura(100, new BuffDebuff(effectTypes.DEFENSE, '4'), [targetTypes.ALLY], true),
                       new Aura(100, new BuffDebuff(effectTypes.TAKE_DAMAGE, [damageTypes.RADIANT,'1d8']), [targetTypes.ENEMY], true)], 
                       noDescription, [durationTypes.TURN_BASED, 10]),
 
-    'startFireBallParty' : new AdditionalEffect("Fireball For Everyone", [characterActions.TURN_START], 
+    'startFireBallParty' : new Effect("Fireball For Everyone", [characterActions.TURN_START], 
                                     [new Aura(100, new Cast('Fireball', 1, 2[targetTypes.CLOSEST_ANY]), [targetTypes.ANY], true)], noDescription, [durationTypes.ALWAYS]),
                             
 });
@@ -41,7 +41,7 @@ const level1_spell_list = {
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
         new Duration(durationTypes.TURN_BASED), [actionTypes.MAIN],
         {
-            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
+            '2' : {caster: [new Effect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         },
         new SpellPattern(spellPatterns.CIRCULAR, 800, 100, castTypes.ON_LOCATION, [targetTypes.ENEMY]),
         [rollTypes.ABILITY_THROW], [rollTypes.NONE]
@@ -51,7 +51,7 @@ const level1_spell_list = {
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
         new Duration(durationTypes.TURN_BASED), [actionTypes.MAIN],
         {
-            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
+            '2' : {caster: [new Effect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         },
         new SpellPattern(spellPatterns.CONE_UPWARD, 800, 100, castTypes.FROM_CASTER, [targetTypes.ANY]),
         [rollTypes.ABILITY_THROW], [rollTypes.NONE]
@@ -61,7 +61,7 @@ const level1_spell_list = {
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
         new Duration(durationTypes.INSTANT), [actionTypes.MAIN],
         {
-            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
+            '2' : {caster: [new Effect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         },
         new SpellPattern(spellPatterns.CONE_UPWARD, 800, 100, castTypes.ON_LOCATION, [targetTypes.ANY]),
         [rollTypes.ABILITY_THROW], [rollTypes.NONE]
@@ -71,7 +71,7 @@ const level1_spell_list = {
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
         new Duration(durationTypes.INSTANT), [actionTypes.MAIN],
         {
-            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
+            '2' : {caster: [new Effect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         
         },
         new SpellPattern(spellPatterns.CONE_DOWNWARD, 800, 100, castTypes.FROM_CASTER, [targetTypes.ANY]),
@@ -82,7 +82,7 @@ const level1_spell_list = {
         1, statTypes.INT, damageTypes.LIGHTNING, '2d8', 'Zapp ur enemies on path, or annoying friends',
         new Duration(durationTypes.INSTANT), [actionTypes.MAIN],
         {
-            '2' : {caster: [new AdditionalEffect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
+            '2' : {caster: [new Effect('Double The Zap',[characterActions.CASTING], [new BuffDebuff(effectTypes.ATTACK_RADIUS_BONUS, 100)], 'Double the lighting ray path')]}
         },
         new SpellPattern(spellPatterns.BOX, 800, 100, castTypes.FROM_CASTER, [targetTypes.ANY]),
         [rollTypes.ABILITY_THROW], [rollTypes.NONE]
@@ -96,7 +96,7 @@ const level1_spell_list = {
                     target: [listCreatedAdditionalEffects.counterSpellEffect]},
             '3' : {caster: [listCreatedAdditionalEffects.attackRadiusBonus_100, listCreatedAdditionalEffects.attackRangeBonus_200]},
             '4' : {caster: [listCreatedAdditionalEffects.startFireBallParty, listCreatedAdditionalEffects.attackRadiusBonus_100]},
-            '5' : {caster: [new AdditionalEffect('Anti-Mage Shield', [characterActions.ATTACKED], 
+            '5' : {caster: [new Effect('Anti-Mage Shield', [characterActions.ATTACKED], 
                 [new Cast('Fireball', 1, 2, [targetTypes.ATTACKER, targetTypes.CLOSEST_ENEMY]), new BuffDebuff(effectTypes.ATTACK_RANGE_BONUS, 600)], 
                 noDescription, [durationTypes.INSTANT])]},
         },

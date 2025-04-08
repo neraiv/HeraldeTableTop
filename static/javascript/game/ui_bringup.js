@@ -313,11 +313,11 @@ spellBookTabs.style.width = "100%";
 spellBookTabs.style.height = "100%";
 spellBook.appendChild(spellBookTabs);
 
-const contentYourSpells = getContentContainer(spellBookTabs, "Your Spells")
+const contentYourSpells = getContentContainer(spellBookTabs, 0)
 contentYourSpells.innerHTML = ""
 contentYourSpells.style.flexDirection = "column";
 
-const contentAllSpells = getContentContainer(spellBookTabs, "All Spells")
+const contentAllSpells = getContentContainer(spellBookTabs, 1)
 contentAllSpells.innerHTML = ""
 
 
