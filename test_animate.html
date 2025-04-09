@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fireball and Ray Animation - PixiJS</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #222; font-family: sans-serif; }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+    #controls button {
+      margin-right: 10px;
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="fireballBtn">Cast Fireball</button>
+    <button id="explosionBtn">Trigger Explosion</button>
+    <button id="castRayBtn">Cast Ray</button>
+    <button id="jiggleRayBtn">Toggle Jiggle Effect</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@8.9.1/dist/pixi.min.js"></script>
+  <script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const app = new PIXI.Application();
+    await app.init({ width: 800, height: 600, background: '#1099bb', resizeTo: window });
+    document.body.appendChild(app.canvas);
+
+    // Create caster (green square)
+    const caster = new PIXI.Graphics().rect(0, 0, 50, 50).fill({ color: 0x00ff00 });
+    caster.position.set(100, 275);
+    app.stage.addChild(caster);
+
+    // Create target (red square)
+    const target = new PIXI.Graphics().rect(0, 0, 50, 50).fill({ color: 0xff0000 });
+    target.position.set(650, 275);
+    app.stage.addChild(target);
+
+    // Fireball system
+    const fireball = new PIXI.Graphics();
+    let fireballRadius = 10;
+    let isAnimating = false;
+
+    function resetFireball() {
+      fireball.clear();
+      fireballRadius = 10;
+      fireball.circle(0, 0, fireballRadius).fill({ color: 0xffa500 });
+      fireball.position.set(caster.x + 25, caster.y + 25);
+      fireball.visible = true;
+    }
+
+    resetFireball();
+    app.stage.addChild(fireball);
+
+    const targetPos = new PIXI.Point(target.x + 25, target.y + 25);
+    const speed = 10;
+
+    function animateFireball() {
+      if (isAnimating) return;
+      isAnimating = true;
+      app.ticker.add(tickFireball);
+    }
+
+    function tickFireball() {
+      const dx = targetPos.x - fireball.x;
+      const dy = targetPos.y - fireball.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > speed) {
+        fireball.x += (dx / distance) * speed;
+        fireball.y += (dy / distance) * speed;
+
+        if (fireballRadius < 30) {
+          fireballRadius += 0.5;
+          fireball.clear();
+          fireball.circle(0, 0, fireballRadius).fill({ color: 0xffa500 });
+        }
+      } else {
+        fireball.visible = false;
+        app.ticker.remove(tickFireball);
+        createExplosion(fireball.x, fireball.y);
+        resetFireball();
+        isAnimating = false;
+      }
+    }
+
+    // Explosion system
+    function createExplosion(x, y) {
+      const particles = new PIXI.Container();
+      app.stage.addChild(particles);
+
+      for (let i = 0; i < 50; i++) {
+        const particle = new PIXI.Graphics();
+        particle.circle(0, 0, 3).fill({ color: 0xff6600 });
+        particle.position.set(x, y);
+        particles.addChild(particle);
+
+        const angle = Math.random() * Math.PI * 2;
+        const pSpeed = Math.random() * 4 + 2;
+        let lifetime = 30;
+
+        const move = () => {
+          particle.x += Math.cos(angle) * pSpeed;
+          particle.y += Math.sin(angle) * pSpeed;
+          particle.alpha -= 0.03;
+          lifetime--;
+
+          if (lifetime <= 0 || particle.alpha <= 0) {
+            app.ticker.remove(move);
+            particles.removeChild(particle);
+            particle.destroy();
+          }
+        };
+
+        app.ticker.add(move);
+      }
+    }
+
+    // Ray system
+    let jigging = false;
+    let rayCount = 5;
+    const rayContainer = new PIXI.Container();
+    app.stage.addChild(rayContainer);
+    let rayAnimationActive = false;
+
+    function clearRays() {
+      rayContainer.removeChildren();
+    }
+
+    function createRay(x1, y1, x2, y2, color = 0xffffff, width = 2) {
+      const graphics = new PIXI.Graphics();
+
+      // First line (thick)
+      graphics.lineStyle(8, 0xFF0000, 1);
+      graphics.moveTo(100, 200);
+      graphics.lineTo(100, 50);
+
+      // Second line (thin)
+      graphics.lineStyle(2, 0x00FF00, 1);
+      graphics.moveTo(100, 2000);
+      graphics.lineTo(100, 100);
+
+      app.stage.addChild(graphics);
+    }
+
+    function animateRay() {
+      if (rayAnimationActive) return;
+      rayAnimationActive = true;
+      clearRays();
+
+      const startX = caster.x + 25;
+      const startY = caster.y + 25;
+      const endX = target.x + 25;
+      const endY = target.y + 25;
+
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+
+      let currentDistance = 0;
+      const raySpeed = 20;
+      const rayDuration = 30; // frames
+      let frameCount = 0;
+
+      const moveRay = () => {
+        if (frameCount++ >= rayDuration) {
+          app.ticker.remove(moveRay);
+          clearRays();
+          rayAnimationActive = false;
+          return;
+        }
+
+        currentDistance = Math.min(currentDistance + raySpeed, distance);
+        const currentX = startX + Math.cos(angle) * currentDistance;
+        const currentY = startY + Math.sin(angle) * currentDistance;
+
+        clearRays();
+        
+        // Main ray
+        createRay(startX, startY, currentX, currentY, 0xffffff, 3);
+        
+        if (jigging) {
+          // Jiggle effect rays
+          for (let i = 0; i < rayCount; i++) {
+            const jiggleAmount = 10;
+            const jx1 = startX + (Math.random() * jiggleAmount - jiggleAmount/2);
+            const jy1 = startY + (Math.random() * jiggleAmount - jiggleAmount/2);
+            const jx2 = currentX + (Math.random() * jiggleAmount - jiggleAmount/2);
+            const jy2 = currentY + (Math.random() * jiggleAmount - jiggleAmount/2);
+            createRay(jx1, jy1, jx2, jy2, 0x88ccff, 1);
+          }
+        }
+      };
+
+      app.ticker.add(moveRay);
+    }
+
+    // Button bindings
+    document.getElementById("fireballBtn").addEventListener("click", animateFireball);
+    document.getElementById("explosionBtn").addEventListener("click", () => {
+      const x = Math.random() * 600 + 100;
+      const y = Math.random() * 400 + 100;
+      createExplosion(x, y);
+    });
+    document.getElementById("castRayBtn").addEventListener("click", createRay(100, 275, 200, 275));
+    document.getElementById("jiggleRayBtn").addEventListener("click", () => {
+      jigging = !jigging;
+      this.textContent = jigging ? "Disable Jiggle" : "Enable Jiggle";
+    });
+
+    document.body.addEventListener("click", (event) => createExplosion(event.clientX, event.clientY));
+  });
+  </script>
+</body>
+</html>

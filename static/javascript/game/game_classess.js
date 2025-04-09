@@ -507,6 +507,61 @@ class Damage{
         this.value = value;
     }
 }
+
+const AniShapes = Object.freeze({
+    square: 1,
+    circle: 2,
+    triangle: 3
+})
+
+const AniDirections = Object.freeze({
+    through: 1,
+    around: 2
+})
+
+class AniSprite {
+    constructor({
+        src,
+        sequanceSize,
+        sequanceCount,
+        srcRowCnt,
+        srcColCnt,
+    } = {}){
+        this.src = src,
+        this.sequanceSize = sequanceSize,
+        this.sequanceCount = sequanceCount,
+        this.srcRowCnt = srcRowCnt,
+        this.srcColCnt = srcColCnt
+    }
+}
+
+class AniExplosion {
+    constructor({
+        colors = ["rgb(190, 71, 16)", "rgb(238, 153, 25)"],
+        particleCount = 30,
+        particleShapes = [AniShapes.circle],
+        explosionDirection = AniDirections.around,
+    } = {}){
+        this.colors = colors
+    }
+}
+
+class AniArea {
+    constructor({
+        colors = ["rgb(190, 71, 16)", "rgb(238, 153, 25)"],
+        shape = AniShapes.circle,
+        sprite = null
+    } = {}){
+        this.colors = colors
+    }
+}
+
+class AniDnd {
+    constructor({area =  null, explosion = null} = {}){
+
+    }
+}
+
 class Spell{
     constructor(
         name = "",
