@@ -343,6 +343,7 @@
 /* Child Creators END */
 
 .input-element{
+    min-height: 39px;
     width: 60%;
     height: 98%;
     padding: 8px;

@@ -8,7 +8,7 @@
             "classess": ["barbarian", "paladin"],
             "race": "",
             "hp": 100,
-            "vision" : 400,
+            "vision": 400,
             "stats": {
                 "dex": 12,
                 "con": 12,
@@ -20,39 +20,37 @@
             "action": 1,
             "additionalEffects": [],
             "spellSlots": {
-                "1": [
-                    5,
-                    3
-                ],
-                "2": [
-                    4,
-                    3
-                ],
-                "3": [
-                    2,
-                    2
-                ],
-                "4": [
-                    2,
-                    2
-                ]
+                "1": {
+                    "avaliable": 5,
+                    "remaining": 3
+                },
+                "2": {
+                    "avaliable": 4,
+                    "remaining": 3
+                },
+                "3": {
+                    "avaliable": 2,
+                    "remaining": 2
+                },
+                "4": {
+                    "avaliable": 2,
+                    "remaining": 2
+                }
             },
             "availableSpells": {
-                "1": [
-                    "Heralde"
-                ]
             },
             "learnedSpells": {
                 "1": [
-                    "Fireball",
-                    "Ice Cone",
-                    "Heralde",
-                    "Pillar of Light"
+                    "fireBolt",
+                    "holyAura"
                 ],
                 "2": [
-                    "Lightning Ray",
-                    "Fire Hands",
-                    "Conjure Mountainless Dwarf"
+                    "conjureSlave",
+                    "conjureWorm",
+                    "emergencyHeal"
+                ],
+                "4": [
+                    "lightningTrident"
                 ]
             },
             "inventory": {
@@ -65,9 +63,9 @@
             },
             "controlling": []
         },
-        "img" : "mountainless_dwarf/char.png",  
-        "width" : 50,
-        "height" : 50
+        "img": "mountainless_dwarf/char.png",
+        "width": 50,
+        "height": 50
     },
     "sir_gawain": {
         "char": {
@@ -90,47 +88,43 @@
             "action": 1,
             "additionalEffects": [],
             "spellSlots": {
-                "1": [
-                    5,
-                    3
-                ],
-                "2": [
-                    4,
-                    3
-                ],
-                "3": [
-                    2,
-                    2
-                ],
-                "4": [
-                    2,
-                    2
-                ]
+                "1": {
+                    "avaliable": 5,
+                    "remaining": 3
+                },
+                "2": {
+                    "avaliable": 4,
+                    "remaining": 3
+                },
+                "3": {
+                    "avaliable": 2,
+                    "remaining": 2
+                },
+                "4": {
+                    "avaliable": 2,
+                    "remaining": 2
+                }
             },
             "availableSpells": {
                 "1": [
-                    "Fireball",
-                    "Ice Cone",
-                    "Heralde",
-                    "Pillar of Light"
+                    "fireBolt",
+                    "holyAura"
                 ],
                 "2": [
-                    "Lightning Ray",
-                    "Fire Hands",
-                    "Conjure Mountainless Dwarf"
+                    "conjureSlave",
+                    "conjureWorm",
+                    "emergencyHeal"
                 ]
             },
             "learnedSpells": {
                 "1": [
-                    "Fireball",
-                    "Ice Cone",
-                    "Heralde",
-                    "Pillar of Light"
+                    "fireBolt",
+                    "holyAura"
                 ],
                 "2": [
-                    "Lightning Ray",
-                    "Fire Hands",
-                    "Conjure Mountainless Dwarf"
+                    "conjureSlave",
+                    "conjureWorm",
+                    "emergencyHeal"
                 ]
             },
             "inventory": {
@@ -143,9 +137,9 @@
             },
             "controlling": []
         },
-        "img" : "druid_woman/char.jpg",  
-        "width" : 50,
-        "height" : 50
+        "img": "druid_woman/char.jpg",
+        "width": 50,
+        "height": 50
     },
     "faramir": {
         "char": {
@@ -168,47 +162,43 @@
             "action": 1,
             "additionalEffects": [],
             "spellSlots": {
-                "1": [
-                    5,
-                    3
-                ],
-                "2": [
-                    4,
-                    3
-                ],
-                "3": [
-                    2,
-                    2
-                ],
-                "4": [
-                    2,
-                    2
-                ]
+                "1": {
+                    "avaliable": 5,
+                    "remaining": 3
+                },
+                "2": {
+                    "avaliable": 4,
+                    "remaining": 3
+                },
+                "3": {
+                    "avaliable": 2,
+                    "remaining": 2
+                },
+                "4": {
+                    "avaliable": 2,
+                    "remaining": 2
+                }
             },
             "availableSpells": {
                 "1": [
-                    "Fireball",
-                    "Ice Cone",
-                    "Heralde",
-                    "Pillar of Light"
+                    "fireBolt",
+                    "holyAura"
                 ],
                 "2": [
-                    "Lightning Ray",
-                    "Fire Hands",
-                    "Conjure Mountainless Dwarf"
+                    "conjureSlave",
+                    "conjureWorm",
+                    "emergencyHeal"
                 ]
             },
             "learnedSpells": {
                 "1": [
-                    "Fireball",
-                    "Ice Cone",
-                    "Heralde",
-                    "Pillar of Light"
+                    "fireBolt",
+                    "holyAura"
                 ],
                 "2": [
-                    "Lightning Ray",
-                    "Fire Hands",
-                    "Conjure Mountainless Dwarf"
+                    "conjureSlave",
+                    "conjureWorm",
+                    "emergencyHeal"
                 ]
             },
             "inventory": {
@@ -221,8 +211,8 @@
             },
             "controlling": []
         },
-        "img" : "elf_warrior_woman/char.jpg",
-        "width" : 50,
-        "height" : 50
+        "img": "elf_warrior_woman/char.jpg",
+        "width": 50,
+        "height": 50
     }
 }

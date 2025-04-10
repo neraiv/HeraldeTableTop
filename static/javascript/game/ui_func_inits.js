@@ -43,40 +43,7 @@ async function initSpells(){
     if (_listSpells.success === true){
         database.spells = _listSpells.data
 
-        for(const spellLevel of Object.keys(database.spells)){
-            const spellContainer = document.createElement('div');
-            spellContainer.classList.add('spell-container');
-        
-            const spellHeader = document.createElement('h3');
-            spellHeader.classList.add('spell-header');
-            spellHeader.textContent = `Level ${spellLevel}`;
-            spellContainer.appendChild(spellHeader);
-        
-            const spellContent = document.createElement('div');
-            spellContent.classList.add('spell-content');
-            spellContent.style.display = 'none'; // Initially hidden
-        
-            for (const spellName of Object.keys(database.spells[spellLevel])) {
-                const spell = database.spells[spellLevel][spellName];
-                const spellInfo = document.createElement('div');
-                spellInfo.classList.add('spell-info');
-                spellInfo.innerHTML = `
-                    <h4>${spell.name}</h4>
-                    <p>${spell.description}</p>
-                    ${spell.damage ? `<p>Damage: ${spell.damage}</p>` : ''}
-                    ${spell.heal ? `<p>Heal: ${spell.heal}</p>` : ''}
-                    ${spell.additionals ? `<p>Additional: ${spell.additionals.join(', ')}</p>` : ''}
-                `;
-                spellContent.appendChild(spellInfo);
-            }
-        
-            spellContainer.appendChild(spellContent);
-            contentYourSpells.appendChild(spellContainer);
-        
-            spellHeader.addEventListener('click', () => {
-                spellContent.style.display = spellContent.style.display === 'none' ? 'block' : 'none';
-            });
-        }
+        populateSpellBook()
     }
 }  
 

@@ -1,43 +1,471 @@
 {
-    "0": {
-        "No Spell": "No Spell"
-    },
+    "0": {},
     "1": {
-        "No Spell": "No Spell"
-    },
-    "2": {
-        "Fire" : {
-            "name": "Fire",
-            "description": "A fireball that deals 1d6 damage to a single target.",
-            "damage": "1d6",
-            "additionals" : ["Attack Damage increase"]
+        "fireBolt": {
+            "name": "Fire Bolt",
+            "classess": [
+                4,
+                5,
+                7,
+                8,
+                1
+            ],
+            "type": 3,
+            "level": 1,
+            "modifiers": [
+                {
+                    "type": 4,
+                    "multiplier": 2
+                },
+                {
+                    "type": 5,
+                    "multiplier": 1.5
+                }
+            ],
+            "damage": {
+                "type": 2,
+                "value": "1d8"
+            },
+            "description": "Conjure a fire bolt.",
+            "castDuration": {
+                "type": 1,
+                "value": 1
+            },
+            "actionCost": [
+                2
+            ],
+            "spendManaEffects": {
+                "2": {
+                    "caster": [
+                        {
+                            "name": "Fiery",
+                            "type": "cast",
+                            "description": "So much power.",
+                            "effect": {
+                                "spellName": "fireBolt",
+                                "mana": "1",
+                                "targetListInOrder": [
+                                    10
+                                ],
+                                "castTimes": 1
+                            }
+                        }
+                    ]
+                },
+                "3": {
+                    "caster": [
+                        {
+                            "name": "Fiery",
+                            "type": "cast",
+                            "description": "So much more power.",
+                            "effect": {
+                                "spellName": "fireBolt",
+                                "mana": "1",
+                                "targetListInOrder": [
+                                    10
+                                ],
+                                "castTimes": 1
+                            }
+                        }
+                    ],
+                    "target": [
+                        {
+                            "name": "Burn",
+                            "type": "buff-debuff",
+                            "description": "U shall burn.",
+                            "effect": {
+                                "effectType": 10,
+                                "value": {
+                                    "type": 2,
+                                    "value": "1d2"
+                                },
+                                "duration": {
+                                    "type": 1,
+                                    "value": 5
+                                },
+                                "triggerActions": [
+                                    18
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "spellPattern": {
+                "pattern": 2,
+                "range": 200,
+                "area": 50,
+                "castType": 2,
+                "canTarget": [
+                    4
+                ]
+            },
+            "casterRolls": [
+                {
+                    "diceType": 20,
+                    "rollType": 3,
+                    "target": 10
+                }
+            ],
+            "targetRolls": [
+                {
+                    "diceType": 20,
+                    "rollType": 1,
+                    "target": 20
+                }
+            ]
         },
-        "Heal" : {
-            "name": "Heal",
-            "description": "Heals a single target for 1d6 health.",
-            "heal": "1d6",
-            "additionals" : ["Heal increase"]
+        "holyAura": {
+            "name": "Holy Aura",
+            "classess": [
+                2,
+                5
+            ],
+            "type": 3,
+            "level": 1,
+            "modifiers": [
+                {
+                    "type": 2,
+                    "multiplier": 1.8
+                }
+            ],
+            "damage": {
+                "type": 0,
+                "value": "0"
+            },
+            "description": "Apply holy aura to target.",
+            "castDuration": {
+                "type": 4,
+                "value": 1
+            },
+            "actionCost": [
+                2
+            ],
+            "spendManaEffects": {
+                "1": {
+                    "caster": [],
+                    "target": [
+                        {
+                            "name": "Holy Aura",
+                            "type": "aura",
+                            "description": "Applys a holy aura around caster.",
+                            "effect": {
+                                "area": 250,
+                                "effectType": 7,
+                                "value": {
+                                    "type": 99,
+                                    "value": "1d8"
+                                },
+                                "duration": {
+                                    "type": 1,
+                                    "value": 10
+                                },
+                                "triggerActions": [
+                                    17
+                                ],
+                                "targetList": [
+                                    2
+                                ],
+                                "canSpread": false
+                            }
+                        }
+                    ]
+                }
+            },
+            "spellPattern": {
+                "pattern": 5,
+                "range": 250,
+                "area": 50,
+                "castType": 1,
+                "canTarget": [
+                    2
+                ]
+            },
+            "casterRolls": [],
+            "targetRolls": []
         }
     },
-    "3": {
-        "No Spell": "No Spell"
+    "2": {
+        "conjureSlave": {
+            "name": "Conjure Your Slave",
+            "classess": [
+                7,
+                1,
+                4
+            ],
+            "type": 3,
+            "level": 2,
+            "modifiers": [
+                {
+                    "type": 6,
+                    "multiplier": 2
+                }
+            ],
+            "damage": {
+                "type": 0,
+                "value": "0"
+            },
+            "description": "Conjure your beloved slave.",
+            "castDuration": {
+                "type": 1,
+                "value": 1
+            },
+            "actionCost": [
+                2
+            ],
+            "spendManaEffects": {
+                "2": {
+                    "caster": [
+                        {
+                            "name": "Summon Your Slave",
+                            "type": "summon",
+                            "description": "Summon your peasent.",
+                            "effect": {
+                                "summonFrom": 4,
+                                "id": "slave",
+                                "duration": {
+                                    "type": 4,
+                                    "value": 1
+                                },
+                                "quantity": 1
+                            }
+                        }
+                    ],
+                    "target": []
+                },
+                "4": {
+                    "caster": [
+                        {
+                            "name": "Extra Help",
+                            "type": "summon",
+                            "description": "Your slave summons an extra.",
+                            "effect": {
+                                "summonFrom": 2,
+                                "id": "farmer-1",
+                                "duration": {
+                                    "type": 4,
+                                    "value": 1
+                                },
+                                "quantity": 1
+                            }
+                        }
+                    ],
+                    "target": []
+                }
+            },
+            "spellPattern": {
+                "pattern": 1,
+                "range": 50,
+                "area": 50,
+                "castType": 1,
+                "canTarget": [
+                    6
+                ]
+            },
+            "casterRolls": [],
+            "targetRolls": []
+        },
+        "conjureWorm": {
+            "name": "Conjure Dweller Worm",
+            "classess": [
+                7,
+                1,
+                4
+            ],
+            "type": 3,
+            "level": 2,
+            "modifiers": [
+                {
+                    "type": 6,
+                    "multiplier": 2
+                }
+            ],
+            "damage": {
+                "type": 0,
+                "value": "0"
+            },
+            "description": "Cast a summoning spell.",
+            "castDuration": {
+                "type": 1,
+                "value": 1
+            },
+            "actionCost": [
+                2
+            ],
+            "spendManaEffects": {
+                "2": {
+                    "caster": [
+                        {
+                            "name": "Dweller Worm",
+                            "type": "summon",
+                            "description": "Conjure a dweller worm from the depts of hell.",
+                            "effect": {
+                                "summonFrom": 1,
+                                "id": "dwellerWorm",
+                                "duration": {
+                                    "type": 4,
+                                    "value": 1
+                                },
+                                "quantity": 1
+                            }
+                        },
+                        {
+                            "name": "Cast Frenzy",
+                            "type": "buff-debuff",
+                            "description": "Applies haste which lowers turn count for casting or attacking.",
+                            "effect": {
+                                "effectType": 11,
+                                "value": 1,
+                                "duration": {
+                                    "type": 1,
+                                    "value": 5
+                                },
+                                "triggerActions": 18
+                            }
+                        }
+                    ],
+                    "target": []
+                }
+            },
+            "spellPattern": {
+                "pattern": 1,
+                "range": 50,
+                "area": 50,
+                "castType": 1,
+                "canTarget": [
+                    6
+                ]
+            },
+            "casterRolls": [],
+            "targetRolls": []
+        },
+        "emergencyHeal": {
+            "name": "Emergency Heal",
+            "classess": [
+                5,
+                2
+            ],
+            "type": 2,
+            "level": 2,
+            "modifiers": [
+                {
+                    "type": 5,
+                    "multiplier": 2
+                }
+            ],
+            "damage": {
+                "type": 99,
+                "value": "2d8"
+            },
+            "description": "Heals around instantly.",
+            "castDuration": {
+                "type": 4,
+                "value": 1
+            },
+            "actionCost": [
+                1
+            ],
+            "spendManaEffects": {},
+            "spellPattern": {
+                "pattern": 1,
+                "range": 200,
+                "area": 200,
+                "castType": 3,
+                "canTarget": [
+                    2
+                ]
+            },
+            "casterRolls": [],
+            "targetRolls": []
+        }
     },
+    "3": {},
     "4": {
-        "No Spell": "No Spell"
+        "lightningTrident": {
+            "name": "Lightning Trident",
+            "classess": [
+                4,
+                8,
+                1
+            ],
+            "type": 3,
+            "level": 4,
+            "modifiers": [
+                {
+                    "type": 4,
+                    "multiplier": 3
+                },
+                {
+                    "type": 5,
+                    "multiplier": 1.5
+                }
+            ],
+            "damage": {
+                "type": 4,
+                "value": "3d8"
+            },
+            "description": "Conjure a fire bolt.",
+            "castDuration": {
+                "type": 1,
+                "value": 1
+            },
+            "actionCost": [
+                2
+            ],
+            "spendManaEffects": {
+                "5": {
+                    "caster": [
+                        {
+                            "name": "Tridents Rage",
+                            "type": "buff-debuff",
+                            "description": "Ur new attack will deal extra damage.",
+                            "effect": {
+                                "effectType": 2,
+                                "value": {
+                                    "type": 13,
+                                    "value": "1d8"
+                                },
+                                "duration": {
+                                    "type": 5,
+                                    "value": 1
+                                },
+                                "triggerActions": [
+                                    8
+                                ]
+                            }
+                        }
+                    ],
+                    "target": []
+                }
+            },
+            "spellPattern": {
+                "pattern": 3,
+                "range": 150,
+                "area": 100,
+                "castType": 2,
+                "canTarget": [
+                    4
+                ]
+            },
+            "casterRolls": [
+                {
+                    "diceType": 20,
+                    "rollType": 3,
+                    "target": 10
+                }
+            ],
+            "targetRolls": [
+                {
+                    "diceType": 20,
+                    "rollType": 1,
+                    "target": 20
+                }
+            ]
+        }
     },
-    "5": {
-        "No Spell": "No Spell"
-    },
-    "6": {
-        "No Spell": "No Spell"
-    },
-    "7": {
-        "No Spell": "No Spell"
-    },
-    "8": {
-        "No Spell": "No Spell"
-    },
-    "9": {
-        "No Spell": "No Spell"
-    }
+    "5": {},
+    "6": {},
+    "7": {},
+    "8": {},
+    "9": {}
 }

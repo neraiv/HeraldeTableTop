@@ -1,3 +1,327 @@
+// Get spell by ID (e.g., "fireBolt")
+function getSpellById(spellId) {
+    for (const level in database.spells) {
+        if (database.spells[level][spellId]) {
+            return database.spells[level][spellId];
+        }
+    }
+    return null;
+}
+
+function populateFunction(spells, parent){
+    for(const spellLevel of Object.keys(spells)){
+        const spellContainer = document.createElement('div');
+    
+        const spellHeader = document.createElement('h3');
+        spellHeader.style.background = "chocolate"
+        spellHeader.textContent = `Level ${spellLevel} (${Object.keys(database.spells[spellLevel]).length})`;
+        spellContainer.appendChild(spellHeader);
+    
+        const spellContent = document.createElement('div');
+        spellContent.classList.add('spell-content');
+        spellContent.style.display = 'none'; // Initially hidden
+    
+        for (const spellId of Object.keys(database.spells[spellLevel])) {
+            const spell = database.spells[spellLevel][spellId];
+            const spellCard = createSpellCard(spell)
+            spellCard.classList.add("active")
+            spellContent.appendChild(spellCard);
+        }
+    
+        spellContainer.appendChild(spellContent);
+        parent.appendChild(spellContainer);
+    
+        spellHeader.addEventListener('click', () => {
+            spellContent.style.display = spellContent.style.display === 'none' ? 'flex' : 'none';
+        });
+    }
+}
+
+function populateSpellBook(){ 
+    // Get all spells for a character based on learnedSpells
+    function getCharacterSpells(knownSpells) {
+        const characterSpells = {};
+        
+        for (const level in knownSpells) {
+            characterSpells[level] = {};
+            
+            for (const spellId of knownSpells[level]) {
+                const spell = getSpellById(spellId);
+                if (spell) {
+                    characterSpells[level][spellId] = spell;
+                }
+            }
+        }
+        
+        return characterSpells;
+    }
+
+    contentAllSpells.innerHTML = ''; // Clear previous content
+    populateFunction(database.spells, contentAllSpells);
+
+    contentYourSpells.innerHTML = ''; // Clear previous content
+    populateFunction(getCharacterSpells(database.chars[player.charId].char.learnedSpells), contentYourSpells);  
+}
+
+function createSpellCard(spell) {
+    // Helper functions
+    const getClassNames = () => {
+        return spell.classess.map(cls => {
+            const classEntry = Object.entries(classTypes).find(([key, val]) => val === cls);
+            return classEntry ? classEntry[0] : 'Unknown';
+        }).join(', ');
+    };
+
+    const getDamageType = () => {
+        if (Array.isArray(spell.damage)) {
+            return spell.damage.value
+        } else if (spell.damage.type) {
+            const damageEntry = Object.entries(damageTypes).find(([key, val]) => val === spell.damage.type);
+            return damageEntry ? damageEntry[0] : 'Unknown';
+        }
+        return 'None';
+    };
+
+    const getActionCost = () => {
+        return spell.actionCost.map(action => {
+            const actionEntry = Object.entries(actionTypes).find(([key, val]) => val === action);
+            return actionEntry ? actionEntry[0] : 'Unknown';
+        }).join(' + ');
+    };
+
+    const getPatternInfo = () => {
+        if (!spell.spellPattern) return 'N/A';
+        
+        const patternEntry = Object.entries(spellPatterns).find(([key, val]) => val === spell.spellPattern.pattern);
+        const castTypeEntry = Object.entries(castTypes).find(([key, val]) => val === spell.spellPattern.castType);
+        
+        return `
+            ${patternEntry ? patternEntry[0] : 'Unknown'} pattern
+            (Range: ${spell.spellPattern.range}ft, 
+            Area: ${spell.spellPattern.area}ft, 
+            Cast: ${castTypeEntry ? castTypeEntry[0] : 'Unknown'})
+        `;
+    };
+
+    const getModifiers = () => {
+        return spell.modifiers.map(mod => {
+            const statEntry = Object.entries(statTypes).find(([key, val]) => val === mod.type);
+            return statEntry ? `${statEntry[0]}×${mod.multiplier}` : 'Unknown';
+        }).join(' + ');
+    };
+
+    function getDuration(duration) {
+        return `${duration.value} ${Object.entries(durationTypes).find(([key, val]) => val === duration.type)[0]}`
+    }
+
+    function getListValues(list, search_in) {
+        return `
+        ${list.length > 0 ? `
+            ${list.map(action => {
+                const found = Object.entries(search_in).find(([key, val]) => val === action);
+                return found ? found[0] : 'Unknown';
+            }).join(', ')}` : ''
+        }
+        `
+    }
+
+    function getEffectDetails(effect) {
+        let effectInfo = ""
+
+        if(effect.type === extraEffectsList.Aura){
+            const aura = effect.effect
+            effectInfo =  `
+            <ul>
+                <ul class="effect">
+                <strong>Description: </strong>${effect.description}
+                </ul>
+                <ul class="effect">
+                <strong>Area: </strong>${aura.area}
+                </ul>
+                <ul class="effect">
+                <strong>Effect: </strong>${Object.entries(effectTypes).find(([key, val]) => val === aura.effectType)[0]}
+                </ul>
+                <ul class="effect">
+                <strong>Value: </strong>${aura.value.value}
+                </ul>
+                <ul class="effect">
+                <strong>Duration: </strong>${getDuration(aura.duration)}
+                </ul>
+                <ul class="effect">
+                <strong>Triggered With: </strong>${getListValues(aura.triggerActions, characterActions)}
+                </ul>
+                <ul class="effect">
+                <strong>Target: </strong>${getListValues(aura.targetList, targetTypes)}
+                </ul>
+                <ul class="effect">
+                <strong>Can Spread: </strong>${aura.canSpread ? 'Yes' : 'No'}
+                </ul>  
+            <ul> 
+            </div>
+           `
+        } else if (effect.type === extraEffectsList["Buff/Debuff"]) {
+            const buffDebuff = effect.effect;
+            effectInfo = `
+            <ul>
+                <ul class="effect">
+                <strong>Description: </strong>${effect.description}
+                </ul>
+                <ul class="effect">
+                <strong>Type: </strong>${Object.entries(effectTypes).find(([key, val]) => val === buffDebuff.effectType)[0]}
+                </ul>
+                <ul class="effect">
+                <strong>Value: </strong>${buffDebuff.value.value}
+                </ul>
+                <ul class="effect">
+                <strong>Duration: </strong>${getDuration(buffDebuff.duration)}
+                </ul>
+                <ul class="effect">
+                <strong>Triggered With: </strong>${getListValues(buffDebuff.triggerActions, characterActions)}
+                </ul>
+            </ul>
+            `;
+        } else if (effect.type === extraEffectsList.Cast) {
+            const cast = effect.effect;
+            effectInfo = `
+            <ul>
+                <ul class="effect">
+                <strong>Description: </strong>${effect.description}
+                </ul>
+                <ul class="effect">
+                <strong>Spell: </strong>${cast.spell}
+                </ul>
+                <ul class="effect">
+                <strong>Target List: </strong>${getListValues(cast.targetListInOrder, targetOrderList)}
+                </ul>
+            </ul>
+            `;
+        } else if (effect.type === extraEffectsList.Summon) {
+            const summon = effect.effect;
+            effectInfo = `
+            <ul>
+                <ul class="effect">
+                <strong>Description: </strong>${effect.description}
+                </ul>
+                <ul class="effect">
+                <strong>Summoned Entity: </strong>${summon.id}
+                </ul>
+                <ul class="effect">
+                <strong>Duration: </strong>${getDuration(summon.duration)}
+                </ul>
+                <ul class="effect">
+                <strong>Quantity: </strong>${summon.quantity}
+                </ul>
+            </ul>
+            `;
+        }
+
+
+        return `
+            <div class="column vertical">
+                <ul class="effect">
+                    <strong>${effect.name}</strong>
+                </ul>
+                ${effectInfo}
+            </div>
+        `
+    }
+
+    // Create the card element
+    const card = document.createElement('div');
+    card.className = 'spell-card';
+    card.dataset.spellName = spell.name; // Set the spell ID as a data attribute
+    card.innerHTML = `
+        <div class="spell-header ${Object.entries(spellTypes).find(([key, val]) => val === spell.type)[0].toLowerCase()}">
+            <div class="row" style="justify-content: space-between;">
+                <h2 class="spell-name">${spell.name}</h2> 
+                <h4 class="spell-type">${Object.entries(spellTypes).find(([key, val]) => val === spell.type)[0]}</h4>
+            </div>
+            <span>${getClassNames()}</span>
+        </div>
+        
+        <div class="spell-body">
+            <div class="spell-description">${spell.description}</div>
+            
+            <div class="spell-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Casting Time:</span>
+                    <span class="stat-value">${getActionCost()}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Duration:</span>
+                    <span class="stat-value">${getDuration(spell.castDuration)}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Damage:</span>
+                    <span class="stat-value">${spell.damage.value || 'N/A'} ${getDamageType()} (${getModifiers()})</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Pattern:</span>
+                    <span class="stat-value">${getPatternInfo()}</span>
+                </div>
+            </div>
+            
+            ${spell.casterRolls.length > 0 ? `
+            <div class="spell-rolls">
+                <h4>Caster Rolls:</h4>
+                <ul>
+                    ${spell.casterRolls.map(roll => `
+                        <li>${Object.entries(diceTypes).find(([key, val]) => val === roll.diceType)[0]} 
+                        ${Object.entries(rollTypes).find(([key, val]) => val === roll.rollType)[0]} 
+                        vs DC${roll.target}</li>
+                    `).join('')}
+                </ul>
+            </div>` : ''}
+            
+            ${spell.targetRolls.length > 0 ? `
+            <div class="spell-rolls">
+                <h4>Target Rolls:</h4>
+                <ul>
+                    ${spell.targetRolls.map(roll => `
+                        <li>${Object.entries(diceTypes).find(([key, val]) => val === roll.diceType)[0]} 
+                        ${Object.entries(rollTypes).find(([key, val]) => val === roll.rollType)[0]} 
+                        vs DC${roll.target}</li>
+                    `).join('')}
+                </ul>
+            </div>` : ''}
+            
+            ${Object.keys(spell.spendManaEffects).length > 0 ? `
+            <div class="spell-mana-effects">
+                <h4>Mana Effects:</h4>
+                ${Object.entries(spell.spendManaEffects).map(([level, effects]) => `
+                    <div class="mana-effect-level">
+                        <h4>Level ${level}:</h4>
+                        ${effects.caster ? `
+                        <div class="effect-group">
+                            <h4>Caster Effects:</h4>
+                            ${effects.caster.map(effect => 
+                                getEffectDetails(effect)
+                            ).join('')}
+                        </div>` : ''}
+                        ${effects.target ? `
+                        <div class="effect-group">
+                            <h4>Target Effects:</h4>
+                            ${effects.target.map(effect => 
+                                getEffectDetails(effect)
+                            ).join('')}
+                        </div>` : ''}
+                    </div>
+                `).join('')}
+            </div>` : ''}
+        </div>
+    `;
+
+    return card;
+}
+
+function displaySpellDescription(spell){
+    console.log(spell)
+}
+
+createSpellButton.onclick = () => {
+    displaySpellCreate()
+}
+
 function displaySpellCreate(spell = new Spell()) {
 
     const isInitialSpellGivenFlag = spell.name != ""
@@ -576,8 +900,8 @@ function effectBuilder(id, initalEffect = null) {
 
     const itemId = id;
 
+
     const effectBuildSheet = document.createElement('div');
-    effectBuildSheet.style.display = 'flex';
     effectBuildSheet.classList.add('aditional-effect-create-sheet');
     effectBuildSheet.classList.add('box-circular-border');
     effectBuildSheet.classList.add('column');
@@ -620,15 +944,19 @@ function effectBuilder(id, initalEffect = null) {
         effectBuildSheet.remove();
     }
 
+    const effectBuilderContent = document.createElement("div")
+    effectBuilderContent.style.display = "block"
+    effectBuilderContent.style.width = "100%"
+    effectBuilderContent.style.height = "100%"
+    effectBuilderContent.style.overflow = "scroll"
+    effectBuildSheet.appendChild(effectBuilderContent)
+
     const effectBuilderForm = document.createElement('div');
     effectBuilderForm.classList.add('column');
     effectBuilderForm.classList.add('vertical');
-    effectBuilderForm.style.width = '100%';
-    effectBuilderForm.style.height = '100%';
     effectBuilderForm.style.backgroundColor = formColor;
-    effectBuilderForm.style.overflowY = 'scroll';
     effectBuilderForm.style.gap = '5px';
-    effectBuildSheet.appendChild(effectBuilderForm);
+    effectBuilderContent.appendChild(effectBuilderForm);
     
     const formName = createInputString('Name: ', itemId + '-name');
     formName.classList.add('box-circular-border');
@@ -641,8 +969,7 @@ function effectBuilder(id, initalEffect = null) {
     formDescription.style.backgroundColor = formColor;
     effectBuilderForm.appendChild(formDescription);
 
-    const effectTypeSelections = ["Aura", "Buff or Debuff", "Make Cast"]
-    const formType = createInputSelector("Effect Type: ", effectTypeSelections, effectTypeSelections, {
+    const formType = createInputSelector("Effect Type: ", Object.values(extraEffectsList, Object.keys(extraEffectsList)), {
         id: itemId + "-type"
     })
     formType.classList.add('box-circular-border');
@@ -791,6 +1118,7 @@ function createBuffDebuffForm(parentId, initial = null){
         multiple: true,
         custom_func: selectorChekmarkOptionFunction
     })
+    effectTrigerActions.classList.add('box-circular-border');
     form.appendChild(effectTrigerActions)
 
     form.inputElement = {
@@ -810,32 +1138,45 @@ function createAuraForm(parentId, initial = null) {
     form.classList.add('form-group');
     form.style.gap = "1rem"
 
-    const effectArea = createInputNumber("Area: ", parentId + '-aditional-effect-aura-area', 500, 0, false, false, effect ? effect.area : null)
+    const itemId = parentId + "-effect-"
+
+    const effectArea = createInputNumber("Area: ", itemId + 'area', {
+        maxValue: 9999,
+        minValue: 1,
+        addIncrementButtons: true,
+        defaultValue: 200
+    })
+    effectArea.classList.add("box-circular-border")
     form.appendChild(effectArea);
 
-    const effectDuration = createInputDuration("Duration: ", parentId + '-aditional-effect-aura-duration')
+    const effectDuration = createInputDuration("Duration: ", itemId + "duration", {
+        initalDuration: new Duration({type: durationTypes.TURN_BASED, value: 5})
+    })
+    effectDuration.classList.add("box-circular-border")
     form.appendChild(effectDuration);
 
     const effectTypeSelector = createInputSelector('Effect Type:',  Object.values(effectTypes), Object.keys(effectTypes),{
-        nonSelectableDefault: 'select',
-        id: parentId +'-aditional-effect-aura-type',
-        defaultValue: effect ? [effect.auraType] : null
+        id: itemId + "type"
     });
     effectTypeSelector.classList.add('box-circular-border');
     form.appendChild(effectTypeSelector);
 
-    const effectValue = createInputNumber("Value: ", parentId + '-aditional-effect-aura-value', 50, 1, false, false, effect ? effect.value : null)   
+    const effectValue = createInputDamage("Value: ", itemId + "value", {
+        defaultValue: "1d1"
+    })   
+    effectValue.classList.add("box-circular-border")
     form.appendChild(effectValue);
 
     const effectTargetSelector = createInputSelector('Target Type:',  Object.values(targetTypes), Object.keys(targetTypes),{
-        nonSelectableDefault: 'select',
-        id: parentId +'-aditional-effect-aura-target',
-        defaultValue: effect ? [effect.target] : null
+        id: itemId + "target",
+        multiple: true,
+        custom_func: selectorChekmarkOptionFunction
     });
     effectTargetSelector.classList.add('box-circular-border');
     form.appendChild(effectTargetSelector);
 
-    const effectCanSpread = createInputBoolean("Can Spread: ", parentId + '-aditional-effect-aura-spread', effect ? effect.canSpread : null)
+    const effectCanSpread = createInputBoolean("Can Spread: ", itemId + "spread")
+    effectCanSpread.classList.add("box-circular-border")
     form.appendChild(effectCanSpread);
 
     form.inputElement = {
@@ -880,43 +1221,4 @@ function createMakeCastForm(parentId, intial = null){
     }
 
     return form
-}
-
-function createSpellCard(spell) {
-    // Create the spell card container
-    const spellCard = document.createElement('div');
-    spellCard.classList.add('spell-card');
-    spellCard.style.display = 'flex';
-    spellCard.style.flexDirection = 'column';
-    spellCard.style.gap = '5px';
-    spellCard.style.padding = '10px';
-    spellCard.style.border = '1px solid black';
-    spellCard.style.borderRadius = '8px';
-    spellCard.style.backgroundColor = '#f0f0f0';
-    spellCard.style.overflow = 'auto';
-    spellCard.style.width = '100%';
-
-    // Create the spell card header
-    const spellCardHeader = document.createElement('div');
-    spellCardHeader.classList.add('spell-card-header');
-    spellCardHeader.style.display = 'flex';
-    spellCardHeader.style.justifyContent = 'space-between';
-    spellCardHeader.style.alignItems = 'center';
-    spellCard.appendChild(spellCardHeader);
-    
-    // Create the spell card name
-    const spellCardName = document.createElement('h3');
-    spellCardName.textContent = spell.name;
-    spellCardName.style.margin = '0';
-    spellCardName.style.fontFamily = "'Cinzel', serif"; // DnD theme font
-    spellCardName.style.fontSize = '16px'; // Larger font size
-    spellCardHeader.appendChild(spellCardName);
-}
-
-function displaySpellDescription(spell){
-    console.log(spell)
-}
-
-createSpellButton.onclick = () => {
-    displaySpellCreate()
 }

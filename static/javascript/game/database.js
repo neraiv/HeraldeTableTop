@@ -80,11 +80,11 @@ async function sendRequest({ type, payload, timeout = 5000 }) {
 }
 
 async function serverGetChar(charId){
-    if (!inGameChars[charId]){
+    if (!database.chars[charId]){
         const _charData =  await sendRequest({type: "get", payload: {type: "char", id: charId}})
 
         if(_charData.success === true){
-            inGameChars[_charData.data.char.id] = {
+            database.chars[_charData.data.char.id] = {
                 char : new Character(_charData.data.char), 
                 width: _charData.data.width, 
                 height: _charData.data.height,

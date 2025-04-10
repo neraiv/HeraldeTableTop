@@ -49,11 +49,11 @@ async function updateLocations(){
         }
 
         for(let charId of charCompare.missing){
-            if(!inGameChars[charId]){
+            if(!database.chars[charId]){
                 await serverGetChar(charId);
             }
         
-            const charInfo = inGameChars[charId]
+            const charInfo = database.chars[charId]
         
             addCharacter(charInfo.char, charInfo.width, charInfo.height, locations.chars[charId].x, locations.chars[charId].y, "static/images/character/"+charInfo.img)
         }

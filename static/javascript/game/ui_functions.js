@@ -81,13 +81,13 @@ passTurnButton.onclick = async () => {
 
 // Spell book button
 spellBookButton.onclick = () => {
-    displaySpellCreate()
-    // const spellBook = document.getElementById("ui-spellbook");
-    // if (spellBook.style.display === "none") {
-    //     spellBook.style.display = "flex";
-    // } else {
-    //     spellBook.style.display = "none";
-    // }
+    //displaySpellCreate()
+    const spellBook = document.getElementById("ui-spellbook");
+    if (spellBook.style.display === "none") {
+        spellBook.style.display = "flex";
+    } else {
+        spellBook.style.display = "none";
+    }
 }
 
 spellBookCloseButton.onclick = () =>{

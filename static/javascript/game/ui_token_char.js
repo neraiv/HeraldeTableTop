@@ -43,8 +43,8 @@ function charHideHoverButtons({token = null, char_id = null}) {
 async function addCharacter(char, width, height, x, y, img = null){
 
     if(char.id === player.charId){ // TEST FUNC
-        inGameChars[char.id].char.inventory.addItem(new Item("Potion", itemTypes.CONSUMABLE), 4)
-        inGameChars[char.id].char.inventory.addItem(new Item("Sword", itemTypes.WEAPON), 1)
+        database.chars[char.id].char.inventory.addItem(new Item("Potion", itemTypes.CONSUMABLE), 4)
+        database.chars[char.id].char.inventory.addItem(new Item("Sword", itemTypes.WEAPON), 1)
     }
 
     const charToken = document.createElement("div")
@@ -138,8 +138,8 @@ async function addCharacter(char, width, height, x, y, img = null){
 }
 
 function charDropInventory(charId) {
-    if(inGameChars[charId]){
-        const charInfo = inGameChars[charId]
+    if(database.chars[charId]){
+        const charInfo = database.chars[charId]
         const charLoaction = sessionInfo.charLocations.find(charLocation => charLocation.charId === charId)
         addObject(new Inventory(charInfo.char.inventory), charLoaction.x + charInfo.width / 2 - 12.5, charLoaction.y + charInfo.height / 2 - 12.5) // -12.5 is half of the pouch size
         charInfo.char.inventory.clear()

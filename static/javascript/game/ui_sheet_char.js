@@ -1,5 +1,5 @@
 async function displayCharaterSheet(charId) {
-    const char = inGameChars[charId].char;
+    const char = database.chars[charId].char;
 
     const characterSheet = document.createElement("div");
     characterSheet.classList.add("character-sheet");
@@ -70,7 +70,7 @@ async function displayCharaterSheet(charId) {
     charStats.appendChild(charImageAndClassContainer);
 
     const charImage = document.createElement("div");
-    charImage.style.backgroundImage = `url(static/images/character/${inGameChars[charId].img})`;
+    charImage.style.backgroundImage = `url(static/images/character/${database.chars[charId].img})`;
     charImage.style.backgroundSize = "contain"; // Ensures the entire image fits without cropping
     charImage.style.backgroundRepeat = "no-repeat"; // Prevents tiling
     charImage.style.backgroundPosition = "center"; // Centers the image

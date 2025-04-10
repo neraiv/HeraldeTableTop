@@ -48,9 +48,9 @@ async function displayInventory(owner, inventory, x, y) {
     // Create the dropdown menu for the 'Send To' button
     const sendToButtons = {}
     const sendToButtonCharIds = []
-    Object.keys(inGameChars).forEach(charId => {
+    Object.keys(database.chars).forEach(charId => {
         if (isCharInventory && charId === id) return;
-        sendToButtons[`${inGameChars[charId].char.name} (${charId})`] = true;
+        sendToButtons[`${database.chars[charId].char.name} (${charId})`] = true;
         sendToButtonCharIds.push(charId);
     });
     const sendToDropDownMenu = createDropdownMenu(sendToButtons);
@@ -73,7 +73,7 @@ async function displayInventory(owner, inventory, x, y) {
         }
     }
 
-    for(let i = 0; i < Object.keys(inGameChars).length-1; i++){
+    for(let i = 0; i < Object.keys(database.chars).length-1; i++){
         sendToDropDownMenu.who = sendToButtonCharIds[i]
         sendToDropDownMenu.children[i].onclick = function(){
             console.log('Send To action clicked', selectedItem, sendToDropDownMenu.children[i].textContent);
@@ -101,7 +101,7 @@ async function displayInventory(owner, inventory, x, y) {
                                     }
 
                                     if (inputValue > 0) {
-                                        inGameChars[sendToDropDownMenu.who].char.inventory.addItem(selectedItem, inputValue);
+                                        database.chars[sendToDropDownMenu.who].char.inventory.addItem(selectedItem, inputValue);
                                         inventory.removeItem(selectedItem.name, inputValue);
                                         console.log('Sent', inputValue, selectedItem.name, 'to', sendToDropDownMenu.children[i].textContent);
                                         inventoryUpdateItem(selectedItem);
@@ -109,7 +109,7 @@ async function displayInventory(owner, inventory, x, y) {
                                 },
                             blocking: true});
                     }else{
-                        inGameChars[sendToDropDownMenu.who].char.inventory.addItem(selectedItem, inputValue);
+                        database.chars[sendToDropDownMenu.who].char.inventory.addItem(selectedItem, inputValue);
                         inventory.removeItem(selectedItem.name, inputValue);
                         console.log('Sent', inputValue, selectedItem.name, 'to', sendToDropDownMenu.children[i].textContent);
                         inventoryUpdateItem(selectedItem);

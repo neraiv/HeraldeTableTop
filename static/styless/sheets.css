@@ -134,27 +134,6 @@ h2 {
     z-index: 10;
 }
 
-.spell-container {
-    margin-bottom: 10px;
-}
-
-.spell-header {
-    background-color: orange;
-    cursor: pointer;
-    padding: 10px;
-    margin: 0;
-}
-
-.spell-content {
-    background-color: #f9f9f9;
-    padding: 10px;
-    border: 1px solid #ddd;
-}
-
-.spell-info {
-    margin-bottom: 10px;
-}
-
 .spell-create-sheet {
     display: flex;
     position: absolute;
@@ -186,41 +165,103 @@ h2 {
 }
 /* End Of Spell Create Sheet */
 
-/*SPELLLS */
-.spell {
-    width: 90%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 20px;
-    background-color: #f9f9f9;
+/* Spell Card */
+
+.spell-content {
+    display: flex;
+    flex-wrap: wrap;
 }
+
+.spell-card {
+    font-family: 'Arial', sans-serif;
+    width: 400px;
+    height: fit-content;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin: 10px;
+    background: #f9f9f9;
+}
+
+.spell-card.active{
+    display: block;
+}
+
+.spell-card.inactive{
+    display: none;
+}
+
 
 .spell-header {
+    padding: 10px 15px;
+    flex-direction: column;
+    display: flex;
+}
+
+.spell-header.spell {
+    background: #7011c9;
+    color: white;
+}
+
+.spell-header.weapon {
+    background: #fbff23;
+    color: black;
+}
+
+.spell-header.cantrip {
+    background: #fcaf09;
+    color: black;
+}
+
+.spell-meta {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    font-size: 0.8em;
+    margin-top: 5px;
 }
 
-.spell-name {
-    font-size: 1.5em;
-    font-weight: bold;
-}
-
-.spell-classes {
-    font-style: italic;
+.spell-body {
+    padding: 15px;
 }
 
 .spell-description {
-    margin-top: 10px;
+    margin-bottom: 15px;
+    font-style: italic;
 }
 
-.spell-effects {
-    margin-top: 15px;
-    font-size: 0.9em;
-    color: #555;
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    gap: 1rem
 }
-/* END OF SPELLS */
+
+.stat-label {
+    font-weight: bold;
+}
+
+.spell-rolls, .spell-mana-effects {
+    margin-top: 15px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+}
+
+.mana-effect-level {
+    margin-bottom: 10px;
+}
+
+.effect-group {
+    margin-left: 15px;
+    margin-bottom: 5px;
+}
+
+.effect {
+    margin-bottom: 3px;
+    font-size: 0.9em;
+}
+/* End Of Spell Card */
+/*----------------------------------------------------------------*/
 
 /* INVENTORY */
 .inventory-sheet{
@@ -272,6 +313,7 @@ h2 {
                                 #eaeff1b7 100%);
 }
 /* END OF INVENTORY */
+/*----------------------------------------------------------------*/
 
 /* AVALIABLE SPELLS SHEET */
 .avaliable-spells-sheet{
@@ -310,6 +352,7 @@ h2 {
     color: gray; /* Optional: changes text color to gray */
 }
 /* END OF AVALIABLE SPELLS SHEET */
+/*----------------------------------------------------------------*/
 
 
 /* DESCRIPTION CONTAINER */
@@ -329,7 +372,7 @@ h2 {
     z-index: 1000; /* Ensure it appears on top */
 }
 /* DESCRIPTION OF CONTAINER */
-
+/*----------------------------------------------------------------*/
 
 /* AVALIABLE SPELLS SHEET */
 .login-screen {
@@ -344,7 +387,7 @@ h2 {
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 75;
 }
-/* AVALIABLE SPELLS SHEET  END*/
+/*----------------------------------------------------------------*
 
 /* QUEST SHEET */
 

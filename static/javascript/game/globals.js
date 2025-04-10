@@ -1,6 +1,5 @@
 const godLevelServerDomain = "https://heraldednd.wuaze.com/"
 let player = {}
-let inGameChars = {}
 let serverRules = {}
 let serverInfo = {}
 let sessionInfo = {}
@@ -38,7 +37,6 @@ const boardEvent = {
     dragEndY : 0
 }
 
-
 const updates = {
     chat: true,
     scene: [],
@@ -47,16 +45,12 @@ const updates = {
 
 const database = {
     quests : {},
+    chars : {},
     npcs : {},
     dialogs : {},
     spells: {}
 }
 
-
-const gameSessionData = {
-    currentTurn: 0,
-    turnStatus: "free"
-}
 const gameSceneData = {
     portals : [],
     chars : [],
