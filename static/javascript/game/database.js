@@ -54,7 +54,7 @@ socket.on('change', async (data) => {
 async function sendRequest({ type, payload, timeout = 5000 }) {
     return new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
-            reject(new Error(`Request timed out after ${timeout}ms`));
+            reject(new Error(`Request timed out after ${timeout}ms for type: ${type} and payload: ${payload}`));
         }, timeout);
 
         socket.emit("request", {

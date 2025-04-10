@@ -178,8 +178,6 @@ function createInputNumber(label, id, {maxValue=99, minValue=1, isReadOnly = fal
     inputElement.readOnly = isReadOnly;
     inputElementsHolder.appendChild(inputElement)
     
-    formGroup.inputElement = inputElement;
-
     inputElement.onchange = () =>{
         keepValueInBetween(inputElement.value)
     }
@@ -209,7 +207,21 @@ function createInputNumber(label, id, {maxValue=99, minValue=1, isReadOnly = fal
         controls.appendChild(buttonDown);
         inputElementsHolder.appendChild(controls);
     }
-   
+
+    formGroup.getValue = function() {
+        // Return the current value of the input element
+        return inputElement.value;
+    }
+
+    formGroup.setValue = function(value) {
+        // Set the value of the input element
+        if (value) {
+            inputElement.value = parseFloat(value);
+        } else {
+            inputElement.value = minValue;
+        }
+    }
+
     return formGroup
 }
 
@@ -309,21 +321,42 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
     buttonAdd.classList.add('button-add');
     buttonAdd.onclick = function(event) {
         event.preventDefault();
-        if (parseFloat(formModifierValue.inputElement.value) > 0){
-            const selectedModifier = formModifierStatAddSelection.inputElement.options[formModifierStatAddSelection.inputElement.selectedIndex].text
+        if (parseFloat(formModifierValue.getValue()) > 0){
+            const selectedModifier = formModifierStatAddSelection.selectElement.options[formModifierStatAddSelection.selectElement.selectedIndex].text
             if (selectedModifier in formModifierStat.value){
                 userWarn("This modifier already added!")
             }else{
-                const newRow = createModifierListElement(selectedModifier, formModifierValue.inputElement.value)
+                const newRow = createModifierListElement(selectedModifier, formModifierValue.getValue())
                 formModifierStatList.appendChild(newRow);
 
-                formModifierStat.value[selectedModifier] = formModifierValue.inputElement.value
+                formModifierStat.value[selectedModifier] = formModifierValue.getValue()
             }
         }else{
             userWarn("Please select multiplier value greater than 0!")
         }
     };
     formModifierStatListButtons.appendChild(buttonAdd);
+
+    formModifierStat.getValue = function() {
+        // Return a copy of the current value object
+        return {...formModifierStat.value};
+    };
+
+    formModifierStat.setValue = function(value) {
+        // Set the value of the input element
+        if (value) {
+            formModifierStat.value = value;
+            formModifierStatList.innerHTML = ""; // Clear the existing list
+
+            for(let element in value) {
+                const newRow = createModifierListElement(element.type, element.multipler)
+                formModifierStatList.appendChild(newRow);
+            }
+        } else {
+            formModifierStat.value = {};
+            formModifierStatList.innerHTML = ""; // Clear the existing list
+        }
+    }
 
     return formModifierStat
 }
@@ -382,7 +415,19 @@ function createInputString(label, id, {
     addSpacer(formGroup); // Assuming addSpacer is a utility function you've defined
     formGroup.appendChild(inputElement);
 
-    formGroup.inputElement = inputElement;
+    formGroup.getValue = function() {
+        // Return the current value of the input element
+        return inputElement.value;
+    }
+
+    formGroup.setValue = function(value) {
+        // Set the value of the input element
+        if (value) {
+            inputElement.value = value;
+        } else {
+            inputElement.value = defaultValue;
+        }
+    }
 
     return formGroup;
 }
@@ -409,7 +454,19 @@ function createInputBoolean(label, id, defaultValue = false) {
     addSpacer(formGroup);
     formGroup.appendChild(inputElement);
 
-    formGroup.inputElement = inputElement;
+    formGroup.getValue = function() {
+        // Return the current value of the checkbox
+        return inputElement.checked;
+    }
+
+    formGroup.setValue = function(value) {
+        // Set the value of the checkbox
+        if (value !== undefined) {
+            inputElement.checked = value;
+        } else {
+            inputElement.checked = defaultValue;
+        }
+    }
 
     return formGroup;
 }
@@ -454,28 +511,25 @@ function createInputDice(label, id, {
     inputElementDice.value = defaultValue.split('d')[1];
     inputElementsHolder.appendChild(inputElementDice);
 
-    formGroup.inputElement = {
-        dice: inputElementDice, 
-        roll: inputElementDiceRollTimes
-    };
 
-    return formGroup
-}
-
-function getDiceValue(diceInputElement){
-    return diceInputElement.roll.value + "d" +diceInputElement.dice.value;
-}
-
-function setDiceValue(diceInputElement, value){
-    const values = value.split("d");
-
-    if(values.length != 2){
-        console.log("Invalid dice value. Dive value should be in the format 'roll' + 'd' + 'dice' (Example: 2d6)")
-        return
+    formGroup.getValue = function() {
+        // Return the current value of the input element
+        return inputElementDiceRollTimes.value + "d" + inputElementDice.value;
     }
 
-    diceInputElement.roll.value = values[0];
-    diceInputElement.dice.value = values[1];
+    formGroup.setValue = function(value) {
+        // Set the value of the input element
+        if (value) {
+            const values = value.split('d');
+            inputElementDiceRollTimes.value = values[0];
+            inputElementDice.value = values[1];
+        } else {
+            inputElementDiceRollTimes.value = "0";
+            inputElementDice.value = "0";
+        }
+    }
+
+    return formGroup
 }
 
 function createInputDamage(label, id, {
@@ -540,32 +594,30 @@ function createInputDamage(label, id, {
         }
     });
 
-    formGroup.inputElement = {
-        number: formRawDamageInput.inputElement,
-        dice: diceInput.inputElement,
-        isNumberInput: checkbox
+    formGroup.getValue = function() {
+        // Return the current value of the input element
+        if (checkbox.checked) {
+            return formRawDamageInput.getValue();
+        }else{
+            return diceInput.getValue();
+        }
+    }
+
+    formGroup.setValue = function(value) {
+        // Set the value of the input element
+        if (value) {
+            if (isNaN(value)) {
+                formRawDamageInput.setValue(value);
+            } else {
+                diceInput.setValue(value);
+            }
+        } else {
+            formRawDamageInput.setValue(0);
+            diceInput.setValue("0d0");
+        }
     }
 
     return formGroup
-}
-
-function getDamageValue(damageInputElement){
-    if(damageInputElement.isNumberInput.checked){
-        return damageInputElement.number.value;
-    }else{
-        return getDiceValue(damageInputElement.dice);
-    }
-}
-
-function setDamageValue(damageInputElement, value){
-    if(isNaN(value)){
-        setDiceValue(damageInputElement.dice, value);
-        damageInputElement.isNumberInput.checked = false;
-
-    }else{
-        damageInputElement.number.value = value;
-        damageInputElement.isNumberInput.checked = true;
-    }
 }
 
 function createInputSelector(label, valueList, textList, 
@@ -617,7 +669,75 @@ function createInputSelector(label, valueList, textList,
         }
     }
 
-    formGroup.inputElement = inputElement;
+    function selectorGetOptionsWithCheckmark(selectElement) {
+        const selectedValues = [];
+        
+        // Loop through the options of the select element
+        for (let option of selectElement.options) {
+            // Check if the option text contains the checkmark '✓'
+            if (option.text.includes('✓')) {
+                selectedValues.push(option.value);
+            }
+        }
+    
+        return selectedValues;
+    }
+
+    function getOrderedSelectedOptions(selectElement) {
+        // Create an array to store the options with their index and value
+        const optionsWithIndex = [];
+        
+        // Loop through the options of the select element
+        for (let option of selectElement.options) {
+            // Check if the option text contains a dash (indicating an index is present)
+            const parts = option.text.split('-');
+            if (parts.length === 2) {
+                const index = parseInt(parts[1], 10); // Extract the index
+                if (!isNaN(index)) { // Ensure it's a valid number
+                    optionsWithIndex.push({ index: index, value: option.value });
+                }
+            }
+        }
+    
+        // Sort the array based on the index (ascending)
+        optionsWithIndex.sort((a, b) => a.index - b.index);
+    
+        // Extract the values in the correct order
+        const orderedValues = optionsWithIndex.map(option => option.value);
+    
+        return orderedValues;
+    }
+
+    formGroup.selectElement = inputElement;
+
+    formGroup.getValue = function() {
+        // Return the current value of the input element
+        if(multiple){
+            if (custom_func == selectorChekmarkOptionFunction){
+                return selectorGetOptionsWithCheckmark(inputElement);
+            }else if (custom_func == selectorIndexedOptionFunctionWithTransparency || custom_func == selecterIndexedOptionFunction){
+                return getOrderedSelectedOptions(inputElement);
+            }
+        }else{
+            return inputElement.value;
+        }
+    }
+
+    formGroup.setValue = function(value) {
+        // Set the value of the input element
+        if (value) {
+            if (multiple) {
+                for(let option of inputElement.options){
+                    option.selected = false;
+                    if(value.includes(option.value)){
+                        option.click()
+                    }
+                }
+            }else{
+                inputElement.value = value;
+            }
+        } 
+    }
 
     return formGroup;
 }
@@ -633,20 +753,6 @@ function selectorChekmarkOptionFunction(event) {
         option.textContent = option.textContent.replace(' ✓', '');
     }
         
-}
-
-function selectorGetOptionsWithCheckmark(selectElement) {
-    const selectedValues = [];
-    
-    // Loop through the options of the select element
-    for (let option of selectElement.options) {
-        // Check if the option text contains the checkmark '✓'
-        if (option.text.includes('✓')) {
-            selectedValues.push(option.value);
-        }
-    }
-
-    return selectedValues;
 }
 
 function selectorIndexedOptionFunctionWithTransparency(event) {
@@ -736,31 +842,6 @@ function selecterIndexedOptionFunction(event) {
         });
     }
 }
-
-function getOrderedSelectedOptions(selectElement) {
-    // Create an array to store the options with their index and value
-    const optionsWithIndex = [];
-    
-    // Loop through the options of the select element
-    for (let option of selectElement.options) {
-        // Check if the option text contains a dash (indicating an index is present)
-        const parts = option.text.split('-');
-        if (parts.length === 2) {
-            const index = parseInt(parts[1], 10); // Extract the index
-            if (!isNaN(index)) { // Ensure it's a valid number
-                optionsWithIndex.push({ index: index, value: option.value });
-            }
-        }
-    }
-
-    // Sort the array based on the index (ascending)
-    optionsWithIndex.sort((a, b) => a.index - b.index);
-
-    // Extract the values in the correct order
-    const orderedValues = optionsWithIndex.map(option => option.value);
-
-    return orderedValues;
-}
 //----------------------------- Duration Input Element -------------------------------------------
 
 function createInputDuration(label = "Duration", id, {
@@ -780,7 +861,7 @@ function createInputDuration(label = "Duration", id, {
     durationSelector.style.width = "100%"
     formGroup.appendChild(durationSelector)
     
-    durationSelector.inputElement.onchange =  (event) => {     
+    durationSelector.selectElement.onchange =  (event) => {     
         displayPart(event.target.value)
     }
 
@@ -808,16 +889,23 @@ function createInputDuration(label = "Duration", id, {
 
     displayPart(defaultValue.type)
 
+    formGroup.getValue = function() {
+        // Return the current value of the input element
+        return new Duration(durationSelector.getValue(), durationValue.getValue())
+    }
+
+    formGroup.setValue = function(value) {
+        // Set the value of the input element
+        if (value) {
+            durationSelector.setValue(value.type);
+            durationValue.setValue(value.value);
+        } else {
+            durationSelector.setValue(durationTypes.TURN_BASED);
+            durationValue.setValue(1);
+        }
+    }
+
     return formGroup
-}
-
-function getDurationValue(durationInputElement){
-    return new Duration(durationInputElement.type.value, durationInputElement.value.value)
-}
-
-function setDurationValue(durationInputElement, value){
-    durationInputElement.type.value = value.type;
-    durationInputElement.value.value = value.value;
 }
 //------------------------------------------------------------------------------------------------
 
@@ -852,8 +940,8 @@ function createInputSpellSelect(id, {initalLevel: level = null, initialSpellName
     const spellEditButton = createImageButton(20, {source: `url(static/images/menu-icons/edit.png)`, custom_padding: 3});
     spellSelectedButtonsContainer.appendChild(spellEditButton)
     spellEditButton.onclick = () => {
-        if(spellLevelSelector.inputElement.selectedOptions[0].value && spellNameSelect.inputElement.selectedOptions[0].value){
-            displaySpellCreate(database.spells[spellLevelSelector.inputElement.selectedOptions[0].value][spellNameSelect.inputElement.selectedOptions[0].value])
+        if(spellLevelSelector.selectElement.selectedOptions[0].value && spellNameSelect.selectElement.selectedOptions[0].value){
+            displaySpellCreate(database.spells[spellLevelSelector.selectElement.selectedOptions[0].value][spellNameSelect.selectElement.selectedOptions[0].value])
         }else {
             userWarn("Please select a Spell first by selecting level then spell name!")
         }
@@ -863,41 +951,43 @@ function createInputSpellSelect(id, {initalLevel: level = null, initialSpellName
     spellInfoButton.style.fontFamily = 'Material Icons Outlined'
     spellSelectedButtonsContainer.appendChild(spellInfoButton)
     spellInfoButton.onclick = () => {
-        if(spellLevelSelector.inputElement.selectedOptions[0].value && spellNameSelect.inputElement.selectedOptions[0].value){
-            displaySpellDescription(database.spells[spellLevelSelector.inputElement.selectedOptions[0].value][spellNameSelect.inputElement.selectedOptions[0].value])
+        if(spellLevelSelector.selectElement.selectedOptions[0].value && spellNameSelect.selectElement.selectedOptions[0].value){
+            displaySpellDescription(database.spells[spellLevelSelector.selectElement.selectedOptions[0].value][spellNameSelect.selectElement.selectedOptions[0].value])
         }else {
             userWarn("Please select a Spell first by selecting level then spell name!")
         }
     }
 
-    spellLevelSelector.inputElement.onchange = function(event){
+    spellLevelSelector.selectElement.onchange = function(event){
         selectedSpellLevelList = event.target.value;
-        spellSelectContainer.spellLevel = spellLevelSelector.inputElement.selectedOptions[0].value;
-        updateSelector(Object.keys(database.spells[selectedSpellLevelList]), database.spells[selectedSpellLevelList], spellNameSelect.inputElement, null, 'select');
+        spellSelectContainer.spellLevel = spellLevelSelector.selectElement.selectedOptions[0].value;
+        updateSelector(Object.keys(database.spells[selectedSpellLevelList]), database.spells[selectedSpellLevelList], spellNameSelect.selectElement, null, 'select');
     }
 
-    spellNameSelect.inputElement.onchange = () => {
-        spellSelectContainer.spellName = spellNameSelect.inputElement.selectedOptions[0].value;
+    spellNameSelect.selectElement.onchange = () => {
+        spellSelectContainer.spellName = spellNameSelect.selectElement.selectedOptions[0].value;
     }
 
-    spellSelectContainer.inputElement = {
-        level: spellLevelSelector.inputElement,
-        name: spellNameSelect.inputElement
+    spellSelectContainer.getValue = function() {
+        // Return the current value of the input element
+        return {
+            level: spellLevelSelector.getValue(),
+            name: spellNameSelect.getValue(),
+        }
+    }
+
+    spellSelectContainer.setValue = function(value) {
+        // Set the value of the input element
+        if (value) {
+            spellLevelSelector.setValue(value.level);
+            spellNameSelect.setValue(value.name);
+        } else {
+            spellLevelSelector.setValue(null);
+            spellNameSelect.setValue(null);
+        }
     }
 
     return spellSelectContainer;
-}
-
-function getSpellSelectValue(spellSelectContainer){
-    return {
-        level: spellSelectContainer.inputElement.level.value,
-        name: spellSelectContainer.inputElement.name.value
-    }
-}
-
-function setSpellSelectValue(spellSelectContainer, value){
-    spellSelectContainer.inputElement.level.value = value.level;
-    spellSelectContainer.inputElement.name.value = value.name;
 }
 
 function createImageButton(fontSize, {icon=null, source=null, custom_padding = 8, toolTip=null}) {

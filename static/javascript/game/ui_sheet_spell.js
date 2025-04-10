@@ -131,98 +131,90 @@ function createSpellCard(spell) {
         if(effect.type === extraEffectsList.Aura){
             const aura = effect.effect
             effectInfo =  `
-            <ul>
-                <ul class="effect">
-                <strong>Description: </strong>${effect.description}
-                </ul>
-                <ul class="effect">
-                <strong>Area: </strong>${aura.area}
-                </ul>
-                <ul class="effect">
-                <strong>Effect: </strong>${Object.entries(effectTypes).find(([key, val]) => val === aura.effectType)[0]}
-                </ul>
-                <ul class="effect">
-                <strong>Value: </strong>${aura.value.value}
-                </ul>
-                <ul class="effect">
-                <strong>Duration: </strong>${getDuration(aura.duration)}
-                </ul>
-                <ul class="effect">
-                <strong>Triggered With: </strong>${getListValues(aura.triggerActions, characterActions)}
-                </ul>
-                <ul class="effect">
-                <strong>Target: </strong>${getListValues(aura.targetList, targetTypes)}
-                </ul>
-                <ul class="effect">
-                <strong>Can Spread: </strong>${aura.canSpread ? 'Yes' : 'No'}
-                </ul>  
-            <ul> 
-            </div>
+            <ul class="effect">
+            <strong>Description: </strong>${effect.description}
+            </ul>
+            <ul class="effect">
+            <strong>Area: </strong>${aura.area}
+            </ul>
+            <ul class="effect">
+            <strong>Effect: </strong>${Object.entries(effectTypes).find(([key, val]) => val === aura.effectType)[0]}
+            </ul>
+            <ul class="effect">
+            <strong>Value: </strong>${aura.value.value}
+            </ul>
+            <ul class="effect">
+            <strong>Duration: </strong>${getDuration(aura.duration)}
+            </ul>
+            <ul class="effect">
+            <strong>Triggered With: </strong>${getListValues(aura.triggerActions, characterActions)}
+            </ul>
+            <ul class="effect">
+            <strong>Target: </strong>${getListValues(aura.targetList, targetTypes)}
+            </ul>
+            <ul class="effect">
+            <strong>Can Spread: </strong>${aura.canSpread ? 'Yes' : 'No'}
+            </ul>  
            `
         } else if (effect.type === extraEffectsList["Buff/Debuff"]) {
             const buffDebuff = effect.effect;
             effectInfo = `
-            <ul>
-                <ul class="effect">
-                <strong>Description: </strong>${effect.description}
-                </ul>
-                <ul class="effect">
-                <strong>Type: </strong>${Object.entries(effectTypes).find(([key, val]) => val === buffDebuff.effectType)[0]}
-                </ul>
-                <ul class="effect">
-                <strong>Value: </strong>${buffDebuff.value.value}
-                </ul>
-                <ul class="effect">
-                <strong>Duration: </strong>${getDuration(buffDebuff.duration)}
-                </ul>
-                <ul class="effect">
-                <strong>Triggered With: </strong>${getListValues(buffDebuff.triggerActions, characterActions)}
-                </ul>
+            <ul class="effect">
+            <strong>Description: </strong>${effect.description}
             </ul>
+            <ul class="effect">
+            <strong>Type: </strong>${Object.entries(effectTypes).find(([key, val]) => val === buffDebuff.effectType)[0]}
+            </ul>
+            <ul class="effect">
+            <strong>Value: </strong>${buffDebuff.value.value}
+            </ul>
+            <ul class="effect">
+            <strong>Duration: </strong>${getDuration(buffDebuff.duration)}
+            </ul>
+            <ul class="effect">
+            <strong>Triggered With: </strong>${getListValues(buffDebuff.triggerActions, characterActions)}
+            </ul>
+
             `;
         } else if (effect.type === extraEffectsList.Cast) {
             const cast = effect.effect;
             effectInfo = `
-            <ul>
-                <ul class="effect">
-                <strong>Description: </strong>${effect.description}
-                </ul>
-                <ul class="effect">
-                <strong>Spell: </strong>${cast.spell}
-                </ul>
-                <ul class="effect">
-                <strong>Target List: </strong>${getListValues(cast.targetListInOrder, targetOrderList)}
-                </ul>
+            <ul class="effect">
+            <strong>Description: </strong>${effect.description}
+            </ul>
+            <ul class="effect">
+            <strong>Spell: </strong>${cast.spell}
+            </ul>
+            <ul class="effect">
+            <strong>Target List: </strong>${getListValues(cast.targetListInOrder, targetOrderList)}
             </ul>
             `;
         } else if (effect.type === extraEffectsList.Summon) {
             const summon = effect.effect;
             effectInfo = `
-            <ul>
-                <ul class="effect">
-                <strong>Description: </strong>${effect.description}
-                </ul>
-                <ul class="effect">
-                <strong>Summoned Entity: </strong>${summon.id}
-                </ul>
-                <ul class="effect">
-                <strong>Duration: </strong>${getDuration(summon.duration)}
-                </ul>
-                <ul class="effect">
-                <strong>Quantity: </strong>${summon.quantity}
-                </ul>
+            <ul class="effect">
+            <strong>Description: </strong>${effect.description}
+            </ul>
+            <ul class="effect">
+            <strong>Summoned Entity: </strong>${summon.id}
+            </ul>
+            <ul class="effect">
+            <strong>Duration: </strong>${getDuration(summon.duration)}
+            </ul>
+            <ul class="effect">
+            <strong>Quantity: </strong>${summon.quantity}
             </ul>
             `;
         }
 
 
         return `
-            <div class="column vertical">
-                <ul class="effect">
+            <ul class="column">
+                <li class="effect">
                     <strong>${effect.name}</strong>
-                </ul>
+                </li>
                 ${effectInfo}
-            </div>
+            </ul>
         `
     }
 
@@ -364,14 +356,14 @@ function displaySpellCreate(spell = new Spell()) {
 
     function getSpellChanges(){
         const spell = new Spell();
-        spell.name = formName.inputElement.value;
-        spell.availableClasses = selectorGetOptionsWithCheckmark(formClasses.inputElement);
-        spell.modifierStats = selectorGetOptionsWithCheckmark(formModifierStat.inputElement);
-        spell.baseDamageType = formBaseDamageType.inputElement.selectedOptions[0].value;
-        spell.baseDamage = getDamageValue(formBaseDamage.inputElement);
-        spell.description = formDescription.inputElement.value;
-        spell.castDuration = getDurationValue(formSpellCastDuration.inputElement);
-        spell.actionCost = formActionCost.inputElement.selectedOptions[0].value;
+        spell.name = formName.getValue()
+        spell.availableClasses = formClasses.getValue();
+        spell.modifierStats = formModifierStat.getValue();
+        spell.baseDamageType = formBaseDamageType.getValue();
+        spell.baseDamage = formBaseDamage.getValue();
+        spell.description = formDescription.getValue();
+        spell.castDuration = formSpellCastDuration.getValue();
+        spell.actionCost = formActionCost.getValue();
         spell.spendManaEffects = {};
         for(let i = 0; i < selectableSpellLevels.length; i++){
             const index = parseInt(selectableSpellLevels[i])
@@ -392,14 +384,14 @@ function displaySpellCreate(spell = new Spell()) {
             }
         }
         spell.spellPattern = new SpellPattern({
-            pattern: spellPatternSelect.inputElement.selectedOptions[0].value,
-            range: spellCastArea.inputElement.value,
-            area: spellCastWidth.inputElement.value,
-            castType: spellCastType.inputElement.selectedOptions[0].value,
-            canTarget: getOrderedSelectedOptions(spellCanTarget.inputElement),
+            pattern: spellPatternSelect.getValue(),
+            range: spellCastArea.getValue(),
+            area: spellCastWidth.getValue(),
+            castType: spellCastType.getValue(),
+            canTarget: spellCanTarget.getValue(),
         })
-        spell.casterRolls = selectorGetOptionsWithCheckmark(spellCasterRolls.inputElement);
-        spell.targetRolls = selectorGetOptionsWithCheckmark(spellTargetRolls.inputElement);
+        spell.casterRolls = spellCasterRolls.getValue();
+        spell.targetRolls = spellTargetRolls.getValue();
         return spell;
     }
 
@@ -532,7 +524,7 @@ function displaySpellCreate(spell = new Spell()) {
     formBaseDamage.style.display = "none"
     formDamage.appendChild(formBaseDamage);
     
-    formBaseDamageType.inputElement.onchange =  (event) => {
+    formBaseDamageType.selectElement.onchange =  (event) => {
         const value = event.target.value
         if(value != damageElements.NONE){
             formBaseDamage.style.display = "flex"
@@ -725,8 +717,8 @@ function displaySpellCreate(spell = new Spell()) {
     userInterface.appendChild(spellCreateSheet);
 
     function updateElements(){ //Future seviye görünümleri değiştirielcek
-        const spellType = selectSpellType.inputElement.selectedOptions[0].value;
-        const spellLevel = parseInt(selectSpellLevel.inputElement.selectedOptions[0].value);
+        const spellType = selectSpellType.selectElement.selectedOptions[0].value;
+        const spellLevel = parseInt(selectSpellLevel.selectElement.selectedOptions[0].value);
         
         // Spell Type Related
         if(spellType == spellTypes.CONJURE){
@@ -1056,12 +1048,12 @@ function effectBuilder(id, initalEffect = null) {
         contentAddtiionalEffect.effects = [];
         for(let i = 0; i < effectsTabWindow.tabList.length; i++){
             const tabContent = getContentContainer(effectsTabWindow, effectsTabWindow.tabList[i]);
-            const effectType = tabContent.inputElement.effectType.inputElement.selectedOptions[0].value;
+            const effectType = tabContent.inputElement.effectType.selectElement.selectedOptions[0].value;
             let effectProperties = {}
             let contenteEffect = null;
             if(effectType == effectTypes.BUFF){
                 effectProperties = {
-                    type: tabContent.inputElement.effectProperties.inputElement.type.inputElement.selectedOptions[0].value,
+                    type: tabContent.inputElement.effectProperties.inputElement.type.selectElement.selectedOptions[0].value,
                     value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
                     duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value
                 }
@@ -1070,15 +1062,15 @@ function effectBuilder(id, initalEffect = null) {
                 effectProperties = {
                     area: tabContent.inputElement.effectProperties.inputElement.area.inputElement.value,
                     duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value,
-                    auraType: tabContent.inputElement.effectProperties.inputElement.type.inputElement.selectedOptions[0].value,
+                    auraType: tabContent.inputElement.effectProperties.inputElement.type.selectElement.selectedOptions[0].value,
                     value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
-                    target: tabContent.inputElement.effectProperties.inputElement.target.inputElement.selectedOptions[0].value,
+                    target: tabContent.inputElement.effectProperties.inputElement.target.selectElement.selectedOptions[0].value,
                     canSpread: tabContent.inputElement.effectProperties.inputElement.canSpread.inputElement.checked
                 }
                 contenteEffect = new Aura(effectProperties)
             }else if(effectType == effectTypes.CAST){
                 effectProperties = {
-                    spell: tabContent.inputElement.effectProperties.inputElement.spell.inputElement.selectedOptions[0].value,
+                    spell: tabContent.inputElement.effectProperties.inputElement.spell.selectElement.selectedOptions[0].value,
                     targetList: getOrderedSelectedOptions(tabContent.inputElement.effectProperties.inputElement.targetList.inputElement)
                 }
                 contenteEffect = new Cast(effectProperties)
