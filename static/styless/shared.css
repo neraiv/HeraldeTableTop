@@ -9,10 +9,6 @@
     flex-direction: column; /* This is the default, so you can omit it */
 }
 
-.ui{
-    pointer-events: auto;
-}
-
 .spacer {
     flex-grow: 1; /* Allow this element to take up all available space */
 }
@@ -48,37 +44,6 @@
     background-color: yellow !important;
 }
 
-.font-red {
-    color: red; /* Sets the text color to red */
-}
-
-.font-mana {
-    color: rgb(18, 52, 146); /* Sets the text color to red */
-}
-
-
-.font-description-1 {
-    font-family: 'Georgia', serif; /* Elegant and readable serif font */
-    color: #333; /* Dark grey for text color to ensure readability */
-    font-size: 1em; /* Adjust size as needed */
-    line-height: 1.5; /* Spacing between lines for readability */
-}
-
-.font-description-2 {
-    font-family: 'Cinzel', serif; /* Decorative serif font for a fantasy feel */
-    color: #123456; /* Dark blue color for a mystical look */
-    font-size: 1em; /* Adjust size as needed */
-    line-height: 1.5; /* Spacing between lines for readability */
-}
-
-.bold {
-    font-weight: bold; 
-}
-
-.normal {
-    font-weight: normal;
-}
-
 .test-dot {
     position: absolute;
     width: 6px;
@@ -87,19 +52,6 @@
     border-radius: 50%;
     background-color: red;
     z-index: 1500;
-}
-
-/* Child Creators */
-.selection-bar{
-    width: 99%;
-    height: 50px;
-    display: flex; /* Use flexbox layout */
-    flex-direction: row; /* Arrange items in a row */
-    align-items: center;
-    text-align: center;
-    justify-content: center;
-    overflow-y: auto; /* Prevent vertical scrolling */
-    gap: 10px;
 }
 
 .image-button {
@@ -130,28 +82,6 @@
     background: none; /* Remove icon background */
     color: inherit; /* Inherit the color from the parent button */
     line-height: 1; /* Prevent extra spacing around the icon */
-}
-
-.menu-name {
-    font-size: 20px;
-    font-weight: bold;
-    color: #333; /* Dark gray color for the text */
-    text-transform: uppercase; /* Uppercase for a modern look */
-    font-family: 'Arial', sans-serif; /* Use a clean, modern font */
-    padding: 5px 10px; /* Add some padding around the name */
-}
-
-.menu-bar {
-    margin-top: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    width: 95%;
-    border-radius: 5px; /* Slightly rounded corners for the background */
-    background-color: #f0f0f0; /* Light background color for contrast */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
-    transition: transform 0.3s ease-in-out; /* Smooth transition for interactions */
 }
 
 .dropdown-menu {
@@ -212,11 +142,7 @@
 }
 
 .form-group input {
-    width: 60%;
-    height: 90%;
-    padding: 8px;
     box-sizing: border-box;
-    text-align: left; /* Center the text horizontally */
     -moz-appearance: textfield; /* Firefox */
     appearance: textfield; /* Chrome, Safari, Edge */
     font-weight: bold;
@@ -224,11 +150,7 @@
 }
 
 .form-group textarea {
-    width: 60%;
-    height: 90%;
-    padding: 8px;
     box-sizing: border-box;
-    text-align: left; /* Center the text horizontally */
     -moz-appearance: textfield; /* Firefox */
     appearance: textfield; /* Chrome, Safari, Edge */
     font-weight: bold;
@@ -236,13 +158,17 @@
 }
 
 .form-group select {
-    width: 60%;
-    height: 90%;
-    padding: 8px;
     box-sizing: border-box;
-    text-align: left; /* Center the text horizontally */
     font-weight: bold;
     font-size: 12px; /* Optional: adjust font size to improve readability */
+}
+
+.input-element{
+    min-height: 39px;
+    width: 60%;
+    height: 98%;
+    padding: 8px;
+    text-align: left;
 }
 
 .form-group input::-webkit-inner-spin-button,
@@ -338,14 +264,4 @@
 .tab-content.active {
     display: flex;
     flex-direction: column; /* Ensure content is displayed in a column */
-}
-
-/* Child Creators END */
-
-.input-element{
-    min-height: 39px;
-    width: 60%;
-    height: 98%;
-    padding: 8px;
-    text-align: left;
 }

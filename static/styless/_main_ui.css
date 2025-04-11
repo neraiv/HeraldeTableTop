@@ -1,0 +1,33 @@
+html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden; /* Prevent scrolling of the body */
+}
+
+h2 {
+    padding: 5px; /* Reduce the padding inside the h2 element */
+    margin: 10px 0; /* Adjust the margin outside the h2 element */
+    /* You can customize the padding and margin values as needed */
+}
+
+#user-interface {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden; /* Prevent scrolling of the body */
+}
+
+.menubar{
+    position: absolute;
+    z-index: 10;
+}
+

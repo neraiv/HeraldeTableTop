@@ -1,0 +1,29 @@
+.description-container {
+    position: absolute;
+    display: block;
+    padding: 15px;
+    border: 2px solid #603B1D; /* Dark brown border for D&D style */
+    background-color: #F5CBA7; /* Skin tone background color */
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4); /* Subtle shadow for depth */
+    font-family: Georgia, serif; /* Fantasy-themed font */
+    color: #2C3E50; /* Dark text color for readability */
+    max-width: 250px; /* Limit width to fit typical D&D-style popup */
+    max-height: 80vh; /* Limit height to 80% of the viewport height */
+    overflow-y: auto; /* Makes content scrollable vertically if it's too tall */
+    z-index: 1000; /* Ensure it appears on top */
+}
+
+.font-description-1 {
+    font-family: 'Georgia', serif; /* Elegant and readable serif font */
+    color: #333; /* Dark grey for text color to ensure readability */
+    font-size: 1em; /* Adjust size as needed */
+    line-height: 1.5; /* Spacing between lines for readability */
+}
+
+.font-description-2 {
+    font-family: 'Cinzel', serif; /* Decorative serif font for a fantasy feel */
+    color: #123456; /* Dark blue color for a mystical look */
+    font-size: 1em; /* Adjust size as needed */
+    line-height: 1.5; /* Spacing between lines for readability */
+}

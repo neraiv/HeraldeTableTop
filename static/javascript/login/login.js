@@ -3,7 +3,7 @@
 let urlParams = null
 
 const loginButton = document.getElementById('login-button')
-const gameButton = document.getElementById('game-button')
+const gameButton = document.getElementById('enter-button')
 const editorButton = document.getElementById('editor-button')
 
 const userName = document.getElementById('username')
@@ -33,6 +33,8 @@ function sendLoginRequest(){
             alert('Login failed: '+ data.error);
         } else {
             userData = data;
+            gameButton.style.display = "block"
+            editorButton.style.display = "block"
         }
     }).catch(error => {
         console.error('Error:', error);

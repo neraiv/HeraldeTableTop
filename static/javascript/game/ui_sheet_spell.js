@@ -357,10 +357,9 @@ function displaySpellCreate(spell = new Spell()) {
     function getSpellChanges(){
         const spell = new Spell();
         spell.name = formName.getValue()
-        spell.availableClasses = formClasses.getValue();
-        spell.modifierStats = formModifierStat.getValue();
-        spell.baseDamageType = formBaseDamageType.getValue();
-        spell.baseDamage = formBaseDamage.getValue();
+        spell.classess = formClasses.getValue();
+        spell.modifiers = formModifierStat.getValue();
+        spell.damage = new Damage({type: formBaseDamageType.getValue(), value: formBaseDamage.getValue()});
         spell.description = formDescription.getValue();
         spell.castDuration = formSpellCastDuration.getValue();
         spell.actionCost = formActionCost.getValue();
@@ -373,11 +372,11 @@ function displaySpellCreate(spell = new Spell()) {
             const targetEffectList = casterEffectsTabbedWindowContainer.querySelector('.additional-effect-list-container');
             const casterEffectList = targetEffectsTabbedWindowContainer.querySelector('.additional-effect-list-container');
             
-            for(let targetEffect of targetEffectList.elementsList.children){
-                target.push(new Effect(targetEffect.effect))
+            for(let listElement of targetEffectList.elementsList.children){
+                target.push(new Effect(listElement.effect))
             }
-            for(let casterEffect of casterEffectList.elementsList.children){
-                caster.push(new Effect(casterEffect.effect))
+            for(let listElement of casterEffectList.elementsList.children){
+                caster.push(new Effect(listElement.effect))
             }
             if(target.length > 0 || caster.length > 0){
                 spell.spendManaEffects[index] = {target, caster}
@@ -419,7 +418,7 @@ function displaySpellCreate(spell = new Spell()) {
     form.style.padding = '5px';
     spellCreateSheetContent.appendChild(form);
 
-    let maxSpellLevel = serverRules.spells.max;
+    let maxSpellLevel = database.serverRules.spells.max;
 
     const rowSpellTypeLevel = document.createElement('div');
     rowSpellTypeLevel.classList.add('row');
@@ -439,7 +438,7 @@ function displaySpellCreate(spell = new Spell()) {
     rowSpellTypeLevel.appendChild(selectSpellType);
 
     const serverRulesSpellsRange = [];
-    for (let level = serverRules.spells.min; level < serverRules.spells.max; level++){
+    for (let level = database.serverRules.spells.min; level < database.serverRules.spells.max; level++){
         serverRulesSpellsRange.push(level);
     }
     const selectSpellLevel = createInputSelector('Spell Level: ', serverRulesSpellsRange, serverRulesSpellsRange, {
@@ -629,7 +628,7 @@ function displaySpellCreate(spell = new Spell()) {
         const tabContent = getContentContainer(casterEffectsTabbedWindowContainer, selectableSpellLevels[i])
         tabContent.innerHTML = '';
         const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
-        const casterEffects = createeffectListContainer(tabContent.id + '-additional-effect-caster-effect-list-container',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
+        const casterEffects = createeffectListContainer(tabContent.id + '-ext-ef',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
         if(spell && spell.spendManaEffects &&spell.spendManaEffects[index] && spell.spendManaEffects[index].caster){
             for(let effect of spell.spendManaEffects[index].caster){
                 const listElement = createeffectListElement(effect)
@@ -736,14 +735,14 @@ function displaySpellCreate(spell = new Spell()) {
         // Spell Level Related
         let displayedLevels = []
 
-        for(let i = spellLevel; i < serverRules.spells.max; i++){
+        for(let i = spellLevel; i < database.serverRules.spells.max; i++){
             displayedLevels.push(i)
         }
 
         // // Filter out any selectableSpellLevels lower than initialSpell.spellLvl
         displayedLevels = displayedLevels.filter(level => (parseInt(level) <= parseInt(maxSpellLevel)));
 
-        for (let level = serverRules.spells.min; level < serverRules.spells.max; level++){
+        for (let level = database.serverRules.spells.min; level < database.serverRules.spells.max; level++){
             if(displayedLevels.includes(level)){
                 changeVisibiltyOfTab(targetEffectsTabbedWindowContainer, level, true)
                 changeVisibiltyOfTab(casterEffectsTabbedWindowContainer, level, true)
@@ -813,7 +812,7 @@ function createeffectListContainer(id, titleStr = null, buttonNames = []){
     return additionalElementListContainer;
 }
 
-function createeffectListElement(effect, edit_icon = 'edit.png', close_icon = 'close.png'){ 
+function createeffectListElement(effect = new Effect()){ 
     
     // Future additnal effect create bağlanacak
     const listElement = document.createElement('div');
@@ -823,7 +822,7 @@ function createeffectListElement(effect, edit_icon = 'edit.png', close_icon = 'c
     listElement.classList.add('row');
     listElement.classList.add('vertical');
 
-    listElement.effect = effect ? effect : new Effect()
+    listElement.effect = effect 
 
     const labeledElement = document.createElement('div');
     labeledElement.classList.add('row');
@@ -840,55 +839,50 @@ function createeffectListElement(effect, edit_icon = 'edit.png', close_icon = 'c
     label.textContent = "New Additional Effect";
     labeledElement.appendChild(label)
 
-    if(effect){
-        label.textContent = effect.name;
-        let effectImageList = new Set();
-        for(const effect of effect.effects){
-            switch (effect.type) {
-                case effectTypes.BUFF:
-                    // Code to run if expression === value1
-                    effectImageList.add("buff_debuff.png")
-                    break;
-                
-                case effectTypes.AURA:
-                    // Code to run if expression === value2
-                    effectImageList.add("aura.png");
-                    break;
-                
-                case effectTypes.CAST:
-                    // Code to run if expression === value3
-                    effectImageList.add("cast.png");
-                    break;
-            }
-        }
-        for(const effectImage of effectImageList){
-            const effectImg = document.createElement('img');
-            effectImg.classList.add('icon');
-            effectImg.style.width = '23px';
-            effectImg.style.height = '23px';
-            effectImg.style.marginRight = '10px';
-            effectImg.src = "static/images/menu-icons/" + effectImage;
-            labeledElement.appendChild(effectImg);
-        }     
-    }
-
-    const editButton = createImageButton('26', {source: `url(static/images/menu-icons/${edit_icon})`, custom_padding: 3});
+    const editButton = createImageButton('26', {source: `url(static/images/menu-icons/edit.png)`, custom_padding: 3});
     listElement.appendChild(editButton);
     editButton.onclick = () => {
-        effectBuilder(Date.now(), listElement);
+        effectBuilder(Date.now(), listElement.effect, listElement);
     }
     
 
-    const removeButton = createImageButton('26', {source: `url(static/images/menu-icons/${close_icon})`, custom_padding: 3});
+    const removeButton = createImageButton('26', {source: `url(static/images/menu-icons/close.png)`, custom_padding: 3});
     listElement.appendChild(removeButton);
     removeButton.onclick = () => {
         listElement.remove()
     }
 
+    listElement.getValue = () => {
+        return listElement.effect
+    }
+
+    listElement.setValue = (effect) => {
+        if(effect){    
+
+            listElement.effect = effect
+
+            label.textContent = effect.name;
+
+            Object.values(extraEffectsList).forEach((value) => {
+                if (value === effect.type) {
+                    const effectImg = document.createElement('img');
+                    effectImg.classList.add('icon');
+                    effectImg.style.width = '23px';
+                    effectImg.style.height = '23px';
+                    effectImg.style.marginRight = '10px';
+                    effectImg.src = "static/images/menu-icons/" + value.toLowerCase() + ".png";
+                    labeledElement.appendChild(effectImg);
+                    return;
+                }
+            });   
+        }
+    }
+
+
     return listElement;
 }
 
-function effectBuilder(id, initalEffect = null) {
+function effectBuilder(id, effect = new Effect(), parentElement = null) {
 
     const itemId = id;
 
@@ -922,9 +916,9 @@ function effectBuilder(id, initalEffect = null) {
     topBar.appendChild(effectSaveButton);
 
     effectSaveButton.onclick = () => {
-        const effect = getEffectChanges();
-        if(effect){
-            console.log(effect);
+        const changes = getEffectChanges();
+        if(changes){
+            console.log(changes);
         }
     }
 
@@ -961,7 +955,7 @@ function effectBuilder(id, initalEffect = null) {
     formDescription.style.backgroundColor = formColor;
     effectBuilderForm.appendChild(formDescription);
 
-    const formType = createInputSelector("Effect Type: ", Object.values(extraEffectsList, Object.keys(extraEffectsList)), {
+    const formType = createInputSelector("Effect Type: ", Object.values(extraEffectsList), Object.keys(extraEffectsList), {
         id: itemId + "-type"
     })
     formType.classList.add('box-circular-border');
@@ -988,6 +982,8 @@ function effectBuilder(id, initalEffect = null) {
     effectData.style.backgroundColor = formColor;
     effectContainer.appendChild(effectData);
 
+    let extraEffectContainer = null
+
     const formTypeChangeHandler = async (event) => {
         if (effectData.innerHTML !== "") {
             const data = await userAskQuestion(
@@ -1001,14 +997,14 @@ function effectBuilder(id, initalEffect = null) {
     
             if (data.buttonText === "Abort") {
                 // ⛔ Temporarily remove listener
-                formType.inputElement.removeEventListener("change", formTypeChangeHandler);
+                formType.selectElement.removeEventListener("change", formTypeChangeHandler);
     
                 // 🧠 Set old value without triggering handler again
-                formType.inputElement.value = previousFormTypeValue;
+                formType.selectElement.value = previousFormTypeValue;
     
                 // ✅ Re-attach listener after a short delay
                 setTimeout(() => {
-                    formType.inputElement.addEventListener("change", formTypeChangeHandler);
+                    formType.selectElement.addEventListener("change", formTypeChangeHandler);
                 }, 0);
     
                 return;
@@ -1021,64 +1017,37 @@ function effectBuilder(id, initalEffect = null) {
         // Replace content
         effectData.innerHTML = "";
     
-        let newContent;
         if (event.target.value === "Buff or Debuff") {
-            newContent = createBuffDebuffForm(itemId);
+            extraEffectContainer = createBuffDebuffForm(itemId);
         } else if (event.target.value === "Aura") {
-            newContent = createAuraForm(itemId);
+            extraEffectContainer = createAuraForm(itemId);
         } else if (event.target.value === "Make Cast") {
-            newContent = createMakeCastForm(itemId);
+            extraEffectContainer = createMakeCastForm(itemId);
+        } else if (event.target.value === "Summon") {
+            extraEffectContainer = createSummonForm(itemId);
         }
     
-        if (newContent) {
-            effectData.appendChild(newContent);
+        if (extraEffectContainer) {
+            effectData.appendChild(extraEffectContainer);
         }
     };
     
     // 👇 Attach once
-    formType.inputElement.addEventListener("change", formTypeChangeHandler);
+    formType.selectElement.addEventListener("change", formTypeChangeHandler);
     
-    let previousFormTypeValue = formType.inputElement.value;    
+    let previousFormTypeValue = formType.selectElement.value;    
 
     function getEffectChanges(){
-        const contentAddtiionalEffect = new Effect();
-        contentAddtiionalEffect.name = formName.inputElement.value;
-        contentAddtiionalEffect.description = formDescription.inputElement.value;
-        contentAddtiionalEffect.characterAction = getOrderedSelectedOptions(triggerActions.inputElement);
-        contentAddtiionalEffect.effects = [];
-        for(let i = 0; i < effectsTabWindow.tabList.length; i++){
-            const tabContent = getContentContainer(effectsTabWindow, effectsTabWindow.tabList[i]);
-            const effectType = tabContent.inputElement.effectType.selectElement.selectedOptions[0].value;
-            let effectProperties = {}
-            let contenteEffect = null;
-            if(effectType == effectTypes.BUFF){
-                effectProperties = {
-                    type: tabContent.inputElement.effectProperties.inputElement.type.selectElement.selectedOptions[0].value,
-                    value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
-                    duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value
-                }
-                contenteEffect = new BuffDebuff(effectProperties)
-            }else if(effectType == effectTypes.AURA){
-                effectProperties = {
-                    area: tabContent.inputElement.effectProperties.inputElement.area.inputElement.value,
-                    duration: tabContent.inputElement.effectProperties.inputElement.duration.inputElement.value,
-                    auraType: tabContent.inputElement.effectProperties.inputElement.type.selectElement.selectedOptions[0].value,
-                    value: tabContent.inputElement.effectProperties.inputElement.value.inputElement.value,
-                    target: tabContent.inputElement.effectProperties.inputElement.target.selectElement.selectedOptions[0].value,
-                    canSpread: tabContent.inputElement.effectProperties.inputElement.canSpread.inputElement.checked
-                }
-                contenteEffect = new Aura(effectProperties)
-            }else if(effectType == effectTypes.CAST){
-                effectProperties = {
-                    spell: tabContent.inputElement.effectProperties.inputElement.spell.selectElement.selectedOptions[0].value,
-                    targetList: getOrderedSelectedOptions(tabContent.inputElement.effectProperties.inputElement.targetList.inputElement)
-                }
-                contenteEffect = new Cast(effectProperties)
-            }
-                  
-            contentAddtiionalEffect.effects.push(contenteEffect)
+        const effect = new Effect();
+        effect.name = formName.getValue();
+        effect.description = formDescription.getValue();
+        effect.type = formType.getValue();
+        if (extraEffectContainer){
+            effect.effect = extraEffectContainer.getValue();
+        }else{
+            userWarn("Please select and create effect.")
         }
-        return contentAddtiionalEffect;
+        return effect;
     }
 }
 
@@ -1113,11 +1082,22 @@ function createBuffDebuffForm(parentId, initial = null){
     effectTrigerActions.classList.add('box-circular-border');
     form.appendChild(effectTrigerActions)
 
-    form.inputElement = {
-        type: effectTypeSelector,
-        value: effectValue,
-        duration: effectDuration,
-        triggerActions : effectTrigerActions
+    form.getValue = () => {
+        const buffDebuff = new BuffDebuff()
+        buffDebuff.effectType = effectTypeSelector.getValue()
+        buffDebuff.value = effectValue.getValue()
+        buffDebuff.duration = effectDuration.getValue()
+        buffDebuff.triggerActions = effectTrigerActions.getValue()
+        return buffDebuff
+    }
+
+    form.setValue = (buffDebuff) => {
+        if(buffDebuff){
+            effectTypeSelector.setValue(buffDebuff.effectType)
+            effectValue.setValue(buffDebuff.value)
+            effectDuration.setValue(buffDebuff.duration)
+            effectTrigerActions.setValue(buffDebuff.triggerActions)
+        }
     }
 
     return form
@@ -1171,13 +1151,26 @@ function createAuraForm(parentId, initial = null) {
     effectCanSpread.classList.add("box-circular-border")
     form.appendChild(effectCanSpread);
 
-    form.inputElement = {
-        area: effectArea,
-        duration: effectDuration,
-        type: effectTypeSelector,
-        value: effectValue,
-        target: effectTargetSelector,
-        canSpread: effectCanSpread
+    form.getValue = () => {
+        const aura = new Aura()
+        aura.area = effectArea.getValue()
+        aura.duration = effectDuration.getValue()
+        aura.effectType = effectTypeSelector.getValue()
+        aura.value = effectValue.getValue()
+        aura.targetList = effectTargetSelector.getValue()
+        aura.canSpread = effectCanSpread.getValue()
+        return aura
+    }
+    
+    form.setValue = (aura) => {
+        if(aura){
+            effectArea.setValue(aura.area)
+            effectDuration.setValue(aura.duration)
+            effectTypeSelector.setValue(aura.effectType)
+            effectValue.setValue(aura.value)
+            effectTargetSelector.setValue(aura.targetList)
+            effectCanSpread.setValue(aura.canSpread)
+        }
     }
 
     return form
@@ -1193,7 +1186,7 @@ function createMakeCastForm(parentId, intial = null){
     form.style.backgroundColor = formColor;
 
     const effectSpellSelect = createInputSpellSelect(parentId + '-aditional-effect-cast-spell-name', {
-        initalLevel: serverRules.spells.min
+        initalLevel: database.serverRules.spells.min
     })
     effectSpellSelect.classList.add('box-circular-border');
     form.appendChild(effectSpellSelect);
@@ -1212,5 +1205,63 @@ function createMakeCastForm(parentId, intial = null){
         targetList: effectTargetList
     }
 
+    form.getValue = () => {
+        const makeCast = new Cast()
+        makeCast.spellName, makeCast.mana = effectSpellSelect.getValue()
+        makeCast.targetList = effectTargetList.getValue()
+        return makeCast
+    }
+
+    form.setValue = (makeCast) => {
+        if(makeCast){
+            effectSpellSelect.setValue({mana: makeCast.mana, spellName: makeCast.spellName})
+            effectTargetList.setValue(makeCast.targetList)
+        }
+    }
+
     return form
 }
+
+function createSummonForm(parentId, initial = null){
+    const form = document.createElement("div")
+    form.classList.add('column');
+    form.classList.add('vertical');
+    form.classList.add('form-group');
+    form.style.width = "100%"
+    form.style.gap = "1rem"
+    form.style.backgroundColor = formColor;
+
+    const hep = new Summon()
+
+    const formSelectSummonSource = createInputSelector('Summon Source:', Object.values(summonSources), Object.keys(summonSources), {
+        id: parentId + '-summon-source',
+        defaultValue: initial ? initial.summonSource : null
+    });
+    formSelectSummonSource.classList.add('box-circular-border');
+    form.appendChild(formSelectSummonSource);
+
+    formSelectSummonSource.selectElement.onchange = (event) => {
+        const value = event.target.value
+        if(value != summonSources.NPC){
+            formSelectSummonSource.style.display = "flex"
+        }else{
+            formSelectSummonSource.style.display = "none"
+        }
+    }
+
+    form.getValue = () => {
+        const makeCast = new Cast()
+        makeCast.spellName, makeCast.mana = effectSpellSelect.getValue()
+        makeCast.targetList = effectTargetList.getValue()
+        return makeCast
+    }
+
+    form.setValue = (makeCast) => {
+        if(makeCast){
+            effectSpellSelect.setValue({mana: makeCast.mana, spellName: makeCast.spellName})
+            effectTargetList.setValue(makeCast.targetList)
+        }
+    }
+
+    return form
+};

@@ -23,7 +23,7 @@ function gameBoardMoveToken(element, x, y, no_request= false){
 
 async function updateLocations(){
 
-    const locations = sceneData.layer.locations
+    const locations = database.sceneData.layer.locations
 
     const portalCompare = compareWithDb(gameSceneData.portals.map((portal) => portal.id),
                                         Object.keys(locations.portals))
@@ -85,8 +85,8 @@ async function updateFog(){
     // 1. Initialize fog layer (fully black canvas)
     const fogCtx = fogCanvas.getContext('2d');
 
-    fogCanvas.width = parseInt(sceneData.width);  // Actual pixel dimensions
-    fogCanvas.height = parseInt(sceneData.height); // (not CSS size)
+    fogCanvas.width = parseInt(database.sceneData.width);  // Actual pixel dimensions
+    fogCanvas.height = parseInt(database.sceneData.height); // (not CSS size)
 
     // 2. Fill fog layer with solid black
     fogCtx.fillStyle = 'black';
@@ -96,7 +96,7 @@ async function updateFog(){
     // 4. Draw visible areas (holes in the fog)
     fogCtx.globalCompositeOperation = 'destination-out'; // Erase from fog
 
-    sceneData.visibleAreas.forEach(shape => {
+    database.sceneData.visibleAreas.forEach(shape => {
         if (shape.shape === 'circle') {
             // Create radial gradient for soft edges
             const gradient = fogCtx.createRadialGradient(

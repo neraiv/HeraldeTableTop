@@ -21,12 +21,31 @@ atexit.register(db.on_exit)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+connections = {}
+
+@socketio.on('register')
+def handle_register(msg :dict):
+    try:
+        key = msg["key"]
+            
+        userId, userInfo = db.controlKey(key)
+        
+        if userId and userInfo:
+            connections[userId] = request.sid
+            emit("response", {"success": True}, room=request.sid)
+        else:
+            emit("response", {"success": False, "error": "Invalid key."}, room=request.sid)
+    except Exception as e:
+        emit("response", {"success": False, "error": str(e)}, room=request.sid)
+        
+        
 @socketio.on('request')
 def handle_message(msg :dict):
     try:
         key = msg["key"]
         
         userId, userInfo = db.controlKey(key)
+        
         if userId and userInfo:
             msg.pop("key")
             socket_reply, socket_update = db.socket_handler(msg, userId, userInfo)

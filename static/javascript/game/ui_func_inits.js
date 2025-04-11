@@ -5,21 +5,26 @@ async function  initDatabase(initStates){
         const _sessionInfo = await sendRequest({ type: "update" , payload: "session_info"});
         const _serverRules = await sendRequest({type: "update" , payload: "rules"})
         const _sceneData = await sendRequest({type: "update", payload: "scene"})
+        const _register = await sendRequest({event: "register"})
+
+        if (_register.success === true){
+            initStates.register = true
+        }
 
         if (_serverInfo.success === true) {
-            serverInfo = _serverInfo.data;
+            database.serverInfo = _serverInfo.data;
             initStates.serverInfo = true;
         }
         if (_sessionInfo.success === true) {
-            sessionInfo = _sessionInfo.data;
+            database.sessionInfo = _sessionInfo.data;
             initStates.sessionInfo = true;
         }
         if (_serverRules.success === true) {
-            serverRules = _serverRules.data;
+            database.serverRules = _serverRules.data;
             initStates.serverRules = true;
         }
         if(_sceneData.success === true){
-            sceneData = _sceneData.data
+            database.sceneData = _sceneData.data
             initStates.sceneData = true;
         }
 
@@ -30,10 +35,10 @@ async function  initDatabase(initStates){
 
     // Wait for all tasks to complete before returning
     if (Object.values(initStates).every(state => state === true)) {
-        console.log("Chat synchronization started successfully.");
+        console.log("Database initialized successfully.");
         return true;
     } else {
-        console.warn("Failed to start chat synchronization.");
+        console.warn("Failed to initialize database:", initStates);
         return false;
     }
 }
@@ -113,9 +118,9 @@ async function initGameBoardFunctions(){
 async function initGameBoard() {
     console.log("Initializing game board...")  
 
-    const gridSize = sceneData.grid_size
-    const width = sceneData.width
-    const height = sceneData.height
+    const gridSize = database.sceneData.grid_size
+    const width = database.sceneData.width
+    const height = database.sceneData.height
 
     gridBackground.style.backgroundSize = `${gridSize}px ${gridSize}px`;
 
@@ -125,9 +130,6 @@ async function initGameBoard() {
     gameboardContent.style.left = `${-width/2}px`;
 
     gameboardContent.style.transform = `translate(0px, 0px) scale(1)`;
-
-    topBarSceneName.textContent = "Scene Ov"
-    
 }
 
 async function initScene(){
@@ -140,18 +142,19 @@ async function initScene(){
 
     Object.keys(gameSceneData).forEach((key) => gameSceneData[key] = [])
 
-    if(!sceneData.layer) return alert("Layer not found in the scene")
+    if(!database.sceneData.layer) return alert("Layer not found in the scene")
 
-    topBarLayerName.textContent = "Layer Ov"
+    topBarSceneName.textContent = database.sessionInfo.locations[player.charId].currentScene.name
+    topBarLayerName.textContent = "Layer " + database.sessionInfo.locations[player.charId].currentScene.layer
 
-    const background = await addBackground(sceneData.layer.width, sceneData.layer.height, sceneData.layer.x, sceneData.layer.y, "static/images/background/"+sceneData.layer.img)
+    const background = await addBackground(database.sceneData.layer.width, database.sceneData.layer.height, database.sceneData.layer.x, database.sceneData.layer.y, "static/images/background/"+database.sceneData.layer.img)
     
     await updateLocations()
 
     await updateFog()
 
-    if (sceneData.layer.ambiance) {
-        audioAmbiance.src = `static/images/background/${sceneData.layer.ambiance}`;        
+    if (database.sceneData.layer.ambiance) {
+        audioAmbiance.src = `static/images/background/${database.sceneData.layer.ambiance}`;        
     }
     
 }

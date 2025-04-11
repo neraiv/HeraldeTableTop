@@ -70,6 +70,7 @@ bottomBar.style.zIndex = "10"
 const chatButton = createImageButton(40, {icon: "chat"})
 chatButton.id = "ui-chat-button"
 chatButton.style.fontFamily = 'Material Icons Outlined'
+chatButton.style.background = "white"
 bottomBar.appendChild(chatButton);
 
 
@@ -153,6 +154,7 @@ topBar.classList.add("row");
 topBar.style.display = "flex";
 topBar.style.marginTop = "5px";
 topBar.style.gap = "5px";
+topBar.style.zIndex = uiZIndex -1;
 
 const topBarSceneInfo = document.createElement("div");
 topBarSceneInfo.classList.add("column");

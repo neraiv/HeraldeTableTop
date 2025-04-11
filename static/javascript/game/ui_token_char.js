@@ -91,7 +91,7 @@ async function addCharacter(char, width, height, x, y, img = null){
     charToken.appendChild(charTokenInventoryButton)
     initButton(charTokenInventoryButton)
     charTokenInventoryButton.onclick = function(event){
-        displayInventory(char.name, char.id.inventory, event.clientX, event.clientY)
+        displayInventory(char.name, char.inventory, event.clientX, event.clientY)
     }
 
     // Spellbook button -----------------------------------------------------------------------
@@ -109,7 +109,7 @@ async function addCharacter(char, width, height, x, y, img = null){
     initButton(characterWeaponButton)
 
     // Add event listeners
-    if( serverRules.visible_inventories || char.controlledBy === player.userName){ // FUTURE: Check from rules "visible_inventories"
+    if( database.serverRules.visible_inventories || char.controlledBy === player.userName){ // FUTURE: Check from rules "visible_inventories"
         charToken.addEventListener('mouseenter', () => {
             charDisplayHoverButtons({token: charToken})
         });
@@ -140,7 +140,7 @@ async function addCharacter(char, width, height, x, y, img = null){
 function charDropInventory(charId) {
     if(database.chars[charId]){
         const charInfo = database.chars[charId]
-        const charLoaction = sessionInfo.charLocations.find(charLocation => charLocation.charId === charId)
+        const charLoaction = database.sessionInfo.charLocations.find(charLocation => charLocation.charId === charId)
         addObject(new Inventory(charInfo.char.inventory), charLoaction.x + charInfo.width / 2 - 12.5, charLoaction.y + charInfo.height / 2 - 12.5) // -12.5 is half of the pouch size
         charInfo.char.inventory.clear()
     }else{

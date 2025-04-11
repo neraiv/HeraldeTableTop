@@ -1,14 +1,7 @@
 const godLevelServerDomain = "https://heraldednd.wuaze.com/"
 let player = {}
-let serverRules = {}
-let serverInfo = {}
-let sessionInfo = {}
-let sceneData = {}
-
-let listSpellNames = null
 
 // UI 
-let chatData = []
 const audioAmbiance = new Audio();
 
 const gameboardContent = document.getElementById('gameboard-content');
@@ -38,9 +31,18 @@ const boardEvent = {
 }
 
 const updates = {
-    chat: true,
-    scene: [],
-    turnStatus: {}
+    chat: {
+        requires: false,
+        data: null
+    },
+    scene : {
+        requires: false,
+        data: []
+    },
+    turnStatus: {
+        requires: false,
+        data: {}
+    },
 }
 
 const database = {
@@ -48,12 +50,16 @@ const database = {
     chars : {},
     npcs : {},
     dialogs : {},
-    spells: {}
+    spells: {},
+    sceneData :{},
+    sessionInfo : {},
+    serverInfo : {},
+    serverRules: {}
 }
 
 const gameSceneData = {
     portals : [],
     chars : [],
     objects : [],
-    npcs: []
+    npcs: [],
 }

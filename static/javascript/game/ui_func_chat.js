@@ -46,14 +46,14 @@ function addMessageToChat(chatMessage, senderName, timestamp) {
 async function updateChatMessages(){
     const _sessionInfo = await sendRequest({ type: "update" , payload: "session_info"});
     if(_sessionInfo.success === true){
-        sessionInfo = _sessionInfo.data
-        const diff = parseInt(sessionInfo.chat_idx, 10) - parseInt(chat.last_idx, 10) - 1 ;
-        const chatData = await sendRequest({type: "chat_get", payload: {start: sessionInfo.chat_idx, length: diff}})
+        database.sessionInfo = _sessionInfo.data
+        const diff = parseInt(database.sessionInfo.chat_idx, 10) - parseInt(chat.last_idx, 10) - 1 ;
+        const chatData = await sendRequest({type: "chat_get", payload: {start: database.sessionInfo.chat_idx, length: diff}})
         if (chatData.success === true){
             for (const data of chatData.data) {
                 addMessageToChat(data.message, data.user, data.timestamp)
             }
-            chat.last_idx = sessionInfo.chat_idx;
+            chat.last_idx = database.sessionInfo.chat_idx;
             return true
         }
     }

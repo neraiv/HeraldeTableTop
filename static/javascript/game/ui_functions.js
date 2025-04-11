@@ -120,10 +120,10 @@ logOutButton.onclick = async (event) => {
             await sendRequest({type: 'status', payload: "sync"})
             
             // Chat updates
-            if(updates.chat){
+            if(updates.chat.requires){
                 const success = await updateChatMessages()
                 if (success) {
-                    updates.chat = false;
+                    updates.chat.requires = false;
                 }
             }
             if(updates.reinit){
@@ -131,7 +131,7 @@ logOutButton.onclick = async (event) => {
                 const _sceneData = await sendRequest({type: "update", payload: "scene"})
                 
                 if(_sceneData.success === true){
-                    sceneData = _sceneData.data
+                    database.sceneData = _sceneData.data
                     if(updates.reinit.board){
                         log += " Gameboard"
                         await initGameBoard()
@@ -144,12 +144,12 @@ logOutButton.onclick = async (event) => {
                     console.log(log)
                 }
             }
-            if(updates.scene.length > 0){
+            if(updates.scene.data.length > 0){
                 
                 updateList = new Set()
                 
-                for (const item of updates.scene) {
-                    let target = sceneData; // Reference to the root object
+                for (const item of updates.scene.data) {
+                    let target = database.sceneData; // Reference to the root object
                     
                     // Traverse the object based on the "where" array except the last key
                     for (let i = 0; i < item.where.length - 1; i++) {
@@ -177,19 +177,19 @@ logOutButton.onclick = async (event) => {
                     await item()
                 }
                 
-                updates.scene = []
+                updates.scene.data = []
             }
-            if( Object.keys(updates.turnStatus).length !== 0){
-                updateTurnStatus(updates.turnStatus)
-                updates.turnStatus = {}
+            if( Object.keys(updates.turnStatus.data).length !== 0){
+                updateTurnStatus(updates.turnStatus.data)
+                updates.turnStatus.data = {}
             }
             isUpdating = false
         }
         
         function updateTurnStatus(){
-            if (updates.turnStatus.type == "change"){
+            if (updates.turnStatus.data.type == "change"){
                 passTurnButton.innerHTML = "pause_circle_outline"
-                labelCurrentTurn.textContent = updates.turnStatus.data
+                labelCurrentTurn.textContent = updates.turnStatus.data.data
             }
         }
         
@@ -216,10 +216,12 @@ logOutButton.onclick = async (event) => {
             player.userName = urlParams.get("userName")
             player.charId = urlParams.get("charId")
             
+
             let isUpdating = false;
             let initErrorCounter = 0
             
             let initStates = {
+                register: false,
                 serverInfo: false,
                 sessionInfo: false,
                 serverRules: false,
@@ -244,7 +246,7 @@ logOutButton.onclick = async (event) => {
                             initGameBoardFunctions()
                             await initScene()
                             await initSpells()
-                            await startSyncTimer();
+                            startSyncTimer();
                             clearInterval(intervalId);
                         }
                         

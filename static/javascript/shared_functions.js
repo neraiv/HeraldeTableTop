@@ -627,7 +627,7 @@ function createInputSelector(label, valueList, textList,
     disable_filter,
     multiple,
     isReadOnly,
-    custom_func,
+    custom_func = selectorChekmarkOptionFunction,
     defaultValue
     } = { nonSelectableDefault: null, id: null, disable_filter: null, multiple: false, isReadOnly: false, custom_func: null, defaultValue: null  }) {
 
@@ -646,7 +646,7 @@ function createInputSelector(label, valueList, textList,
     const inputElement = createSelector(id, valueList, textList, {
         defaultValue: nonSelectableDefault, 
         disable_filter: disable_filter, 
-        onclick_func: multiple ? (custom_func ? custom_func: selectorChekmarkOptionFunction) : null}
+        onclick_func: multiple ? custom_func : null}
     );
 
     inputElement.style.height = '98%';
@@ -971,16 +971,16 @@ function createInputSpellSelect(id, {initalLevel: level = null, initialSpellName
     spellSelectContainer.getValue = function() {
         // Return the current value of the input element
         return {
-            level: spellLevelSelector.getValue(),
-            name: spellNameSelect.getValue(),
+            mana: spellLevelSelector.getValue(),
+            spellName: spellNameSelect.getValue(),
         }
     }
 
     spellSelectContainer.setValue = function(value) {
         // Set the value of the input element
         if (value) {
-            spellLevelSelector.setValue(value.level);
-            spellNameSelect.setValue(value.name);
+            spellLevelSelector.setValue(value.mana);
+            spellNameSelect.setValue(value.spellName);
         } else {
             spellLevelSelector.setValue(null);
             spellNameSelect.setValue(null);

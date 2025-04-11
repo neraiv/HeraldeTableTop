@@ -1,6 +1,6 @@
 
 const classTypes = Object.freeze({
-    ALL: null,
+    ALL: 0,
     WIZARD: 1,
     CLERIC: 2,
     ROGUE: 3,
@@ -466,13 +466,13 @@ class Aura {
     }
 }
 
-const SummonTypes = Object.freeze({
+const summonTypes = Object.freeze({
     CONJURED: 1,
     SUMMONED: 2,
     ANIMATED: 3
 })
 
-const SummontFromTypes = Object.freeze({
+const summonSources = Object.freeze({
     OBJECT: 1,
     NPC: 2,
     CHARACTER: 3,
@@ -480,8 +480,8 @@ const SummontFromTypes = Object.freeze({
 })
 
 class Summon {
-    constructor({summonFrom, id, duration = new Duration(), quantity = 1} = {}) {
-        this.summonFrom = summonFrom
+    constructor({summonSource, id, duration = new Duration(), quantity = 1} = {}) {
+        this.summonSource = summonSource
         this.id = id;  // Character ID
         this.duration = duration;
         this.quantity = quantity; // Number of summons
@@ -694,7 +694,7 @@ const spells = {
                 "2": {
                     caster: [
                         new Effect("Summon Your Slave", extraEffectsList.Summon, "Summon your peasent.",
-                            new Summon({summonFrom: SummontFromTypes.PLAYER_LIST, id: "slave", duration: new Duration({ type: durationTypes.INSTANT}) })
+                            new Summon({summonFrom: summonSources.PLAYER_LIST, id: "slave", duration: new Duration({ type: durationTypes.INSTANT}) })
                         ),
                     ],
                     target: []
@@ -702,7 +702,7 @@ const spells = {
                 "4" : {
                     caster: [
                         new Effect("Extra Help", extraEffectsList.Summon, "Your slave summons an extra.",
-                            new Summon({summonFrom: SummontFromTypes.NPC, id: "farmer-1", duration: new Duration({ type: durationTypes.INSTANT}) })
+                            new Summon({summonFrom: summonSources.NPC, id: "farmer-1", duration: new Duration({ type: durationTypes.INSTANT}) })
                         ),
                     ],
                     target: []
@@ -719,7 +719,7 @@ const spells = {
                 "2": {
                     caster: [
                         new Effect("Dweller Worm", extraEffectsList.Summon, "Conjure a dweller worm from the depts of hell.",
-                            new Summon({ summonFrom: SummontFromTypes.OBJECT, id: "dwellerWorm", duration: new Duration({ type: durationTypes.INSTANT}) })
+                            new Summon({ summonFrom: summonSources.OBJECT, id: "dwellerWorm", duration: new Duration({ type: durationTypes.INSTANT}) })
                         ),
                         new Effect("Cast Frenzy", extraEffectsList["Buff/Debuff"], "Applies haste which lowers turn count for casting or attacking.",
                             new BuffDebuff({

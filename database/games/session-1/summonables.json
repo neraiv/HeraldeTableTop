@@ -1,0 +1,28 @@
+{
+
+    "fire-elemental" :{
+    "id": 1,
+    "name": "Fire Elemental",
+    "type": "elemental",
+    "level": 5,
+    "abilities": ["fireball", "flame shield"],
+    "stats": {
+            "health": 100,
+            "attack": 20,
+            "defense": 10
+        }
+    },
+    "ice-golem" : { 
+    "id": 2,
+    "name": "Ice Golem",
+    "type": "golem",
+    "level": 7,
+    "abilities": ["ice spike", "frost armor"],
+        "stats": {
+            "health": 120,
+            "attack": 15,
+            "defense": 20
+        }
+    }
+    
+}

@@ -49,7 +49,6 @@ async function displayInventory(owner, inventory, x, y) {
     const sendToButtons = {}
     const sendToButtonCharIds = []
     Object.keys(database.chars).forEach(charId => {
-        if (isCharInventory && charId === id) return;
         sendToButtons[`${database.chars[charId].char.name} (${charId})`] = true;
         sendToButtonCharIds.push(charId);
     });

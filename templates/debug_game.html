@@ -4,14 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabletop Board</title>
-    <link rel="stylesheet" href="/static/styless/shared.css">
-    <link rel="stylesheet" href="/static/styless/sheets.css">
-    <link rel="stylesheet" href="/static/styless/gameboard.css">
-    <link rel="stylesheet" href="/static/styless/ui.css">
+    <link rel = "stylesheet" href ="static/styless/_main_ui.css">
+    <link rel = "stylesheet" href ="static/styless/gameboard.css">
+    <link rel = "stylesheet" href ="static/styless/shared.css">
+    <link rel = "stylesheet" href ="static/styless/sheet_character.css">
+    <link rel = "stylesheet" href ="static/styless/sheet_chat.css">
+    <link rel = "stylesheet" href ="static/styless/sheet_description.css">
+    <link rel = "stylesheet" href ="static/styless/sheet_dialog.css">
+    <link rel = "stylesheet" href ="static/styless/sheet_inventory.css">
+    <link rel = "stylesheet" href ="static/styless/sheet_quest.css">
+    <link rel = "stylesheet" href ="static/styless/sheet_spell.css">
+    <link rel = "stylesheet" href ="static/styless/storage.css">
+    <link rel = "stylesheet" href ="static/styless/user_ask.css">
+    <link rel = "stylesheet" href ="static/styless/user_warn.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined">
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
-<body>
+<body style= "background-color: #000000;">
     <div id="user-interface">
         <div id="ui-storage" class="menubar"></div>
         <div id="ui-spellbook" class="menubar"></div>
@@ -21,7 +30,7 @@
         <div id="ui-top-bar" class="menubar"></div>
     </div>
 
-    <div id="gameboard">
+    <div id="gameboard ">
         <div id="gameboard-content">
             <div id="grid-background"></div>
             <div id="background-layer" class="layer passive"></div> 

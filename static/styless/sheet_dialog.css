@@ -1,0 +1,45 @@
+.dialog {
+    display: none;
+    position: fixed;
+    background: white;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 100;
+    width: 80%;
+    max-width: 500px;
+}
+
+.dialog-content {
+    margin-bottom: 20px;
+    font-family: 'Cinzel', serif;
+}
+
+.dialog-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.talk-sheet{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    position: absolute;
+}
+
+.talk-sheet-element {
+    padding: 10px;
+    gap: 5px;
+    width: 100%;
+    background-color: white;
+    cursor: pointer;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.talk-sheet-element:hover {
+    background-color: #f0f0f0;
+}
