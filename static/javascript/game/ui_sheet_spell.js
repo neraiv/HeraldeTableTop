@@ -1017,14 +1017,14 @@ function effectBuilder(id, effect = new Effect(), parentElement = null) {
         // Replace content
         effectData.innerHTML = "";
     
-        if (event.target.value === "Buff or Debuff") {
+        if (event.target.value === extraEffectsList["Buff/Debuff"]) {
             extraEffectContainer = createBuffDebuffForm(itemId);
-        } else if (event.target.value === "Aura") {
+        } else if (event.target.value === extraEffectsList.Aura) {
             extraEffectContainer = createAuraForm(itemId);
-        } else if (event.target.value === "Make Cast") {
+        } else if (event.target.value === extraEffectsList.makeCast) {
             extraEffectContainer = createMakeCastForm(itemId);
-        } else if (event.target.value === "Summon") {
-            extraEffectContainer = createSummonForm(itemId);
+        } else if (event.target.value === extraEffectsList.Summon) {
+            extraEffectContainer = await createSummonForm(itemId);
         }
     
         if (extraEffectContainer) {
@@ -1222,7 +1222,7 @@ function createMakeCastForm(parentId, intial = null){
     return form
 }
 
-function createSummonForm(parentId, initial = null){
+async function createSummonForm(parentId, initial = null){
     const form = document.createElement("div")
     form.classList.add('column');
     form.classList.add('vertical');
@@ -1233,33 +1233,45 @@ function createSummonForm(parentId, initial = null){
 
     const hep = new Summon()
 
-    const formSelectSummonSource = createInputSelector('Summon Source:', Object.values(summonSources), Object.keys(summonSources), {
+    const summonables = await sendRequest({type: "get", payload: {type: "summonables_id"}})
+
+    if (summonables.success === false){
+        userWarn("Summonables not found")
+        return
+    }
+
+    const formSelectSummontId = createInputSelector('Summon Source:', Object.values(summonables.data), Object.keys(summonables.data), {
         id: parentId + '-summon-source',
         defaultValue: initial ? initial.summonSource : null
     });
-    formSelectSummonSource.classList.add('box-circular-border');
-    form.appendChild(formSelectSummonSource);
+    formSelectSummontId.classList.add('box-circular-border');
+    form.appendChild(formSelectSummontId);
 
-    formSelectSummonSource.selectElement.onchange = (event) => {
-        const value = event.target.value
-        if(value != summonSources.NPC){
-            formSelectSummonSource.style.display = "flex"
-        }else{
-            formSelectSummonSource.style.display = "none"
-        }
-    }
+    const formSummonCastDuration = createInputDuration("Cast Duration: ", parentId + '-duration', {
+        defaultValue: initial ? initial.castDuration : null
+    });
+    formSummonCastDuration.classList.add('box-circular-border');
+    form.appendChild(formSummonCastDuration);
+
+    const formSummonDuration = createInputDuration("Summon Duration: ", parentId + '-summon-duration', {
+        defaultValue: initial ? initial.duration : null
+    });
+    formSummonDuration.classList.add('box-circular-border');
+    form.appendChild(formSummonDuration);
 
     form.getValue = () => {
-        const makeCast = new Cast()
-        makeCast.spellName, makeCast.mana = effectSpellSelect.getValue()
-        makeCast.targetList = effectTargetList.getValue()
-        return makeCast
+        const summon = new Summon()
+        summon.id = formSelectSummontId.getValue()
+        summon.castDuration = formSummonCastDuration.getValue()
+        summon.duration = formSummonDuration.getValue()
+        return summon
     }
 
-    form.setValue = (makeCast) => {
-        if(makeCast){
-            effectSpellSelect.setValue({mana: makeCast.mana, spellName: makeCast.spellName})
-            effectTargetList.setValue(makeCast.targetList)
+    form.setValue = (summon) => {
+        if(summon){
+            formSelectSummontId.setValue(summon.id)
+            formSummonCastDuration.setValue(summon.castDuration)
+            formSummonDuration.setValue(summon.duration)
         }
     }
 

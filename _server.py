@@ -233,6 +233,7 @@ def get_npcs_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+ 
 def main():
     socketio.run(app, host='127.0.0.1', port=5000, debug=True)
 

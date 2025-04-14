@@ -37,6 +37,7 @@ class DBHandeler():
         self.objects     : dict   = self.getGameFile("objects.json")
         self.quests      : dict   = self.getGameFile("quests.json")
         self.npcs        : dict   = self.getGameFile("npcs.json")
+        self.summonables : dict   = self.getGameFile("summonables.json")
         
         self.defaults : dict = {
             "char" : self.getGameFile("char.json", DatabaseWhere.FROM_DEFAULTS)
@@ -169,7 +170,7 @@ class DBHandeler():
     #########################^^^^^^^^^^^^^^^^^^#############################
     #########################   USER RELATED   #############################
     ########################################################################  
-    def sync(self, server_info = False, users = False, session_info = False, rules = False, spells = False, chars = False, scenes = False):
+    def sync(self, server_info = False, users = False, session_info = False, rules = False, spells = False, chars = False, scenes = False, summonables = False):
         if server_info:
             self.saveGameFile(self.server_info, "server_info.json", DatabaseWhere.FROM_ROOT)
         if users:
@@ -184,6 +185,8 @@ class DBHandeler():
             self.saveGameFile(self.chars, "chars.json")
         if scenes:
             self.saveGameFile(self.scenes, "scenes.json")
+        if summonables:
+            self.saveGameFile(self.summonables, "summonables.json")
             
     def getGameFile(self, name, where = DatabaseWhere.FROM_SESSION):
         path = ""
@@ -455,6 +458,16 @@ class DBHandeler():
             else:
                 socket_reply = {'success': False, "error": "Spell not found"}
                 
+        elif payload["type"] == "summonables_id":
+            try:
+                summonables : dict = {}
+                for summonableId, summonableData in self.summonables.items():
+                    summonables[summonableId] = summonableData["name"]
+                
+                socket_reply = {'success': True, "data" : summonables}
+            except json.JSONDecodeError as e :
+                socket_reply = {'success': False, "error": "Error decoding JSON" + str(e)}
+            
         return socket_reply, socket_update
         
     def check_requirement(self, rquirement, charId):
