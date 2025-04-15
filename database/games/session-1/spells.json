@@ -221,10 +221,13 @@
                             "type": "summon",
                             "description": "Summon your peasent.",
                             "effect": {
-                                "summonFrom": 4,
                                 "id": "slave",
-                                "duration": {
+                                "castDuration": {
                                     "type": 4,
+                                    "value": 1
+                                },
+                                "summonDuration": {
+                                    "type": 3,
                                     "value": 1
                                 },
                                 "quantity": 1
@@ -240,10 +243,13 @@
                             "type": "summon",
                             "description": "Your slave summons an extra.",
                             "effect": {
-                                "summonFrom": 2,
                                 "id": "farmer-1",
-                                "duration": {
+                                "castDuration": {
                                     "type": 4,
+                                    "value": 1
+                                },
+                                "summonDuration": {
+                                    "type": 3,
                                     "value": 1
                                 },
                                 "quantity": 1
@@ -300,10 +306,13 @@
                             "type": "summon",
                             "description": "Conjure a dweller worm from the depts of hell.",
                             "effect": {
-                                "summonFrom": 1,
                                 "id": "dwellerWorm",
-                                "duration": {
+                                "castDuration": {
                                     "type": 4,
+                                    "value": 1
+                                },
+                                "summonDuration": {
+                                    "type": 3,
                                     "value": 1
                                 },
                                 "quantity": 1

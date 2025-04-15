@@ -314,9 +314,9 @@ createSpellButton.onclick = () => {
     displaySpellCreate()
 }
 
-function displaySpellCreate(spell = new Spell()) {
+function displaySpellCreate(initialSpell = spells[2].conjureWorm) {
 
-    const isInitialSpellGivenFlag = spell.name != ""
+    const isInitialSpellGivenFlag = initialSpell.name != ""
 
     // random 4 digit number
     const id = Math.floor(Math.random() * 9000) + 1000;
@@ -431,7 +431,7 @@ function displaySpellCreate(spell = new Spell()) {
 
     const selectSpellType = createInputSelector('Spell Type: ', Object.values(spellTypes), Object.keys(spellTypes), {
         id: id + '-type',
-        defaultValue: isInitialSpellGivenFlag ? spell.type : null
+        defaultValue: isInitialSpellGivenFlag ? [initialSpell.type] : null
     });
     selectSpellType.classList.remove("form-group")
     selectSpellType.style.width = '100%';
@@ -443,7 +443,7 @@ function displaySpellCreate(spell = new Spell()) {
     }
     const selectSpellLevel = createInputSelector('Spell Level: ', serverRulesSpellsRange, serverRulesSpellsRange, {
         id: id +'-level',
-        defaultValue: isInitialSpellGivenFlag ? spell.level : null
+        defaultValue: isInitialSpellGivenFlag ? [initialSpell.level] : null
     }); 
     selectSpellLevel.classList.remove("form-group")
     selectSpellLevel.style.width = '100%';
@@ -468,22 +468,22 @@ function displaySpellCreate(spell = new Spell()) {
     }
 
     const formName = createInputString('Name: ', id + '-name', {
-        defaultValue: isInitialSpellGivenFlag ? spell.name : null
+        defaultValue: isInitialSpellGivenFlag ? initialSpell.name : null
     });
     formName.classList.add('box-circular-border');
     formName.style.backgroundColor = formColor;
     form.appendChild(formName);
 
     if(isInitialSpellGivenFlag){
-        spellCreateSheetTitle.textContent = "Editing - " + spell.name
-        formName.querySelector(".input-element").value = spell.name
+        spellCreateSheetTitle.textContent = "Editing - " + initialSpell.name
+        formName.querySelector(".input-element").value = initialSpell.name
     }
 
     const formClasses = createInputSelector('Usable By Class:', Object.values(classTypes), Object.keys(classTypes), {
         id:  id +'-clasess',
         multiple: true,
         custom_func: selectorChekmarkOptionFunction,
-        defaultValue: isInitialSpellGivenFlag ? spell.classess : null
+        defaultValue: isInitialSpellGivenFlag ? initialSpell.classess : null
     });
 
     formClasses.classList.add('box-circular-border');
@@ -492,7 +492,7 @@ function displaySpellCreate(spell = new Spell()) {
     form.appendChild(formClasses);
 
     const formModifierStat = createInputModifier("Spell Modifiers", id+"-modifier", Object.values(statTypes), Object.keys(statTypes), {
-        defaultValue: isInitialSpellGivenFlag ? spell.modifiers : null
+        defaultValue: isInitialSpellGivenFlag ? initialSpell.modifiers : null
     })
     formModifierStat.style.backgroundColor = formColor;
     form.appendChild(formModifierStat);
@@ -508,15 +508,14 @@ function displaySpellCreate(spell = new Spell()) {
 
     const formBaseDamageType = createInputSelector('Damage Type: ', Object.values(damageTypes), Object.keys(damageTypes), {
         id:  id +'-damage-type',
-        multiple: false,
-        defaultValue: isInitialSpellGivenFlag ? spell.damage.type : null
+        defaultValue: isInitialSpellGivenFlag ? [initialSpell.damage.type] : null
     });
     formBaseDamageType.classList.remove('form-group');
     formBaseDamageType.style.width = "100%"
     formDamage.appendChild(formBaseDamageType);
 
     const formBaseDamage = createInputDamage("Damage: ", id+ '-base-damage', {
-        defaultValue: isInitialSpellGivenFlag ? spell.damage : null
+        defaultValue: isInitialSpellGivenFlag ? initialSpell.damage.value : null
     })
     formBaseDamage.classList.remove('form-group');
     formBaseDamage.style.width = "100%"
@@ -535,7 +534,7 @@ function displaySpellCreate(spell = new Spell()) {
     const formDescription = createInputString('Description: ', {
         id: 'create-spell-description',
         isTextArea: true, 
-        defaultValue: isInitialSpellGivenFlag ? spell.description : null
+        defaultValue: isInitialSpellGivenFlag ? initialSpell.description : null
     });
     formDescription.classList.add('box-circular-border');
     formDescription.style.height = '150px';
@@ -543,13 +542,13 @@ function displaySpellCreate(spell = new Spell()) {
     form.appendChild(formDescription);
  
     const formSpellCastDuration = createInputDuration("Cast Duration: ",id +'-duration', {
-        defaultValue: isInitialSpellGivenFlag ? spell.castDuration : null
+        defaultValue: isInitialSpellGivenFlag ? initialSpell.castDuration : null
     });
     form.appendChild(formSpellCastDuration);
 
     const formActionCost = createInputSelector('Action Cost: ', Object.values(actionTypes), Object.keys(actionTypes),{
         id: 'create-spell-pattern-cast-type',
-        defaultValue: isInitialSpellGivenFlag ?  spell.actionCost : null, 
+        defaultValue: isInitialSpellGivenFlag ?  [initialSpell.actionCost] : null, 
         multiple: true
     })
     formActionCost.classList.add('box-circular-border');
@@ -587,8 +586,8 @@ function displaySpellCreate(spell = new Spell()) {
         const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
         const formTargetEffects = createeffectListContainer(tabContent.id + '-additional-effect-target-effect-list-container',
             `Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
-        if(spell && spell.spendManaEffects && spell.spendManaEffects[index] && spell.spendManaEffects[index].target){
-            for(let effect of spell.spendManaEffects[index].target){
+        if(initialSpell && initialSpell.spendManaEffects && initialSpell.spendManaEffects[index] && initialSpell.spendManaEffects[index].target){
+            for(let effect of initialSpell.spendManaEffects[index].target){
                 const listElement = createeffectListElement(effect)
                 formTargetEffects.elementsList.appendChild(listElement);
             }
@@ -629,8 +628,8 @@ function displaySpellCreate(spell = new Spell()) {
         tabContent.innerHTML = '';
         const buttonNames = ['Add Previously Created Effect', 'Add New Effect']
         const casterEffects = createeffectListContainer(tabContent.id + '-ext-ef',`Spell Mana Effect for Mana: ${selectableSpellLevels[i]}`, buttonNames);
-        if(spell && spell.spendManaEffects &&spell.spendManaEffects[index] && spell.spendManaEffects[index].caster){
-            for(let effect of spell.spendManaEffects[index].caster){
+        if(initialSpell && initialSpell.spendManaEffects &&initialSpell.spendManaEffects[index] && initialSpell.spendManaEffects[index].caster){
+            for(let effect of initialSpell.spendManaEffects[index].caster){
                 const listElement = createeffectListElement(effect)
                 casterEffects.elementsList.appendChild(listElement);
             }
@@ -659,25 +658,25 @@ function displaySpellCreate(spell = new Spell()) {
 
     const spellPatternSelect = createInputSelector('Spell Pattern: ', Object.values(spellPatterns), Object.keys(spellPatterns),{
         id: 'create-spell-pattern-select',
-        defaultValue: spell ? [spell.spellPattern.pattern] : null, 
+        defaultValue: initialSpell ? [initialSpell.spellPattern.pattern] : null, 
     })
     spellPatternSelect.classList.add('box-circular-border');
     spellPatternSelect.style.backgroundColor = formColor;
     formCastPatternContainer.appendChild(spellPatternSelect);
 
-    const spellCastArea = createInputNumber("Cast Range:", "create-spell-pattern-cast-area", 9999, 0, false, false, spell ? spell.spellPattern.range : null)
+    const spellCastArea = createInputNumber("Cast Range:", "create-spell-pattern-cast-area", 9999, 0, false, false, initialSpell ? initialSpell.spellPattern.range : null)
     spellCastArea.classList.add('box-circular-border');
     spellCastArea.style.backgroundColor = formColor;
     formCastPatternContainer.appendChild(spellCastArea);
 
-    const spellCastWidth = createInputNumber("Cast Area:", "create-spell-pattern-cast-area", 500, 0, false, false, spell ? spell.spellPattern.area : null)
+    const spellCastWidth = createInputNumber("Cast Area:", "create-spell-pattern-cast-area", 500, 0, false, false, initialSpell ? initialSpell.spellPattern.area : null)
     spellCastWidth.classList.add('box-circular-border');
     spellCastWidth.style.backgroundColor = formColor;
     formCastPatternContainer.appendChild(spellCastWidth);
 
     const spellCastType = createInputSelector('Spell Cast Type: ', Object.values(castTypes), Object.keys(castTypes),{
         id: 'create-spell-pattern-cast-type',
-        defaultValue: spell ? [spell.spellPattern.castType] : null, 
+        defaultValue: initialSpell ? [initialSpell.spellPattern.castType] : null, 
     })
     spellCastType.classList.add('box-circular-border');
     spellCastType.style.backgroundColor = formColor;
@@ -685,7 +684,7 @@ function displaySpellCreate(spell = new Spell()) {
 
     const spellCanTarget = createInputSelector('Can Target: ', Object.values(targetTypes), Object.keys(targetTypes),{
         id: 'create-spell-pattern-can-target',
-        defaultValue: spell ? spell.spellPattern.canTarget : null, 
+        defaultValue: initialSpell ? initialSpell.spellPattern.canTarget : null, 
         multiple: true,
         custom_func: selectorChekmarkOptionFunction
     })
@@ -696,7 +695,7 @@ function displaySpellCreate(spell = new Spell()) {
 
     const spellCasterRolls = createInputSelector('Caster Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
         id: 'create-spell-caster-rolls',
-        defaultValue: spell ? spell.casterRolls : null, 
+        defaultValue: initialSpell ? initialSpell.casterRolls : null, 
         multiple: true,
     })
     spellCasterRolls.classList.add('box-circular-border');
@@ -705,7 +704,7 @@ function displaySpellCreate(spell = new Spell()) {
 
     const spellTargetRolls = createInputSelector('Target Rolls: ', Object.values(rollTypes), Object.keys(rollTypes),{
         id: 'create-spell-target-rolls',
-        defaultValue: spell ? spell.targetRolls : null, 
+        defaultValue: initialSpell ? initialSpell.targetRolls : null, 
         multiple: true,
     })
     spellTargetRolls.classList.add('box-circular-border');
@@ -812,7 +811,8 @@ function createeffectListContainer(id, titleStr = null, buttonNames = []){
     return additionalElementListContainer;
 }
 
-function createeffectListElement(effect = new Effect()){ 
+function createeffectListElement(initalEffect = null
+){ 
     
     // Future additnal effect create bağlanacak
     const listElement = document.createElement('div');
@@ -822,7 +822,7 @@ function createeffectListElement(effect = new Effect()){
     listElement.classList.add('row');
     listElement.classList.add('vertical');
 
-    listElement.effect = effect 
+    listElement.effect = initalEffect 
 
     const labeledElement = document.createElement('div');
     labeledElement.classList.add('row');
@@ -878,14 +878,15 @@ function createeffectListElement(effect = new Effect()){
         }
     }
 
-
+    if (initalEffect){
+        listElement.setValue(initalEffect)
+    }
     return listElement;
 }
 
-function effectBuilder(id, effect = new Effect(), parentElement = null) {
+function effectBuilder(id, initial = null, parentElement = null) {
 
     const itemId = id;
-
 
     const effectBuildSheet = document.createElement('div');
     effectBuildSheet.classList.add('aditional-effect-create-sheet');
@@ -916,9 +917,9 @@ function effectBuilder(id, effect = new Effect(), parentElement = null) {
     topBar.appendChild(effectSaveButton);
 
     effectSaveButton.onclick = () => {
-        const changes = getEffectChanges();
+        const changes = effectBuildSheet.getValue();
         if(changes){
-            console.log(changes);
+            parentElement.setValue(changes);
         }
     }
 
@@ -944,7 +945,9 @@ function effectBuilder(id, effect = new Effect(), parentElement = null) {
     effectBuilderForm.style.gap = '5px';
     effectBuilderContent.appendChild(effectBuilderForm);
     
-    const formName = createInputString('Name: ', itemId + '-name');
+    const formName = createInputString('Name: ', itemId + '-name', {
+        placeholder: 'New Effect'
+    });
     formName.classList.add('box-circular-border');
     formName.style.backgroundColor = formColor;
     effectBuilderForm.appendChild(formName);
@@ -982,7 +985,20 @@ function effectBuilder(id, effect = new Effect(), parentElement = null) {
     effectData.style.backgroundColor = formColor;
     effectContainer.appendChild(effectData);
 
-    let extraEffectContainer = null
+    function formTypeAbort(){
+        // ⛔ Temporarily remove listener
+        formType.selectElement.removeEventListener("change", formTypeChangeHandler);
+
+        // 🧠 Set old value without triggering handler again
+        formType.selectElement.value = previousFormTypeValue;
+
+        // ✅ Re-attach listener after a short delay
+        setTimeout(() => {
+            formType.selectElement.addEventListener("change", formTypeChangeHandler);
+        }, 0);
+
+        return;
+    }
 
     const formTypeChangeHandler = async (event) => {
         if (effectData.innerHTML !== "") {
@@ -996,27 +1012,12 @@ function effectBuilder(id, effect = new Effect(), parentElement = null) {
             );
     
             if (data.buttonText === "Abort") {
-                // ⛔ Temporarily remove listener
-                formType.selectElement.removeEventListener("change", formTypeChangeHandler);
-    
-                // 🧠 Set old value without triggering handler again
-                formType.selectElement.value = previousFormTypeValue;
-    
-                // ✅ Re-attach listener after a short delay
-                setTimeout(() => {
-                    formType.selectElement.addEventListener("change", formTypeChangeHandler);
-                }, 0);
-    
-                return;
+                return formTypeAbort()
             }
         }
-    
-        // Save new value as previous
-        previousFormTypeValue = event.target.value;
-    
-        // Replace content
-        effectData.innerHTML = "";
-    
+        
+        let extraEffectContainer = null
+        
         if (event.target.value === extraEffectsList["Buff/Debuff"]) {
             extraEffectContainer = createBuffDebuffForm(itemId);
         } else if (event.target.value === extraEffectsList.Aura) {
@@ -1027,8 +1028,14 @@ function effectBuilder(id, effect = new Effect(), parentElement = null) {
             extraEffectContainer = await createSummonForm(itemId);
         }
     
-        if (extraEffectContainer) {
+        if (extraEffectContainer != null) {
+            // Replace content
+            effectData.innerHTML = "";
             effectData.appendChild(extraEffectContainer);
+
+            previousFormTypeValue = event.target.value;
+        }else{
+            return formTypeAbort()
         }
     };
     
@@ -1037,17 +1044,33 @@ function effectBuilder(id, effect = new Effect(), parentElement = null) {
     
     let previousFormTypeValue = formType.selectElement.value;    
 
-    function getEffectChanges(){
+    effectBuildSheet.getValue = () => {
         const effect = new Effect();
         effect.name = formName.getValue();
         effect.description = formDescription.getValue();
         effect.type = formType.getValue();
-        if (extraEffectContainer){
+        if (effectData.innerHTML != ""){
             effect.effect = extraEffectContainer.getValue();
         }else{
             userWarn("Please select and create effect.")
         }
         return effect;
+    }
+
+    effectBuildSheet.setValue = (effect) => {
+        if(effect){
+            formName.setValue(effect.name)
+            formDescription.setValue(effect.description)
+            formType.setValue(effect.type)
+            formTypeChangeHandler({target: {value: effect.type}})
+            if(extraEffectContainer){
+                extraEffectContainer.setValue(effect.effect);
+            }
+        }
+    }
+
+    if (initial) {
+        effectBuildSheet.setValue(initial);
     }
 }
 
@@ -1083,11 +1106,13 @@ function createBuffDebuffForm(parentId, initial = null){
     form.appendChild(effectTrigerActions)
 
     form.getValue = () => {
-        const buffDebuff = new BuffDebuff()
-        buffDebuff.effectType = effectTypeSelector.getValue()
-        buffDebuff.value = effectValue.getValue()
-        buffDebuff.duration = effectDuration.getValue()
-        buffDebuff.triggerActions = effectTrigerActions.getValue()
+        const buffDebuff = new BuffDebuff({
+            effectType: effectTypeSelector.getValue(),
+            value: effectValue.getValue(),
+            duration: effectDuration.getValue(),
+            triggerActions: effectTrigerActions.getValue()
+        })
+
         return buffDebuff
     }
 
@@ -1152,13 +1177,14 @@ function createAuraForm(parentId, initial = null) {
     form.appendChild(effectCanSpread);
 
     form.getValue = () => {
-        const aura = new Aura()
-        aura.area = effectArea.getValue()
-        aura.duration = effectDuration.getValue()
-        aura.effectType = effectTypeSelector.getValue()
-        aura.value = effectValue.getValue()
-        aura.targetList = effectTargetSelector.getValue()
-        aura.canSpread = effectCanSpread.getValue()
+        const aura = new Aura({
+            area: effectArea.getValue(),
+            duration: effectDuration.getValue(),
+            effectType: effectTypeSelector.getValue(),
+            value: effectValue.getValue(),
+            targetList: effectTargetSelector.getValue(),
+            canSpread: effectCanSpread.getValue()
+        })
         return aura
     }
     
@@ -1206,9 +1232,10 @@ function createMakeCastForm(parentId, intial = null){
     }
 
     form.getValue = () => {
-        const makeCast = new Cast()
-        makeCast.spellName, makeCast.mana = effectSpellSelect.getValue()
-        makeCast.targetList = effectTargetList.getValue()
+        const makeCast = new Cast({
+            spell: effectSpellSelect.getValue(),
+            targetList: effectTargetList.getValue()
+        })
         return makeCast
     }
 
@@ -1231,39 +1258,48 @@ async function createSummonForm(parentId, initial = null){
     form.style.gap = "1rem"
     form.style.backgroundColor = formColor;
 
-    const hep = new Summon()
-
     const summonables = await sendRequest({type: "get", payload: {type: "summonables_id"}})
 
     if (summonables.success === false){
-        userWarn("Summonables not found")
-        return
+        userWarn("Summonables not found in database. Contant DM!")
+        return null
     }
 
     const formSelectSummontId = createInputSelector('Summon Source:', Object.values(summonables.data), Object.keys(summonables.data), {
         id: parentId + '-summon-source',
-        defaultValue: initial ? initial.summonSource : null
+        defaultValue: initial ? [initial.summonSource] : null
     });
     formSelectSummontId.classList.add('box-circular-border');
     form.appendChild(formSelectSummontId);
 
     const formSummonCastDuration = createInputDuration("Cast Duration: ", parentId + '-duration', {
-        defaultValue: initial ? initial.castDuration : null
+        defaultValue: initial ? initial.castDuration : new Duration({type: durationTypes.INSTANT})
     });
     formSummonCastDuration.classList.add('box-circular-border');
     form.appendChild(formSummonCastDuration);
 
     const formSummonDuration = createInputDuration("Summon Duration: ", parentId + '-summon-duration', {
-        defaultValue: initial ? initial.duration : null
+        defaultValue: initial ? initial.duration : new Duration({type: durationTypes.AFTER_LONG_REST})
     });
     formSummonDuration.classList.add('box-circular-border');
     form.appendChild(formSummonDuration);
 
+    const formSummonQuantitiy = createInputNumber("Summon Quantity: ", parentId + '-summon-quantity', {
+        maxValue: 9999,
+        minValue: 1,
+        addIncrementButtons: true,
+        defaultValue: initial ? initial.quantity : 1
+    })
+    formSummonQuantitiy.classList.add('box-circular-border');
+    form.appendChild(formSummonQuantitiy);
+
     form.getValue = () => {
-        const summon = new Summon()
-        summon.id = formSelectSummontId.getValue()
-        summon.castDuration = formSummonCastDuration.getValue()
-        summon.duration = formSummonDuration.getValue()
+        const summon = new Summon({
+            id: formSelectSummontId.getValue(),
+            castDuration: formSummonCastDuration.getValue(),
+            duration: formSummonDuration.getValue(),
+            quantity: formSummonQuantitiy.getValue()
+        })
         return summon
     }
 
@@ -1272,6 +1308,7 @@ async function createSummonForm(parentId, initial = null){
             formSelectSummontId.setValue(summon.id)
             formSummonCastDuration.setValue(summon.castDuration)
             formSummonDuration.setValue(summon.duration)
+            formSummonQuantitiy.setValue(summon.quantity)
         }
     }
 

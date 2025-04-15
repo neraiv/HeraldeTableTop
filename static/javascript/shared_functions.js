@@ -365,6 +365,7 @@ function createInputString(label, id, {
     defaultValue = "", 
     isReadOnly = false,
     isTextArea = false,
+    placeholder = null,
     maxRows = 10 // Maximum rows for a textarea (if isTextArea is true)
 } = {}) {
     const formGroup = document.createElement('div');
@@ -405,11 +406,12 @@ function createInputString(label, id, {
 
     // Convert the default value to a string, preventing [object Object]
     inputElement.value = defaultValue
-
-
     inputElement.readOnly = isReadOnly;
-    
 
+    if (placeholder) {
+        inputElement.placeholder = placeholder;
+    }
+    
     // Append the label and input to the form group
     formGroup.appendChild(labelElement);
     addSpacer(formGroup); // Assuming addSpacer is a utility function you've defined
@@ -472,8 +474,12 @@ function createInputBoolean(label, id, defaultValue = false) {
 }
 
 function createInputDice(label, id, {
-    defaultValue = "0d0"
+    defaultValue = null
 }){
+    if(defaultValue == null){
+        defaultValue = "0d0"
+    }   
+    
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
@@ -498,6 +504,7 @@ function createInputDice(label, id, {
     inputElementDiceRollTimes.type = 'number';
     inputElementDiceRollTimes.id = id;
     inputElementDiceRollTimes.value = defaultValue.split('d')[0];
+    inputElementDiceRollTimes.style.width = "100%"
     inputElementsHolder.appendChild(inputElementDiceRollTimes);
 
     const labelD = document.createElement('label');
@@ -509,6 +516,7 @@ function createInputDice(label, id, {
     inputElementDice.type = 'number';
     inputElementDice.id = id;
     inputElementDice.value = defaultValue.split('d')[1];
+    inputElementDice.style.width = "100%"
     inputElementsHolder.appendChild(inputElementDice);
 
 
@@ -540,10 +548,11 @@ function createInputDamage(label, id, {
     formGroup.classList.add('column');
     formGroup.classList.add('vertical');
 
-    const isIntialDamageRaw = defaultValue ? (defaultValue && !defaultValue.includes("d")) : false
+    const isIntialDamageRaw = defaultValue ? (!defaultValue.includes("d")) : false
 
     if(defaultValue == null){
-        defaultValue = new Damage({type: damageTypes.PURE, value: "0d0"})
+        isIntialDamageRaw = false
+        defaultValue = "0d0"
     }
 
     const formRawDamageInput = createInputNumber(label, id + "-number-input", {
@@ -558,7 +567,7 @@ function createInputDamage(label, id, {
     formGroup.appendChild(formRawDamageInput);
     
     const diceInput = createInputDice(label, id + '-dice-input', {
-        defaultValue : isIntialDamageRaw ? null : defaultValue.value
+        defaultValue : isIntialDamageRaw ? null : defaultValue
     });
     diceInput.classList.remove('form-group');
     diceInput.style.width = "100%"
@@ -569,12 +578,12 @@ function createInputDamage(label, id, {
     checkboxRow.classList.add('row');
     checkboxRow.classList.add('vertical');
 
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = id; // Assuming `id` is defined elsewhere
-    checkbox.style.width = '15px';
-    checkbox.style.height = '15px';
-    checkboxRow.appendChild(checkbox); // Add the checkbox to the container
+    const formRawCheckbox = document.createElement('input');
+    formRawCheckbox.type = 'checkbox';
+    formRawCheckbox.id = id; // Assuming `id` is defined elsewhere
+    formRawCheckbox.style.width = '15px';
+    formRawCheckbox.style.height = '15px';
+    checkboxRow.appendChild(formRawCheckbox); // Add the checkbox to the container
 
     const checkboxLabel = document.createElement('label');
     checkboxLabel.htmlFor = id+"-checkbox"; // Associate label with the checkbox
@@ -582,8 +591,8 @@ function createInputDamage(label, id, {
     checkboxRow.appendChild(checkboxLabel); // Add the label to the container
     formGroup.appendChild(checkboxRow)
 
-    checkbox.addEventListener('change', event => {
-        if (checkbox.checked) {
+    formRawCheckbox.addEventListener('change', event => {
+        if (formRawCheckbox.checked) {
             formRawDamageInput.style.display = 'flex';
             diceInput.style.display = 'none';
             formGroup.value = formRawDamageInput.querySelector('.input-element').value
@@ -596,7 +605,7 @@ function createInputDamage(label, id, {
 
     formGroup.getValue = function() {
         // Return the current value of the input element
-        if (checkbox.checked) {
+        if (formRawCheckbox.checked) {
             return formRawDamageInput.getValue();
         }else{
             return diceInput.getValue();
@@ -606,10 +615,12 @@ function createInputDamage(label, id, {
     formGroup.setValue = function(value) {
         // Set the value of the input element
         if (value) {
-            if (isNaN(value)) {
-                formRawDamageInput.setValue(value);
-            } else {
+            if (value.includes("d")) {
                 diceInput.setValue(value);
+            } else {
+                formRawDamageInput.setValue(value);
+                formRawCheckbox.checked = true;
+                formRawCheckbox.dispatchEvent(new Event('change')); // Trigger the change event to show the correct input
             }
         } else {
             formRawDamageInput.setValue(0);
@@ -712,7 +723,7 @@ function createInputSelector(label, valueList, textList,
 
     formGroup.getValue = function() {
         // Return the current value of the input element
-        if(multiple){
+        if(inputElement.multiple ){
             if (custom_func == selectorChekmarkOptionFunction){
                 return selectorGetOptionsWithCheckmark(inputElement);
             }else if (custom_func == selectorIndexedOptionFunctionWithTransparency || custom_func == selecterIndexedOptionFunction){
@@ -726,7 +737,7 @@ function createInputSelector(label, valueList, textList,
     formGroup.setValue = function(value) {
         // Set the value of the input element
         if (value) {
-            if (multiple) {
+            if (inputElement.multiple ) {
                 for(let option of inputElement.options){
                     option.selected = false;
                     if(value.includes(option.value)){
