@@ -9,7 +9,7 @@ async function displayCharaterSheet(charId) {
     characterSheet.id = "character-sheet-" + charId;
     userInterface.appendChild(characterSheet);
 
-    const topRow = addDraggableRow(characterSheet);
+    const topRow = addWinwowTopBar(characterSheet);
     topRow.classList.add('row');
     topRow.classList.add("vertical")
     topRow.style.justifyContent = "space-between";

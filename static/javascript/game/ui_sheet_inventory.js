@@ -7,7 +7,7 @@ async function displayInventory(owner, inventory, x, y) {
     inventorySheet.style.top = `${y}px`;
     userInterface.appendChild(inventorySheet);
     
-    const topRow = addDraggableRow(inventorySheet)
+    const topRow = addWinwowTopBar(inventorySheet)
     topRow.classList.add('row');
     topRow.classList.add('centered');
     

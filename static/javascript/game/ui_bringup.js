@@ -274,7 +274,7 @@ spellBook.style.alignItems = "center";
 spellBook.style.gap = "5px";
 
 
-const spellBookTopBar = addDraggableRow(spellBook)
+const spellBookTopBar = addWinwowTopBar(spellBook)
 spellBookTopBar.style.justifyContent = "space-between";
 
 

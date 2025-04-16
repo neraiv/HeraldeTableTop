@@ -14,10 +14,19 @@ function removeTestDots(parent, dotlist){
     dotlist.forEach(dot => parent.removeChild(dot));
 }
 
-function calc_hover_button_final_location(buttonSize, radius, angle){
+function calcButtonsAroundLocation(buttonSize, radius, angle){
     const finalX = (radius * 2) * Math.cos((angle * Math.PI) / 180) + radius - buttonSize / 2;
     const finalY = -(radius * 2) * Math.sin((angle * Math.PI) / 180) + radius - buttonSize / 2;
     return {finalX, finalY}
+}
+
+function dictFindValueName(dict, value) {
+    for (const key in dict) {
+        if (dict[key] == value) {
+            return key;
+        }
+    }
+    return null; // Return null if the value is not found
 }
 
 function compareWithDb(arr1, arr2) {
@@ -88,7 +97,7 @@ function userAskQuestion(title, question, {
         container.classList.add('box-circular-border')
         container.style.zIndex = '9999'; // Ensure it is above the overlay
 
-        const topRow = addDraggableRow(container);
+        const topRow = addWinwowTopBar(container);
         container.appendChild(topRow);
 
         // Create the title
@@ -144,12 +153,7 @@ function keepValueInBetween(value, max, min){
 }
 
 function createInputNumber(label, id, {maxValue=99, minValue=1, isReadOnly = false, addIncrementButtons = true, defaultValue = null}) {
-    if(defaultValue){
-        defaultValue = keepValueInBetween(defaultValue);
-    }else {
-        defaultValue = minValue;
-    }
-
+    
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     formGroup.classList.add('row');
@@ -179,7 +183,7 @@ function createInputNumber(label, id, {maxValue=99, minValue=1, isReadOnly = fal
     inputElementsHolder.appendChild(inputElement)
     
     inputElement.onchange = () =>{
-        keepValueInBetween(inputElement.value)
+        keepValueInBetween(inputElement.value, maxValue, minValue)
     }
 
     if(addIncrementButtons){
@@ -216,16 +220,17 @@ function createInputNumber(label, id, {maxValue=99, minValue=1, isReadOnly = fal
     formGroup.setValue = function(value) {
         // Set the value of the input element
         if (value) {
-            inputElement.value = parseFloat(value);
+            inputElement.value = keepValueInBetween(parseFloat(value), maxValue, minValue); ;
         } else {
             inputElement.value = minValue;
         }
     }
 
+    formGroup.setValue(defaultValue)
     return formGroup
 }
 
-function createInputModifier(label, id, modiferTextList, modifierValueList, {
+function createInputModifier(label, id, dict, {
     defaultValue = null
 }){
     const formModifierStat = document.createElement('div');
@@ -244,18 +249,20 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
     formModifierStatLabel.style.textAlign = 'center';
     formModifierStat.appendChild(formModifierStatLabel);
 
-    const formModifierStatChangeColumn = document.createElement('div');
-    formModifierStatChangeColumn.classList.add('column');
-    formModifierStatChangeColumn.classList.add('centered');
-    formModifierStatChangeColumn.style.width = '100%'
-    formModifierStatChangeColumn.style.gap = "1rem 1rem"
-    formModifierStat.appendChild(formModifierStatChangeColumn)
+    const formModifierStatList = document.createElement('div');
+    formModifierStatList.className = 'box-circular-border form-group';
+    formModifierStatList.style.width = "98%"
+    formModifierStatList.style.gap = '10px';
+    formModifierStatList.style.flexWrap = "wrap";
+    formModifierStatList.style.display = "flex"
+    formModifierStatList.style.backgroundColor = formColor
+    formModifierStat.appendChild(formModifierStatList);
 
-    const formModifierStatAddSelection = createInputSelector("Modifier:", modiferTextList, modifierValueList, {
-        defaultValue: "Select stat type...",
-    })
+    addSpacer(formModifierStat, {line: true, line_width: "60%"})
+
+    const formModifierStatAddSelection = createInputSelector("Modifier:", Object.values(dict), Object.keys(dict))
     formModifierStatAddSelection.classList.add("box-circular-border")
-    formModifierStatChangeColumn.appendChild(formModifierStatAddSelection)
+    formModifierStat.appendChild(formModifierStatAddSelection)
 
     const formModifierValue =  createInputNumber("Multiplier:", id+"-multiplier", {
         maxValue: 9999,
@@ -263,22 +270,13 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
         defaultValue: 1,
     })
     formModifierValue.classList.add("box-circular-border")
-    formModifierStatChangeColumn.appendChild(formModifierValue)
+    formModifierStat.appendChild(formModifierValue)
 
     const formModifierStatListButtons = document.createElement("div")
     formModifierStatListButtons.classList.add('row', 'centered');
     formModifierStatListButtons.style.width = '60%';
     formModifierStatListButtons.style.gap = '10px';
-    formModifierStatChangeColumn.appendChild(formModifierStatListButtons);
-
-    const formModifierStatList = document.createElement('div');
-    formModifierStatList.className = 'box-circular-border input-element';
-    formModifierStatList.style.width = "95%"
-    formModifierStatList.style.gap = '10px';
-    formModifierStatList.style.flexWrap = "wrap";
-    formModifierStatList.style.display = "flex"
-    formModifierStatList.style.backgroundColor = formColor
-    formModifierStat.appendChild(formModifierStatList);
+    formModifierStat.appendChild(formModifierStatListButtons);
 
     function createModifierListElement(modfier_type, modifer_multiplier) {
         // Future additnal effect create bağlanacak
@@ -309,10 +307,22 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
         return listElement;
     }
 
+    function populate(element){
+        const type = dictFindValueName(dict, element.type)
+        if (type == null) return;
+        else if (type in formModifierStat.value){
+            userWarn("This modifier already added!")
+            return
+        }
+
+        const newRow = createModifierListElement(type, element.multiplier)
+        formModifierStatList.appendChild(newRow);
+        formModifierStat.value[type] = formModifierValue.getValue()
+    }
+
     if(defaultValue != null) {
-        for(let element in defaultValue) {
-            const newRow = createModifierListElement(element.type, element.multipler)
-            formModifierStatList.appendChild(newRow);
+        for(let element of defaultValue) {
+            populate(element)
         }
     }
 
@@ -322,15 +332,7 @@ function createInputModifier(label, id, modiferTextList, modifierValueList, {
     buttonAdd.onclick = function(event) {
         event.preventDefault();
         if (parseFloat(formModifierValue.getValue()) > 0){
-            const selectedModifier = formModifierStatAddSelection.selectElement.options[formModifierStatAddSelection.selectElement.selectedIndex].text
-            if (selectedModifier in formModifierStat.value){
-                userWarn("This modifier already added!")
-            }else{
-                const newRow = createModifierListElement(selectedModifier, formModifierValue.getValue())
-                formModifierStatList.appendChild(newRow);
-
-                formModifierStat.value[selectedModifier] = formModifierValue.getValue()
-            }
+            populate({type: formModifierStatAddSelection.getValue(), multiplier: formModifierValue.getValue()})        
         }else{
             userWarn("Please select multiplier value greater than 0!")
         }
@@ -501,6 +503,7 @@ function createInputDice(label, id, {
     formGroup.appendChild(inputElementsHolder);
 
     const inputElementDiceRollTimes = document.createElement('input');
+    inputElementDiceRollTimes.classList.add('input-element');
     inputElementDiceRollTimes.type = 'number';
     inputElementDiceRollTimes.id = id;
     inputElementDiceRollTimes.value = defaultValue.split('d')[0];
@@ -513,6 +516,7 @@ function createInputDice(label, id, {
     inputElementsHolder.appendChild(labelD);
 
     const inputElementDice = document.createElement('input');
+    inputElementDice.classList.add('input-element');
     inputElementDice.type = 'number';
     inputElementDice.id = id;
     inputElementDice.value = defaultValue.split('d')[1];
@@ -628,6 +632,10 @@ function createInputDamage(label, id, {
         }
     }
 
+    if (isIntialDamageRaw) {
+        formRawCheckbox.checked = true;
+        formRawCheckbox.dispatchEvent(new Event('change')); // Trigger the change event to show the correct input
+    }
     return formGroup
 }
 
@@ -659,8 +667,6 @@ function createInputSelector(label, valueList, textList,
         disable_filter: disable_filter, 
         onclick_func: multiple ? custom_func : null}
     );
-
-    inputElement.style.height = '98%';
     inputElement.classList.add('input-element');
     inputElement.multiple = multiple;
 
@@ -674,6 +680,7 @@ function createInputSelector(label, valueList, textList,
 
     for(let option of inputElement.options){
         option.selected = false;
+        option.style.minHeight = "18px"
         if(defaultValue && (defaultValue.includes(option.value) || defaultValue.includes(parseInt(option.value)))){
             if(multiple) option.click();
             else option.selected = true;
@@ -856,7 +863,7 @@ function selecterIndexedOptionFunction(event) {
 //----------------------------- Duration Input Element -------------------------------------------
 
 function createInputDuration(label = "Duration", id, {
-    initalDuration: defaultValue = new Duration({type: durationTypes.TURN_BASED, value: 1}),
+    defaultValue = new Duration({type: durationTypes.TURN, value: 1}),
     avaliableDurationTypes = durationTypes} = {}) {
     
     const formGroup = document.createElement('div');
@@ -867,7 +874,9 @@ function createInputDuration(label = "Duration", id, {
     formGroup.style.gap = "1rem"
     
 
-    const durationSelector = createInputSelector(label, Object.values(avaliableDurationTypes), Object.keys(avaliableDurationTypes))
+    const durationSelector = createInputSelector(label, Object.values(avaliableDurationTypes), Object.keys(avaliableDurationTypes), {
+        defaultValue: [defaultValue.type]
+    })
     durationSelector.classList.remove('form-group')
     durationSelector.style.width = "100%"
     formGroup.appendChild(durationSelector)
@@ -891,7 +900,7 @@ function createInputDuration(label = "Duration", id, {
     durationValue.querySelector('.input-element').value = defaultValue.value 
 
     function displayPart(type){
-        if(type == durationTypes.TURN_BASED || type == durationTypes.UNTIL_NEXT_CAST){
+        if(type == durationTypes.TURN || type == durationTypes.NEXT_NTH_CAST){
             durationValue.style.display = "flex"
         }else{
             durationValue.style.display = "none"
@@ -902,7 +911,7 @@ function createInputDuration(label = "Duration", id, {
 
     formGroup.getValue = function() {
         // Return the current value of the input element
-        return new Duration(durationSelector.getValue(), durationValue.getValue())
+        return new Duration({type: durationSelector.getValue(), value: durationValue.getValue()})
     }
 
     formGroup.setValue = function(value) {
@@ -911,7 +920,7 @@ function createInputDuration(label = "Duration", id, {
             durationSelector.setValue(value.type);
             durationValue.setValue(value.value);
         } else {
-            durationSelector.setValue(durationTypes.TURN_BASED);
+            durationSelector.setValue(durationTypes.TURN);
             durationValue.setValue(1);
         }
     }
@@ -1251,11 +1260,17 @@ function genareteRandomColor() {
     return color;
 }
 
-function addSpacer(parentElement){
+function addSpacer(parentElement, { line = false , line_width = "60%", line_height = "60%"} = {}) {
     const spacer = document.createElement('div');
     spacer.className = 'spacer';
+    if (line) {
+        spacer.style.border = '2px dashed black';
+        spacer.style.width = line_width;
+        spacer.style.height = line_height;
+    }
     parentElement.appendChild(spacer);
 }
+
 
 function addClickHighlightListener(element) {
     // Add event listeners for 'mousedown' and 'mouseup' events
@@ -1431,9 +1446,9 @@ function makeDraggable(parent){
         };
     };
 }
-function addDraggableRow(parent){
+function addWinwowTopBar(parent){
     const draggableRow = document.createElement('div');
-    draggableRow.classList.add('draggable-row');
+    draggableRow.classList.add('window-top-bar');
 
     // Make the draggable row actually draggable (optional)
     let offsetX, offsetY;

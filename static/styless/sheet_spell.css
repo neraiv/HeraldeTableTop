@@ -46,6 +46,13 @@
     background: #fff;
     z-index: 52;
 }
+
+.exf-container {
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+    height: 150px;
+}
 /* End Of Spell Create Sheet */
 
 /* Spell Card */

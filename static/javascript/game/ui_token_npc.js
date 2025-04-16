@@ -91,7 +91,7 @@ function createNpcTalkSheet(npcId) {
         talkSheet.classList.add('talk-sheet', 'column', 'vertical');
         talkSheet.style.zIndex = uiZIndex;
 
-        const topRow = addDraggableRow(talkSheet)
+        const topRow = addWinwowTopBar(talkSheet)
         topRow.style.justifyContent = "space-between";
         
         // Header

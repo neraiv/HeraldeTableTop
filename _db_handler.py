@@ -55,8 +55,7 @@ class DBHandeler():
             
             self.init_activeArea(scene_name, layer)
         
-        self.sync_timeout = 5
-        self.userSyncTimeout = 2
+        self.userDisconnectTimeout = USER_SYNC_DICONNECT_TIMEOUT
         self.syncTimerCounter = 0
         
         self.sync_thread = threading.Thread(target=self.sync_loop, daemon=True)
@@ -79,11 +78,11 @@ class DBHandeler():
         while True:
             self.updateServerTime()
             self.syncTimerCounter += 1
-            if self.syncTimerCounter >= self.userSyncTimeout:
+            if self.syncTimerCounter >= self.userDisconnectTimeout:
                 self.updateUsersStatus()
                 self.syncTimerCounter = 0
 
-            time.sleep(self.sync_timeout)
+            time.sleep(1)
 
             
     def get_currentTime(self) -> str:
@@ -107,7 +106,7 @@ class DBHandeler():
 
                 # Calculate time differenc
                 time_difference = now - timestamp
-                if time_difference.seconds > self.userSyncTimeout * self.sync_timeout:
+                if time_difference.seconds > self.userDisconnectTimeout * self.userDisconnectTimeout:
                     self.users[username]["status"] = "offline"
                     self.sync(users=True)
     
@@ -605,7 +604,6 @@ class DBHandeler():
                 
             elif type == "get":
                 socket_reply, socket_update = self.handle_get(payload, userID, userInfo)
-                        
                         
             elif type == "action":
                 socket_reply, socket_update =  self.handle_action(payload, userID, userInfo)

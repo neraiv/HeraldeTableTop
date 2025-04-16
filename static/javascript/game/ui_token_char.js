@@ -79,7 +79,7 @@ async function addCharacter(char, width, height, x, y, img = null){
 
     function initButton(button){
         button.classList.add("hover-button")
-        let {finalX, finalY} = calc_hover_button_final_location(buttonSize, radius, angle)
+        let {finalX, finalY} = calcButtonsAroundLocation(buttonSize, radius, angle)
         button.dataset.finalX = finalX;
         button.dataset.finalY = finalY;
     }
