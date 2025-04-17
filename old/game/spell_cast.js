@@ -25,8 +25,8 @@ function spellCast(tokenID, spell, mana=0) {
     let spellRange = spell.spellPattern.range;
 
     if(spell.spendManaEffects[mana]){
-        const allBuffs = getAdditionalEffectBonuses(spell.spendManaEffects[mana].caster, characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_RADIUS_BONUS, effectTypes.ATTACK_RANGE_BONUS, effectTypes.PATTERN_CHANGE]);
-        const radiusBonusesSum = allBuffs.get(effectTypes.ATTACK_RADIUS_BONUS).reduce((sum, bonus) => sum + parseInt(bonus), 0);
+        const allBuffs = getAdditionalEffectBonuses(spell.spendManaEffects[mana].caster, characterActions.CASTING, additionalEffectTypes.BUFF, [effectTypes.ATTACK_AREA_BONUS, effectTypes.ATTACK_RANGE_BONUS, effectTypes.PATTERN_CHANGE]);
+        const radiusBonusesSum = allBuffs.get(effectTypes.ATTACK_AREA_BONUS).reduce((sum, bonus) => sum + parseInt(bonus), 0);
         const rangeBonusesSum = allBuffs.get(effectTypes.ATTACK_RANGE_BONUS).reduce((sum, bonus) => sum + parseInt(bonus), 0);
         const patternChange = allBuffs.get(effectTypes.PATTERN_CHANGE);
     

@@ -38,6 +38,7 @@ def handle_register(msg :dict):
     except Exception as e:
         emit("response", {"success": False, "error": str(e)}, room=request.sid)
         
+
         
 @socketio.on('request')
 def handle_message(msg :dict):

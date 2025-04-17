@@ -107,17 +107,26 @@ const durationTypes = Object.freeze({
 
 const effectTypes = Object.freeze({
     DICE_CHANGE: 1,
-    ATTACK_DAMAGE_BONUS: 2,
-    ATTACK_RADIUS_BONUS: 3, // Adjusted for consistency
-    ATTACK_RANGE: 4,        // Moved ATTACK_RANGE to follow ATTACK_RADIUS_BONUS
-    ATTACK_RANGE_BONUS: 5,  // Adjusted to be sequential
-    PATTERN_CHANGE: 6,      // Adjusted to follow ATTACK_RANGE_BONUS
-    HEAL: 7,
-    DEFENSE: 8,
-    VISION_RANGE_BONUS: 9,   // Adjusted to be in sequential order
-    TAKE_DAMAGE: 10,
-    HASTE: 11,
+    ATTACK_DAMAGE_BONUS: 2, // value = new Damage
+    ATTACK_AREA_BONUS: 3,  // value = number   
+    ATTACK_RANGE_BONUS: 5,  // value = number
+    PATTERN_CHANGE: 6, // value = new SpellPattern
+    HEAL: 7, // value = new Damage
+    DEFENSE: 8, // value = new Damage
+    VISION_RANGE_BONUS: 9,  // value = number
+    TAKE_DAMAGE: 10, // value = new Damage
+    HASTE: 11, // value = number
 });
+
+const effectSources = Object.freeze({
+    ITEM: 1,
+    CHARACTER: 2,
+    NPC: 3,
+    ENVIRONMENT: 4,
+    OBJECT: 5,
+})
+
+
 
 const actionTypes = Object.freeze({
     BONUS: 1,
@@ -385,7 +394,7 @@ class Character {
         cha = 12,//gameSettings.MIN_STAT_POINT,
         str = 12,//gameSettings.MIN_STAT_POINT,
         action = characterActions.IDLE,
-        additionalEffects = [],
+        extraEffects = [],
         spellSlots = {
             '1':[5,3],
             '2':[4,3],
@@ -416,7 +425,7 @@ class Character {
         this.cha = cha;
         this.str = str;
         this.action = action;
-        this.additionalEffects = additionalEffects;
+        this.extraEffects = extraEffects;
         this.spellSlots = spellSlots;
         this.availableSpells = availableSpells;
         this.learnedSpells = learnedSpells;
@@ -437,13 +446,42 @@ class Character {
             cha: this.cha,
             str: this.str,
             charCurrentAction: this.charCurrentAction,
-            additionalEffects: [...this.additionalEffects],
+            extraEffects: [...this.extraEffects],
             spellSlots: {...this.spellSlots},
             availableSpells: {...this.availableSpells},
             learnedSpells: {...this.learnedSpells},
             inventory: new Inventory(),
             controlling: [...this.controlling]
         });
+    }
+
+    getExtraEffects(action) {
+        return this.extraEffects.filter(effect => effect.triggerActions.includes(action) || effect.triggerActions.includes(characterActions.ALWAYS));
+    }
+
+    calculateResistence(damageType){
+        let resistence = 0;
+        this.extraEffects.forEach(effect => {
+            if(effect.effectType === effectTypes.DEFENSE && effect.value.type === damageType){
+                resistence += effect.value.value;
+            }
+        });
+        return resistence;
+    }
+
+    takeDamage(damage){
+        let resistence = this.calculateResistence(damage.type);
+        let damageValue = damage.value - resistence;
+        if(damageValue < 0){
+            damageValue = 0;
+        }
+        this.hp -= damageValue;
+        if(this.hp <= 0){
+            this.action = characterActions.DYING;
+            this.hp = 0;
+        }else{
+            this.action = characterActions.ATTACKED;
+        }
     }
 }
 
@@ -463,11 +501,15 @@ class SpellPattern  {
 }
 
 class BuffDebuff {
-    constructor({effectType, value, duration = null, triggerActions= [characterActions.TURN_START]}) {
+    constructor({effectType, value, duration = null, triggerActions= [characterActions.TURN_START]}, source_type = null, source = null) {
         this.effectType = effectType;
         this.value = value;
         this.duration = duration;
         this.triggerActions = triggerActions;
+
+        // Below values assigned when someoen casts buff/debuff
+        this.source_type = source_type; // EffectSource enum
+        this.source = source; // Character ID or Object ID
     }
 }
 
@@ -484,22 +526,23 @@ class Aura {
 }
 
 class Summon {
-    constructor({id, castDuration, summonDuration, quantity = 1, summonLocation = summonLocations.AROUND_CASTER} = {}) {
+    constructor({id, castDuration, summonDuration, quantity = 1, summonLocation = summonLocations.AROUND_CASTER, triggerActions= [characterActions.ALWAYS]} = {}) {
         this.id = id;  // Character ID
         this.castDuration = castDuration; // Duration of the spell cast
         this.summonDuration = summonDuration;
         this.quantity = quantity; // Number of summons
         this.summonLocation = summonLocation; // Location of the summon
+        this.triggerActions = triggerActions; // CharacterAction enum
     }
 }
 
 class Cast {
-    constructor({spellName, mana, targetListInOrder, castTimes= 1} = {}) {
-
+    constructor({spellName, mana, targetListInOrder, castTimes= 1, triggerActions = [characterActions.ALWAYS]} = {}) {
         this.spellName = spellName;  // Spell object
         this.mana = mana;
         this.targetListInOrder = targetListInOrder;
         this.castTimes = castTimes;
+        this.triggerActions = triggerActions
     }
 }
 
@@ -580,25 +623,35 @@ class AniDnd {
     }
 }
 
-class Spell{
-    constructor(
-        name,
-        type,
-        classess,
-        level = 1,
-        modifiers,
-        damage,
-        description,
-        castDuration,
-        actionCost,
-        spendManaEffects,
-        spellPattern,
-        casterRolls, 
-        targetRolls,
-    ) {
+// Modified Spell Class (from step 1 above)
+class Spell {
+    constructor({
+        name, // Required
+        type, // Required
+        classess, // Required (e.g., [classTypes.WIZARD])
+        level = 1, // Default level is 1
+        modifiers = [], // Default to empty array
+        damage = null, // Default to null, might need specific handling if always expected
+        description = "", // Default to empty string
+        castDuration = new Duration({ type: durationTypes.INSTANT }), // Default duration
+        actionCost = [], // Default to empty array
+        spendManaEffects = {}, // Default to empty object
+        spellPattern = new SpellPattern(), // Required or provide a default SpellPattern? Assuming required for now.
+        casterRolls = [], // Default to empty array
+        targetRolls = [], // Default to empty array
+        animation = null, // Optional animation data
+    } = {}) { // Add '= {}' to handle constructor called with no arguments
+
+        // Basic validation for required fields (optional but recommended)
+        if (!name) throw new Error("Spell requires a 'name'.");
+        if (type === undefined || type === null) throw new Error("Spell requires a 'type'.");
+        if (!classess || classess.length === 0) throw new Error("Spell requires 'classess'.");
+        if (!spellPattern) throw new Error("Spell requires a 'spellPattern'.");
+        // Add more validation as needed
+
         this.name = name;
-        this.classess = classess;  // Array of ClassType enum 0: ALL, 1: WARRIOR, 2: ROGUE, 3: MAGE, 4: PRIEST, 5: DRUID, 6: PALADIN
         this.type = type;
+        this.classess = classess;
         this.level = level;
         this.modifiers = modifiers;
         this.damage = damage;
@@ -609,6 +662,26 @@ class Spell{
         this.spellPattern = spellPattern;
         this.casterRolls = casterRolls;
         this.targetRolls = targetRolls;
+        this.animation = animation; // Assign animation if provided
+    }
+
+    getExtraEffects(usedMana){
+        const availableKeys = Object.keys(this.spendManaEffects)
+            .filter(key => key <= usedMana)
+            .sort((a, b) => a - b); // Optional: sort for consistency
+
+        const allEffects = {
+            caster: [],
+            target: []
+        };
+
+        for (const key of availableKeys) {
+            const effects = this.spendManaEffects[key];
+            if (effects.caster) allEffects.caster.push(...effects.caster);
+            if (effects.target) allEffects.target.push(...effects.target);
+        }
+
+        return allEffects;
     }
 }
 
@@ -642,14 +715,21 @@ class Roll{
         this.target = target;
     }
 }
+
 const spells = {
     0: {},
     1: {
-        "fireBolt": new Spell("Fire Bolt", spellTypes.SPELL,
-            [classTypes.DRUID, classTypes.PALADIN, classTypes.WARLOCK, classTypes.SORCERER, classTypes.WIZARD],
-            1, [new StatMultiplier({ type: statTypes.INT, multipler: 2 }), new StatMultiplier({ type: statTypes.WIS, multipler: 1.5 })],
-            new Damage({ type: damageTypes.FIRE, value: "1d8" }), "Conjure a fire bolt.", new Duration({ type: durationTypes.TURN, value: 1 }), [actionTypes.MAIN],
-            {
+        "fireBolt": new Spell({
+            name: "Fire Bolt",
+            type: spellTypes.SPELL,
+            classess: [classTypes.DRUID, classTypes.PALADIN, classTypes.WARLOCK, classTypes.SORCERER, classTypes.WIZARD],
+            level: 1,
+            modifiers: [new StatMultiplier({ type: statTypes.INT, multipler: 2 }), new StatMultiplier({ type: statTypes.WIS, multipler: 1.5 })],
+            damage: [new Damage({ type: damageTypes.FIRE, value: "1d8" })],
+            description: "Conjure a fire bolt.",
+            castDuration: new Duration({ type: durationTypes.TURN, value: 1 }),
+            actionCost: [actionTypes.MAIN],
+            spendManaEffects: {
                 "2": {
                     caster: [new Effect({name: "Fiery", type: extraEffectsList.Cast, description: "So much power.",
                         effect: new Cast({ spellName: "fireBolt", mana: "1", targetListInOrder: [targetOrderList.LAST_TARGET], castTimes: 1 })})]
@@ -668,38 +748,57 @@ const spells = {
                     ]
                 }
             },
-            new SpellPattern({ pattern: spellPatterns.BOX, range: 200, area: 50, castType: castTypes.FROM_CASTER, canTarget: [targetTypes.ANY] }),
-            [new Roll(diceTypes.D20, rollTypes.ABILITY_THROW, 10)], [new Roll(diceTypes.D20, rollTypes.SAVING_THROW, 20)]
-        ),
-        "holyAura": new Spell("Holy Aura", spellTypes.SPELL, [classTypes.CLERIC, classTypes.PALADIN], 1, [new StatMultiplier({ type: statTypes.DEX, multipler: 1.8 })],
-            new Damage({ type: damageTypes.NONE, value: "0" }), "Apply holy aura to target.", new Duration({ type: durationTypes.INSTANT }), [actionTypes.MAIN],
-            {
+            spellPattern: new SpellPattern({ pattern: spellPatterns.BOX, range: 200, area: 50, castType: castTypes.FROM_CASTER, canTarget: [targetTypes.ANY] }),
+            casterRolls: [new Roll(diceTypes.D20, rollTypes.ABILITY_THROW, 10)],
+            targetRolls: [new Roll(diceTypes.D20, rollTypes.SAVING_THROW, 20)]
+            // animation: new AniDnd({ /* ... */ }) // Example if you add animation data
+        }),
+        "holyAura": new Spell({
+            name: "Holy Aura",
+            type: spellTypes.SPELL,
+            classess: [classTypes.CLERIC, classTypes.PALADIN],
+            level: 1,
+            modifiers: [new StatMultiplier({ type: statTypes.DEX, multipler: 1.8 })],
+            damage: [new Damage({ type: damageTypes.NONE, value: "0" })], // Explicitly setting damage even if none
+            description: "Apply holy aura to target.",
+            castDuration: new Duration({ type: durationTypes.INSTANT }),
+            actionCost: [actionTypes.MAIN],
+            spendManaEffects: {
                 "1": {
                     caster: [],
-                    target: [new Effect({name: "Holy Aura", type: extraEffectsList.Aura, description: "Applys a holy aura around caster.", 
+                    target: [new Effect({name: "Holy Aura", type: extraEffectsList.Aura, description: "Applys a holy aura around caster.",
                                 effect: new Aura({
                                     area: 250, effectType: effectTypes.HEAL,
-                                    value: new Damage({ type: damageTypes.HEALING, value: "1d8" }), 
+                                    value: new Damage({ type: damageTypes.HEALING, value: "1d8" }),
                                     duration: new Duration({ type: durationTypes.TURN, value: 10 }),
                                     triggerActions: [characterActions.TURN_END], targetList: [targetTypes.ALLY], canSpread: false
                                     })})
                             ]
                     }
             },
-            new SpellPattern({ pattern: spellPatterns.TARGET, range: 250, area: 50, castType: castTypes.ON_LOCATION, canTarget: [targetTypes.ALLY] }),
-            [], []),
+            spellPattern: new SpellPattern({ pattern: spellPatterns.TARGET, range: 250, area: 50, castType: castTypes.ON_LOCATION, canTarget: [targetTypes.ALLY] }),
+            // casterRolls: [], // Default, can omit
+            // targetRolls: []  // Default, can omit
+        }),
     },
     2: {
-        "conjureSlave": new Spell("Conjure Your Slave", spellTypes.SPELL, [classTypes.WARLOCK, classTypes.WIZARD, classTypes.DRUID],
-            2, [new StatMultiplier({ type: statTypes.CHA, multipler: 2 })], new Damage({ type: damageTypes.NONE, value: "0" }), "Conjure your beloved slave.",
-            new Duration({ type: durationTypes.TURN, value: 1 }), [actionTypes.MAIN],
-            {
+        "conjureSlave": new Spell({
+            name: "Conjure Your Slave",
+            type: spellTypes.SPELL,
+            classess: [classTypes.WARLOCK, classTypes.WIZARD, classTypes.DRUID],
+            level: 2,
+            modifiers: [new StatMultiplier({ type: statTypes.CHA, multipler: 2 })],
+            damage: [new Damage({ type: damageTypes.NONE, value: "0" })],
+            description: "Conjure your beloved slave.",
+            castDuration: new Duration({ type: durationTypes.TURN, value: 1 }),
+            actionCost: [actionTypes.MAIN],
+            spendManaEffects: {
                 "2": {
                     caster: [
                         new Effect({name: "Summon Your Slave", type: extraEffectsList.Summon, description: "Summon your peasent.",
                             effect: new Summon({
-                                id: "slave", 
-                                castDuration: new Duration({ type: durationTypes.INSTANT}), 
+                                id: "slave",
+                                castDuration: new Duration({ type: durationTypes.INSTANT}),
                                 summonDuration: new Duration({type: durationTypes.NEXT_LONG_REST})})}
                         ),
                     ],
@@ -709,38 +808,45 @@ const spells = {
                     caster: [
                         new Effect({name: "Extra Help", type: extraEffectsList.Summon, description: "Your slave summons an extra.",
                             effect: new Summon({
-                                id: "farmer-1", 
-                                castDuration: new Duration({ type: durationTypes.INSTANT}), 
+                                id: "farmer-1",
+                                castDuration: new Duration({ type: durationTypes.INSTANT}),
                                 summonDuration: new Duration({type: durationTypes.NEXT_LONG_REST})})}
                         ),
                     ],
                     target: []
                 }
             },
-            new SpellPattern({ pattern: spellPatterns.CIRCULAR, range: 50, area: 50, castType: castTypes.ON_LOCATION, canTarget: [targetTypes.GROUND] }),
-            [], []
-        ),
-        "conjureWorm": new Spell("Conjure Dweller Worm", spellTypes.SPELL, [classTypes.WARLOCK, classTypes.WIZARD, classTypes.DRUID],
-            2, [new StatMultiplier({ type: statTypes.CHA, multipler: 2 })], new Damage({ type: damageTypes.NONE, value: "0" }),
-            "Cast a summoning spell.",
-            new Duration({ type: durationTypes.TURN, value: 1 }), [actionTypes.MAIN],
-            {
+            spellPattern: new SpellPattern({ pattern: spellPatterns.CIRCULAR, range: 50, area: 50, castType: castTypes.ON_LOCATION, canTarget: [targetTypes.GROUND] }), // Assuming GROUND is a target type or needs definition
+            // casterRolls: [], // Default, can omit
+            // targetRolls: []  // Default, can omit
+        }),
+        "conjureWorm": new Spell({
+            name: "Conjure Dweller Worm",
+            type: spellTypes.SPELL,
+            classess: [classTypes.WARLOCK, classTypes.WIZARD, classTypes.DRUID],
+            level: 2,
+            modifiers: [new StatMultiplier({ type: statTypes.CHA, multipler: 2 })],
+            damage: [new Damage({ type: damageTypes.NONE, value: "0" })],
+            description: "Cast a summoning spell.",
+            castDuration: new Duration({ type: durationTypes.TURN, value: 1 }),
+            actionCost: [actionTypes.MAIN],
+            spendManaEffects: {
                 "2": {
                     caster: [
                         new Effect({name: "Dweller Worm", type: extraEffectsList.Summon, description: "Conjure a dweller worm from the depts of hell.",
                             effect: new Summon({
-                                id: "dwellerWorm", 
-                                castDuration: new Duration({ type: durationTypes.INSTANT}), 
+                                id: "dwellerWorm",
+                                castDuration: new Duration({ type: durationTypes.INSTANT}),
                                 summonDuration: new Duration({type: durationTypes.NEXT_LONG_REST}),
                                 quantity: 5,
                                 summonLocation: summonLocations.ON_FIRST_HIT
                             })}
                         ),
-                        new Effect({name: "Cast Frenzy", type: extraEffectsList["Buff/Debuff"], 
+                        new Effect({name: "Cast Frenzy", type: extraEffectsList["Buff/Debuff"],
                             description: "Applies haste which lowers turn count for casting or attacking.",
                             effect: new BuffDebuff({
-                                effectType: effectTypes.HASTE, 
-                                value: "10",
+                                effectType: effectTypes.HASTE,
+                                value: "10", // Assuming value is a string or number indicating haste amount/percentage?
                                 duration: new Duration({ type: durationTypes.TURN, value: 5 }),
                                 triggerActions: [characterActions.CASTING]
                             })}
@@ -749,27 +855,45 @@ const spells = {
                     target: []
                 }
             },
-            new SpellPattern({ 
-                pattern: spellPatterns.CIRCULAR, 
-                range: 50, 
-                area: 50, 
-                castType: castTypes.ON_LOCATION, 
-                canTarget: [targetTypes.ANY] 
+            spellPattern: new SpellPattern({
+                pattern: spellPatterns.CIRCULAR,
+                range: 50,
+                area: 50,
+                castType: castTypes.ON_LOCATION,
+                canTarget: [targetTypes.ANY]
             }),
-            [], []
-        ),
-        "emergencyHeal": new Spell("Emergency Heal", spellTypes.CANTRIP, [classTypes.PALADIN, classTypes.CLERIC], 2, [new StatMultiplier({ type: statTypes.WIS, multipler: 2 })],
-            new Damage({ type: damageTypes.HEALING, value: "2d8" }), "Heals around instantly.", new Duration({ type: durationTypes.INSTANT }), [actionTypes.BONUS], {},
-            new SpellPattern({ pattern: spellPatterns.CIRCULAR, range: 200, area: 200, castType: castTypes.AROUND_CASTER, canTarget: [targetTypes.ALLY] }),
-            [], [])
+            // casterRolls: [], // Default, can omit
+            // targetRolls: []  // Default, can omit
+        }),
+        "emergencyHeal": new Spell({
+            name: "Emergency Heal",
+            type: spellTypes.CANTRIP, // This should probably be spellTypes.SPELL if it has a level and cost, or level 0 if truly a cantrip? Assuming SPELL based on level 2. Changed to CANTRIP as per original code.
+            classess: [classTypes.PALADIN, classTypes.CLERIC],
+            level: 2, // Level was 2 in original definition for emergencyHeal
+            modifiers: [new StatMultiplier({ type: statTypes.WIS, multipler: 2 })],
+            damage: [new Damage({ type: damageTypes.HEALING, value: "2d8" })],
+            description: "Heals around instantly.",
+            castDuration: new Duration({ type: durationTypes.INSTANT }),
+            actionCost: [actionTypes.BONUS],
+            // spendManaEffects: {}, // Default, can omit
+            spellPattern: new SpellPattern({ pattern: spellPatterns.CIRCULAR, range: 200, area: 200, castType: castTypes.AROUND_CASTER, canTarget: [targetTypes.ALLY] }),
+            // casterRolls: [], // Default, can omit
+            // targetRolls: []  // Default, can omit
+        })
     },
     3: {},
     4: {
-        "lightningTrident": new Spell("Lightning Trident", spellTypes.SPELL,
-            [classTypes.DRUID, classTypes.SORCERER, classTypes.WIZARD],
-            4, [new StatMultiplier({ type: statTypes.INT, multipler: 3 }), new StatMultiplier({ type: statTypes.WIS, multipler: 1.5 })],
-            new Damage({ type: damageTypes.LIGHTNING, value: "3d8" }), "Conjure a fire bolt.", new Duration({ type: durationTypes.TURN, value: 1 }), [actionTypes.MAIN],
-            {
+        "lightningTrident": new Spell({
+            name: "Lightning Trident",
+            type: spellTypes.SPELL,
+            classess: [classTypes.DRUID, classTypes.SORCERER, classTypes.WIZARD],
+            level: 4,
+            modifiers: [new StatMultiplier({ type: statTypes.INT, multipler: 3 }), new StatMultiplier({ type: statTypes.WIS, multipler: 1.5 })],
+            damage: [new Damage({ type: damageTypes.LIGHTNING, value: "3d8" })],
+            description: "Conjure a lightning trident strike.", // Slightly improved description
+            castDuration: new Duration({ type: durationTypes.TURN, value: 1 }),
+            actionCost: [actionTypes.MAIN],
+            spendManaEffects: {
                 "5": {
                     caster: [new Effect({name: "Tridents Rage", type: extraEffectsList["Buff/Debuff"], description: "Ur new attack will deal extra damage.",
                         effect: new BuffDebuff({
@@ -780,9 +904,10 @@ const spells = {
                     target: []
                 }
             },
-            new SpellPattern({ pattern: spellPatterns.CONE_UPWARD, range: 150, area: 100, castType: castTypes.FROM_CASTER, canTarget: [targetTypes.ANY] }),
-            [new Roll(diceTypes.D20, rollTypes.ABILITY_THROW, 10)], [new Roll(diceTypes.D20, rollTypes.SAVING_THROW, 20)]
-        )
+            spellPattern: new SpellPattern({ pattern: spellPatterns.CONE_UPWARD, range: 150, area: 100, castType: castTypes.FROM_CASTER, canTarget: [targetTypes.ANY] }),
+            casterRolls: [new Roll(diceTypes.D20, rollTypes.ABILITY_THROW, 10)],
+            targetRolls: [new Roll(diceTypes.D20, rollTypes.SAVING_THROW, 20)]
+        })
     },
     5: {},
     6: {},
