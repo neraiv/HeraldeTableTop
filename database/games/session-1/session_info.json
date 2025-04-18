@@ -1,1 +1,44 @@
-{"chat_idx": 66, "turnType": "turnBased", "current_turn": 1, "locations": {"faramir": {"id": "faramir", "user": "robotdeha", "turnStatus": "continue", "currentScene": {"name": "The Depths", "layer": "1"}}, "sir_gawain": {"id": "sir_gawain", "user": "rebella", "turnStatus": "continue", "currentScene": {"name": "The Depths", "layer": "1"}}, "mountainless_dwarf": {"id": "mountainless_dwarf", "user": "yilmo", "turnStatus": "continue", "currentScene": {"name": "The Royal Bank", "layer": "1"}}}}
+{
+  "chat_idx": 66,
+  "turnType": "turnBased",
+  "current_turn": 1,
+  "flagRelations": {
+    "ally": {
+      "allies": "ally",
+      "enemies": "enemy"
+    },
+    "enemy": {
+      "allies": "enemy",
+      "enemies": "ally"
+    }
+  },
+  "locations": {
+    "faramir": {
+      "id": "faramir",
+      "user": "robotdeha",
+      "turnStatus": "continue",
+      "currentScene": {
+        "name": "The Depths",
+        "layer": "1"
+      }
+    },
+    "sir_gawain": {
+      "id": "sir_gawain",
+      "user": "rebella",
+      "turnStatus": "continue",
+      "currentScene": {
+        "name": "The Depths",
+        "layer": "1"
+      }
+    },
+    "mountainless_dwarf": {
+      "id": "mountainless_dwarf",
+      "user": "yilmo",
+      "turnStatus": "continue",
+      "currentScene": {
+        "name": "The Royal Bank",
+        "layer": "1"
+      }
+    }
+  }
+}

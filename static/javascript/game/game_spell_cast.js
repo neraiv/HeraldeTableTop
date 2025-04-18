@@ -112,6 +112,7 @@ class SpellCast {
         this.modifiedSpellData = new Spell(database.spells[spellName]);
         this.tokenPosition = database.sceneData.chars[tokenID];
         this.tokenCharData = new Character(database.chars[tokenID]);
+        this.castQueue = [];
     }
 
     checkInit(){
@@ -138,9 +139,10 @@ class SpellCast {
         }
     }
 
-    getCharstatMultipliers(){
+    applyCharStatMultipliers(){
 
     }
+
 
     applyEffects(effects_list){
         for (const effect of effects_list) {
@@ -178,7 +180,7 @@ class SpellCast {
                 this.tokenCharData.addAura(effect);
             } else if (effect instanceof Summon) {
                 this.tokenCharData.addSummon(effect);
-            } else if (effect instanceof Effect) {
+            } else if (effect instanceof Cast) {
                 this.tokenCharData.addEffect(effect);
             } else {
                 userWarn(`Unknown effect type: ${effect}`);

@@ -2,7 +2,6 @@
     "mountainless_dwarf": {
         "char": {
             "id": "mountainless_dwarf",
-            "summons" : {},
             "controlledBy": "yilmo",
             "level": 0,
             "name": "Dağsız Uluğ Bey",
@@ -71,7 +70,6 @@
     "sir_gawain": {
         "char": {
             "id": "sir_gawain",
-            "summons" : {},
             "controlledBy": "robotdeha",
             "level": 0,
             "name": "Sir Gawain",
@@ -146,7 +144,6 @@
     "faramir": {
         "char": {
             "id": "faramir",
-            "summons" : {},
             "controlledBy": "yilmo",
             "level": 0,
             "name": "Faramir",

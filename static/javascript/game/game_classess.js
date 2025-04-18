@@ -387,12 +387,16 @@ class Character {
         classess = [],
         race = "",
         hp = 100,
-        dex = 12,//gameSettings.MIN_STAT_POINT,
-        con = 12,//gameSettings.MIN_STAT_POINT,
-        int = 8,//gameSettings.MIN_STAT_POINT,
-        wis = 12,//gameSettings.MIN_STAT_POINT,
-        cha = 12,//gameSettings.MIN_STAT_POINT,
-        str = 12,//gameSettings.MIN_STAT_POINT,
+        vision = 240,
+        flag = "ally",
+        stats = {
+            dex: 12,//gameSettings.MIN_STAT_POINT,
+            con: 12,//gameSettings.MIN_STAT_POINT,
+            int: 8,//gameSettings.MIN_STAT_POINT,
+            wis: 12,//gameSettings.MIN_STAT_POINT,
+            cha: 12,//gameSettings.MIN_STAT_POINT,
+            str: 12,//gameSettings.MIN_STAT_POINT,
+        },
         action = characterActions.IDLE,
         extraEffects = [],
         spellSlots = {
@@ -409,7 +413,7 @@ class Character {
             1: ['Fireball', 'Ice Cone', 'Heralde', 'Pillar of Light'], 
             2: ['Lightning Ray', 'Fire Hands', 'Conjure Mountainless Dwarf']
         },
-        inventory = null,
+        inventory = new Inventory(),
         controlling = []
     } = {}) {
         this.id = id;
