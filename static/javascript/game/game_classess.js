@@ -422,12 +422,10 @@ class Character {
         this.name = name;
         this.classess = classess;
         this.race = race;
-        this.dex = dex;
-        this.con = con;
-        this.int = int;
-        this.wis = wis;
-        this.cha = cha;
-        this.str = str;
+        this.hp = hp;
+        this.vision = vision;
+        this.flag = flag; // Assuming flag is a string or number indicating the character's allegiance
+        this.stats = stats; // Assuming stats is an object with keys like dex, con, etc.
         this.action = action;
         this.extraEffects = extraEffects;
         this.spellSlots = spellSlots;
@@ -488,7 +486,6 @@ class Character {
         }
     }
 }
-
 class SpellPattern  {
     constructor({
         pattern,

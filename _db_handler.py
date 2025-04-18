@@ -23,8 +23,8 @@ class DBHandeler():
     DB_GAMES_PATH = os.path.join(DB_MAIN_PATH, 'database', 'games')
     
     def __init__(self):  
-        self.server_info : dict   = self.getGameFile("server_info.json", DatabaseWhere.FROM_ROOT)
-        self.users       : dict   = self.getGameFile("users.json", DatabaseWhere.FROM_ROOT)
+        self.server_info : dict   = self.getGameFile("status.json", Where.FROM_ROOT)
+        self.users       : dict   = self.getGameFile("users.json", Where.FROM_ROOT)
 
         self.init_server_info()
         self.init_users()
@@ -40,7 +40,7 @@ class DBHandeler():
         self.summonables : dict   = self.getGameFile("summonables.json")
         
         self.defaults : dict = {
-            "char" : self.getGameFile("char.json", DatabaseWhere.FROM_DEFAULTS)
+            "char" : self.getGameFile("char.json", Where.FROM_DEFAULTS)
         }
         
         active_session = self.server_info["active_session"]
@@ -171,9 +171,9 @@ class DBHandeler():
     ########################################################################  
     def sync(self, server_info = False, users = False, session_info = False, rules = False, spells = False, chars = False, scenes = False, summonables = False):
         if server_info:
-            self.saveGameFile(self.server_info, "server_info.json", DatabaseWhere.FROM_ROOT)
+            self.saveGameFile(self.server_info, "status.json", Where.FROM_ROOT)
         if users:
-            self.saveGameFile(self.users, "users.json", DatabaseWhere.FROM_ROOT)
+            self.saveGameFile(self.users, "users.json", Where.FROM_ROOT)
         if session_info:
             self.saveGameFile(self.session_info, "session_info.json")
         if rules:
@@ -187,12 +187,12 @@ class DBHandeler():
         if summonables:
             self.saveGameFile(self.summonables, "summonables.json")
             
-    def getGameFile(self, name, where = DatabaseWhere.FROM_SESSION):
+    def getGameFile(self, name, where = Where.FROM_SESSION):
         path = ""
-        if where == DatabaseWhere.FROM_SESSION:
+        if where == Where.FROM_SESSION:
             active_session = self.server_info["active_session"]       
             path = os.path.join(DBHandeler.DB_GAMES_PATH, active_session, name)
-        elif where == DatabaseWhere.FROM_DEFAULTS:
+        elif where == Where.FROM_DEFAULTS:
             path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", "defaults", name)
         else:
             path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", name)
@@ -200,12 +200,12 @@ class DBHandeler():
         with open(path, 'r', encoding="utf-8") as file:
             return json.load(file)
     
-    def saveGameFile(self, data, name, where = DatabaseWhere.FROM_SESSION):
+    def saveGameFile(self, data, name, where = Where.FROM_SESSION):
         path = ""
-        if where == DatabaseWhere.FROM_SESSION:
+        if where == Where.FROM_SESSION:
             active_session = self.server_info["active_session"]       
             path = os.path.join(DBHandeler.DB_GAMES_PATH, active_session, name)
-        elif where == DatabaseWhere.FROM_DEFAULTS:
+        elif where == Where.FROM_DEFAULTS:
             path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", "defaults", name)
         else:
             path = os.path.join(DBHandeler.DB_MAIN_PATH,"database", name)
