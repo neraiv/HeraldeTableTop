@@ -1,57 +1,3 @@
-async function  initDatabase(initStates){
-    try {
-        // Fetch server info
-        const _serverInfo = await sendRequest({ type: "update" , payload: "server_info"});
-        const _sessionInfo = await sendRequest({ type: "update" , payload: "session_info"});
-        const _serverRules = await sendRequest({type: "update" , payload: "rules"})
-        const _sceneData = await sendRequest({type: "update", payload: "scene"})
-        const _register = await sendRequest({event: "register"})
-
-        if (_register.success === true){
-            initStates.register = true
-        }
-
-        if (_serverInfo.success === true) {
-            database.serverInfo = _serverInfo.data;
-            initStates.serverInfo = true;
-        }
-        if (_sessionInfo.success === true) {
-            database.sessionInfo = _sessionInfo.data;
-            initStates.sessionInfo = true;
-        }
-        if (_serverRules.success === true) {
-            database.serverRules = _serverRules.data;
-            initStates.serverRules = true;
-        }
-        if(_sceneData.success === true){
-            database.sceneData = _sceneData.data
-            initStates.sceneData = true;
-        }
-
-    } catch (error) {
-        // Handle unexpected errors
-        return false
-    }
-
-    // Wait for all tasks to complete before returning
-    if (Object.values(initStates).every(state => state === true)) {
-        console.log("Database initialized successfully.");
-        return true;
-    } else {
-        console.warn("Failed to initialize database:", initStates);
-        return false;
-    }
-}
-
-async function initSpells(){
-    const _listSpells = await sendRequest({type: "update", payload: "spells"})
-    if (_listSpells.success === true){
-        database.spells = _listSpells.data
-
-        populateSpellBook()
-    }
-}  
-
 async function initGameBoardFunctions(){
     const maxZoomOut = 0.6 // If its lower grids dissaper
     const maxZoomIn = 5 // it can be higher
@@ -115,14 +61,10 @@ async function initGameBoardFunctions(){
     });
 }
 
-async function initGameBoard() {
+async function initGameBoard(gridSize, width, height) {
     console.log("Initializing game board...")  
 
-    const gridSize = database.sceneData.grid_size
-    const width = database.sceneData.width
-    const height = database.sceneData.height
-
-    gridBackground.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+    // gridBackground.style.backgroundSize = `${gridSize}px ${gridSize}px`; // FUTURE: Change it to work with canvas
 
     gameboardContent.style.width = `${width}px`
     gameboardContent.style.height = `${height}px`;
@@ -132,29 +74,15 @@ async function initGameBoard() {
     gameboardContent.style.transform = `translate(0px, 0px) scale(1)`;
 }
 
-async function initScene(){
-    console.log("Initializing layer...")
-
-    // future get image  width and heigh with scale factor
-    backgroundLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
-    characterLayer.innerHTML = "" // FUTURE we may keep old layer in case of fast returning
-    audioAmbiance.pause()
-
-    Object.keys(gameSceneData).forEach((key) => gameSceneData[key] = [])
-
-    if(!database.sceneData.layer) return alert("Layer not found in the scene")
-
-    topBarSceneName.textContent = database.sessionInfo.locations[player.charId].currentScene.name
-    topBarLayerName.textContent = "Layer " + database.sessionInfo.locations[player.charId].currentScene.layer
-
-    const background = await addBackground(database.sceneData.layer.width, database.sceneData.layer.height, database.sceneData.layer.x, database.sceneData.layer.y, "static/images/background/"+database.sceneData.layer.img)
+function gameBoardPan(x = null, y = null, scale = null) {
+    x = x ?? boardEvent.panX;
+    y = y ?? boardEvent.panY;
+    scale = scale ?? boardEvent.scale;
     
-    await updateLocations()
+    gameboardContent.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
 
-    await updateFog()
-
-    if (database.sceneData.layer.ambiance) {
-        audioAmbiance.src = `static/images/background/${database.sceneData.layer.ambiance}`;        
-    }
-    
+    // Update the pan values
+    boardEvent.panX = x;
+    boardEvent.panY = y;
+    boardEvent.scale = scale;
 }

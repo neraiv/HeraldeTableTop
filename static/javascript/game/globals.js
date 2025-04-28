@@ -5,12 +5,8 @@ let player = {}
 const audioAmbiance = new Audio();
 
 const gameboardContent = document.getElementById('gameboard-content');
-const userInterface = document.getElementById('user-interface');
-const gridBackground = document.getElementById('grid-background');
-const backgroundLayer = document.getElementById('background-layer')
-const characterLayer = document.getElementById('character-layer')
-const fogLayer = document.getElementById('fog-layer')
-const fogCanvas = document.getElementById('fog-canvas');
+
+const app = new PIXI.Application();
 
 const dragOverlay = document.getElementById('drag-overlay');
 

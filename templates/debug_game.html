@@ -19,6 +19,8 @@
     <link rel = "stylesheet" href ="static/styless/user_warn.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined">
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@8.9.1/dist/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body style= "background-color: #000000;">
     <div id="user-interface">
@@ -31,45 +33,22 @@
     </div>
 
     <div id="gameboard ">
-        <div id="gameboard-content">
-            <div id="grid-background"></div>
-            <div id="background-layer" class="layer passive"></div> 
-            <div id="character-layer" class="layer active"></div>
-            <div id="fog-layer" class="layer passive">
-                <canvas id="fog-canvas" width="100%" height="100%" style="
-                    height: 100%;
-                    width: 100%;
-                "></canvas>
-            </div>
-            <div id="drag-overlay" class="drag-circle"></div>
-        </div>
+        <div id="gameboard-content"></div>
     </div>
 
     <script src="/static/javascript/shared_functions.js"></script>
-
-    <script src="/static/javascript/game/game_classess.js"></script>
+    
     <script src="/static/javascript/game/consts.js"></script>
     <script src="/static/javascript/game/globals.js"></script>
 
-    <script src="/static/javascript/game/database_classess.js"></script> 
-    <script src="/static/javascript/game/database.js"></script>
     <script src="/static/javascript/game/ui_bringup.js"></script>
+    <script src="/static/javascript/game/gameboard.js"></script>
 
-    <script src="/static/javascript/game/ui_sheet_char.js"></script>
-    <script src="/static/javascript/game/ui_sheet_inventory.js"></script>
-    <script src="/static/javascript/game/ui_sheet_spell.js"></script>
-    <script src="/static/javascript/game/ui_sheet_quest.js"></script>
+    <script src="/static/javascript/game/core_objects.js"></script>
 
-    <script src="/static/javascript/game/ui_token_background.js"></script>
-    <script src="/static/javascript/game/ui_token_char.js"></script>
-    <script src="/static/javascript/game/ui_token_npc.js"></script>
-    <script src="/static/javascript/game/ui_token_objects.js"></script>
-    <script src="/static/javascript/game/ui_token_portal.js"></script>
+    <script src="/static/javascript/game/token_char.js"></script>
+    <script src="/static/javascript/game/token_ground.js"></script>
 
-    <script src="/static/javascript/game/ui_func_chat.js"></script>
-    <script src="/static/javascript/game/ui_func_inits.js"></script>
-    <script src="/static/javascript/game/ui_func_gameboard.js"></script>
-    
-    <script src="/static/javascript/game/ui_functions.js"></script>
+    <script src="/static/javascript/game/init.js"></script>
 </body>
 </html>
