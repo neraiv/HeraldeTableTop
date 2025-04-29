@@ -53,12 +53,10 @@ class HdCharToken extends HdTokenObject {
         
         this.buttons.push(button);
         this.sprite.addChild(button);
-        console.log('Button added to sprite:', button);
     }
 
 
     showButtons() {
-        console.log('Showing buttons:', this.buttons.length);
         this.buttons.forEach(button => {
             button.visible = true;
             console.log('Animating button to:', {x: button.finalX, y: button.finalY});
@@ -71,7 +69,6 @@ class HdCharToken extends HdTokenObject {
     }
 
     hideButtons() {
-        console.log('Hiding buttons');
         this.buttons.forEach(button => {
             gsap.to(button, {
                 x: this.width / 2 - this.buttonSize / 2,

@@ -324,7 +324,7 @@ contentAllSpells.innerHTML = ""
 
 const warnPopup = document.getElementById("ui-warn-popup");
 
-gameboardContent.style.width = `${1000}px`
-gameboardContent.style.height = `${1000}px`;
-gameboardContent.style.top = `${-1000/2}px`
-gameboardContent.style.left = `${-1000/2}px`;
+gameboardContent.style.width = `${2000}px`
+gameboardContent.style.height = `${2000}px`;
+gameboardContent.style.top = `${-2000/2}px`
+gameboardContent.style.left = `${-2000/2}px`;

@@ -15,7 +15,7 @@ function removeTestDots(parent, dotlist){
 }
 
 function calcButtonsAroundLocation(buttonSize, radius, angle){
-    const finalX = (radius * 2) * Math.cos((angle * Math.PI) / 180) + radius - buttonSize / 2;
+    const finalX = (radius * 2) * Math.cos((angle * Math.PI) / 180) + radius + buttonSize / 2;
     const finalY = -(radius * 2) * Math.sin((angle * Math.PI) / 180) + radius - buttonSize / 2;
     return {finalX, finalY}
 }

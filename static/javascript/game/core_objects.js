@@ -18,7 +18,7 @@ class HdTokenObject {
         const texture = PIXI.Assets.get(this.texturePath);
     
         // Force nearest neighbor scaling (no blur when resized)
-        texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+        texture.baseTexture.scaleMode = PIXI.SCALE_MODES.LINEAR;
     
         const sprite = new PIXI.Sprite(texture);
         sprite.width = this.width;

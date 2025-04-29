@@ -1,10 +1,15 @@
+function setupPIXI(){
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODE.LINEAR;
+}
+
+
 document.addEventListener("DOMContentLoaded", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     player.userKey = urlParams.get("key")
     player.userName = urlParams.get("userName")
     player.charId = urlParams.get("charId")
     
-    await app.init({background: '#1099bb', resizeTo: gameboardContent });
+    await app.init({width: 1000, height: 1000, background: '#1099bb'});
     app.stage.sortableChildren = true;
     gameboardContent.appendChild(app.canvas);
 
