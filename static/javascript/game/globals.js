@@ -5,8 +5,11 @@ let player = {}
 const audioAmbiance = new Audio();
 
 const gameboardContent = document.getElementById('gameboard-content');
+const userInterface = document.getElementById('user-interface');
 
 const app = new PIXI.Application();
+const uiLayer = new PIXI.Container();
+const gameLayer = new PIXI.Container();
 
 const dragOverlay = document.getElementById('drag-overlay');
 

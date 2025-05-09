@@ -7,11 +7,19 @@ import json
 import os
 import atexit
 
-from _db_handler import DBHandeler
+from __socket_event import SocketReply, SocketUpdate
+from _1_database_handler import DatabaseHandeler
+from _2_user_handler import UserHandler
+from _3_scene_handler import SceneHandler
+
 from handler_keys import controlKey
 
+db = DatabaseHandeler()
+userHandler = UserHandler()
+sceneHandler = SceneHandler()
 
-db = DBHandeler()
+userHandler._setDatabaseReference(db)
+sceneHandler._setDatabaseReference(db)
 
 app = Flask(__name__)
 app.secret_key = "48c80162841c766a3bee0d888fdaeacb4e6f1792710d34e0"
@@ -28,7 +36,7 @@ def handle_register(msg :dict):
     try:
         key = msg["key"]
             
-        userId, userInfo = db.controlKey(key)
+        userId, userInfo = userHandler.controlKey(key)
         
         if userId and userInfo:
             connections[userId] = request.sid
@@ -40,27 +48,16 @@ def handle_register(msg :dict):
         
 
         
-@socketio.on('request')
+@socketio.on('database')
 def handle_message(msg :dict):
     try:
         key = msg["key"]
         
-        userId, userInfo = db.controlKey(key)
+        userId, userInfo = userHandler.controlKey(key)
         
-        if userId and userInfo:
-            msg.pop("key")
-            socket_reply, socket_update = db.socket_handler(msg, userId, userInfo)
-            emit("response", socket_reply, room=request.sid)
-            
-            if socket_update:
-                for item in socket_update:
-                    isAllUsers = item["all_users"]
-                    item.pop("all_users")
-                    if isAllUsers:
-                        emit("change", item)
-                    else:
-                        emit("change", item, room=request.sid)
-            
+        
+        
+        
     except json.JSONDecodeError:
         # Send back the response
         emit("error", jsonify({"error": f"Error decoding JSON in function {__name__}"}), room=request.sid)
@@ -72,7 +69,7 @@ def home():
 @app.route('/game')  # Route with parameters
 def game():
     key = request.args.get('key')
-    userName, user = db.controlKey(key)
+    userName, user = userHandler.controlKey(key)
     
     try:
         if userName and user:
@@ -118,7 +115,7 @@ def login():
 def get_objects():
     # CONTROL KEY
     key = request.args.get('key')
-    userId, userInfo = db.controlKey(key)
+    userId, userInfo = userHandler.controlKey(key)
     
     if not userId and not userInfo:
         return jsonify({"error": "Invalid key."}), 401    
@@ -128,7 +125,7 @@ def get_objects():
 def get_background():
         # CONTROL KEY
     key = request.args.get('key')
-    userId, userInfo = db.controlKey(key)
+    userId, userInfo = userHandler.controlKey(key)
     
     if not userId and not userInfo:
         return jsonify({"error": "Invalid key."}), 401
@@ -139,7 +136,7 @@ def get_background():
 def get_npcs():
         # CONTROL KEY
     key = request.args.get('key')
-    userId, userInfo = db.controlKey(key)
+    userId, userInfo = userHandler.controlKey(key)
     
     if not userId and not userInfo:
         return jsonify({"error": "Invalid key."}), 401

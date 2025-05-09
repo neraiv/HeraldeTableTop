@@ -1,85 +1,119 @@
 class HdCharToken extends HdTokenObject {
-    constructor({charID, x, y, width, height, texturePath}) {
-        super(charID, x, y, width, height, texturePath, charTokenZIndex);
-        this.buttons = [];
-        this.buttonSize = 80;
-        this.radius = width / 2;
+    constructor({charID, x, y, width, height, texturePath, name}) {
+        super(charID, x, y, width, height, texturePath, charTokenZIndex, name);
+        this.buttonInventory = null;
+        this.buttonSpellbook = null;
+        this.buttonWeapon = null;
+        this.flags = {
+            hoverChar: false,
+            hoverInventory: false,
+            hoverSpellbook: false,
+            hoverWeapon: false
+        }
+        this.hideButtonTimeout = null;
+        this.initButtons();
         console.log('HdCharToken created:', {charID, x, y, width, height});
     }
 
+    initButtons() {
+        const buttonSize = 50;
+        const buttonPadding = 1.5 * buttonSize;
+        const buttonOffset = 50;
+
+        this.buttonInventory = createPixieImageButton(buttonSize, {source: '../static/images/menu-icons/inventory.png'});
+        this.buttonInventory.visible = false;
+        this.buttonInventory.x = this.width / 2 - buttonSize / 2 + this.x  
+        this.buttonInventory.y = this.y - buttonOffset
+        this.buttonInventory.on('pointerover', () => {
+            this.flags.hoverInventory = true;
+            this.handleButtonsVisiblty();
+        });
+        this.buttonInventory.on('pointerout', () => {
+            this.flags.hoverInventory = false;
+            this.handleButtonsVisiblty();
+        }); 
+        this.buttonInventory.on('pointerdown', () => {
+            displayInventory(this.charID, database.chars[this.charID].char.inventory, event.clientX, event.clientY);
+        });
+        uiLayer.addChild(this.buttonInventory);
+
+        this.buttonSpellbook = createPixieImageButton(buttonSize, {source: '../static/images/menu-icons/spellbook.png'});
+        this.buttonSpellbook.visible = false;
+        this.buttonSpellbook.x = this.width / 2 - buttonSize / 2 + this.x - buttonPadding;
+        this.buttonSpellbook.y = this.y - buttonOffset;
+        this.buttonSpellbook.on('pointerover', () => {
+            this.flags.hoverSpellbook = true;
+            this.handleButtonsVisiblty();
+        });
+        this.buttonSpellbook.on('pointerout', () => {
+            this.flags.hoverSpellbook = false;
+            this.handleButtonsVisiblty();
+        }); 
+        this.buttonSpellbook.on('pointerdown', () => {
+            displaySpellbook(this.charID, database.chars[this.charID].char.spellbook, event.clientX, event.clientY);
+        });
+        uiLayer.addChild(this.buttonSpellbook);
+        
+        this.buttonWeapon = createPixieImageButton(buttonSize, {source: '../static/images/menu-icons/sword.png'});
+        this.buttonWeapon.visible = false;
+        this.buttonWeapon.x = this.width / 2 - buttonSize / 2 + this.x + buttonPadding;
+        this.buttonWeapon.y = this.y - buttonOffset;
+        this.buttonWeapon.on('pointerover', () => {
+            this.flags.hoverWeapon = true;
+            this.handleButtonsVisiblty();
+        });
+        
+        this.buttonWeapon.on('pointerout', () => {
+            this.flags.hoverWeapon = false;
+            this.handleButtonsVisiblty();
+        });
+
+        this.buttonWeapon.on('pointerdown', () => {
+            displayWeapon(this.charID, database.chars[this.charID].char.weapon, event.clientX, event.clientY);
+        });
+        uiLayer.addChild(this.buttonWeapon); 
+    }
+
     onHover() {
-        console.log('onHover called');
         this.setHighlight(true);
         this.showButtons();
     }
 
     onLeave() {
-        console.log('onLeave called');
         this.setHighlight(false);
-        this.hideButtons();
+        this.setHideButtonTimeout();
     }
 
-    addButton(angle, texturePath, onClick) {
-        console.log('Adding button:', {angle, texturePath});
-        
-        // Create a colored rectangle as fallback
-        const graphics = new PIXI.Graphics();
-        graphics.beginFill(0x3498db); // Blue color
-        graphics.drawRoundedRect(0, 0, this.buttonSize, this.buttonSize, 5);
-        graphics.endFill();
-        
-        // Create sprite with texture or graphics
-        const button = new PIXI.Sprite();
-
-        button.texture = app.renderer.generateTexture(graphics);
-        
-        
-        button.width = this.buttonSize;
-        button.height = this.buttonSize;
-        button.interactive = true;
-        button.buttonMode = true;
-        
-        // Calculate final position
-        const {finalX, finalY} = calcButtonsAroundLocation(this.buttonSize, this.width, angle);
-        button.finalX = finalX;
-        button.finalY = finalY;
-        
-        // Set initial position to center
-        button.x = this.width / 2 - this.buttonSize / 2 + this.x;
-        button.y = this.height / 2 - this.buttonSize / 2 + this.y;
-        
-        // Add click handler
-        button.on('pointerdown', onClick);
-        
-        this.buttons.push(button);
-        this.sprite.addChild(button);
+    handleButtonsVisiblty(){
+        if(this.flags.hoverChar || this.flags.hoverInventory || this.flags.hoverSpellbook || this.flags.hoverWeapon){
+            if(this.hideButtonTimeout){
+                clearTimeout(this.hideButtonTimeout);
+                this.hideButtonTimeout = null;
+            }
+            this.showButtons();
+        } else {
+            this.setHideButtonTimeout();
+        }
     }
-
 
     showButtons() {
-        this.buttons.forEach(button => {
-            button.visible = true;
-            console.log('Animating button to:', {x: button.finalX, y: button.finalY});
-            gsap.to(button, {
-                x: button.finalX,
-                y: button.finalY,
-                duration: 0.3
-            });
-        });
+        this.buttonInventory.visible = true;
+        this.buttonSpellbook.visible = true;
+        this.buttonWeapon.visible = true;
+    }
+
+    setHideButtonTimeout() {
+        this.hideButtonTimeout = setTimeout(() => {
+            this.hideButtons();
+        }, hideCharTokenButtonsTimeout);
     }
 
     hideButtons() {
-        this.buttons.forEach(button => {
-            gsap.to(button, {
-                x: this.width / 2 - this.buttonSize / 2,
-                y: this.height / 2 - this.buttonSize / 2,
-                duration: 0.3,
-                onComplete: () => {
-                    button.visible = false;
-                }
-            });
-        });
+        this.buttonInventory.visible = false;
+        this.buttonSpellbook.visible = false;
+        this.buttonWeapon.visible = false;
     }
+    
 }
   
 
@@ -89,27 +123,14 @@ async function conjureCharToken(charID) {
         charID: charID,
         x: 200,
         y: 200,
-        width: 50,
-        height: 50,
-        texturePath: '../static/images/character/void_elf/char.png'
+        width: 100,
+        height: 100,
+        texturePath: '../static/images/character/void_elf/char.png',
+        name: 'Void Elf'
     });
     await char.load();
-    char.addToStage(app.stage);
-
-    // Add inventory button
-    char.addButton(45, '../static/images/menu-icons/inventory.png', (event) => {
-        displayInventory(charID, database.chars[charID].char.inventory, event.clientX, event.clientY);
-    });
-
-    // Add spellbook button
-    char.addButton(90, '../static/images/menu-icons/spellbook.png', (event) => {
-        // Add spellbook functionality here
-    });
-
-    // Add weapon button
-    char.addButton(135, '../static/images/menu-icons/sword.png', (event) => {
-        // Add weapon functionality here
-    });
-
+    char.addToStage(gameLayer);
+    
     return char;
 }
+

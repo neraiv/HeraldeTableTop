@@ -9,3 +9,7 @@ const questPaperImgSrc = "url(static/images/menu-icons/quest_paper.png)"
 
 const charTokenZIndex = 1
 const groundTokenZIndex = 0
+
+
+/// Timouts
+const hideCharTokenButtonsTimeout = 500;

@@ -1,17 +1,37 @@
 class HdTokenObject {
-    constructor(id, x, y, width, height, texturePath, zIndex) {
+    constructor(id, x, y, width, height, texturePath, zIndex, name= null) {
         this.id = id;
+        this.name = name;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.texturePath = texturePath;
         this.sprite = null;
+        this.nameText = null;
         this.zIndex = zIndex;
     }
 
     async load() {
         await PIXI.Assets.load(this.texturePath);
+    }
+
+    setDisplayName(state = true) {
+        if (state) {
+            const nameText = new PIXI.Text(this.name, {
+                fontSize: 40,
+                fill: 0xFFFFFF,
+                align: 'center'
+            });
+            nameText.visible = false;
+            nameText.anchor.set(0.5);
+            nameText.x = this.x + this.width / 2;
+            nameText.y = this.y + this.height + 20;
+            this.sprite.addChild(nameText);
+        } else {
+            this.nameText.destroy();
+            this.name = null;
+        }
     }
 
     addToStage(stage) {
@@ -25,11 +45,9 @@ class HdTokenObject {
         sprite.height = this.height;
         sprite.x = this.x;
         sprite.y = this.y;
-        sprite.zIndex = this.zIndex || 0;  // 👈 Add this line
-        
-        // Enable interactivity
+        sprite.zIndex = this.zIndex || 0;
         sprite.interactive = true;
-        
+
         // Add Events
         if (this.onHover) {
             sprite.on('pointerover', () => {
@@ -50,7 +68,22 @@ class HdTokenObject {
         }
 
         stage.addChild(sprite);
+
         this.sprite = sprite;
+
+        if(this.name){
+            const nameText = new PIXI.Text(this.name, {
+                fontSize: 40,
+                fill: 0xFFFFFF,
+                align: 'center'
+            });
+            nameText.visible = true
+            nameText.x = this.width / 2;
+            nameText.y = this.y + this.height / 2 + 5;
+
+            sprite.addChild(nameText);
+            this.nameText = nameText;
+        }
     }
     
 

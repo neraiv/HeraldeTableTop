@@ -138,4 +138,5 @@ class DatabaseHandeler():
         if objects:
             self.saveGameFile(selected.objects,      "objects.json")
             
-    
+    def on_exit(self):
+        self.server_info["status"] = "offline"    

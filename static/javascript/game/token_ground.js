@@ -15,7 +15,7 @@ async function conjureGroundToken(id) {
         texturePath: '../static/images/background/royal-bank-1/dark_1.jpg'
     });
     await groundToken.load();
-    groundToken.addToStage(app.stage);
+    groundToken.addToStage(gameLayer);
 }
 
 
