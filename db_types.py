@@ -25,7 +25,7 @@ class Where(Enum):
     
 class ServerInfoHolder(object):
     def __init__(self):
-        self.status : dict = None 
+        self.info : dict = None 
         self.users : dict = None
     
 class DataHolder(object):

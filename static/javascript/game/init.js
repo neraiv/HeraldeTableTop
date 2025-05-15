@@ -30,21 +30,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     player.userKey = urlParams.get("key")
     player.userName = urlParams.get("userName")
     player.charId = urlParams.get("charId")
+    player.gameId = urlParams.get("gameId")
+    
+    await sendRequest({event: "sync", payload: {scene: true}}).then((data) => {
+        if(data.success){
+            database.sceneData = data.scene
+        }
+    })
     
     await app.init({
         background: '#1099bb',
-        width: 1940,
-        height: 1080,
+        width: database.sceneData.width,
+        height: database.sceneData.height,
         autoDensity: true
     });
     app.stage.sortableChildren = true;
     gameboardContent.appendChild(app.canvas);
 
     setupPIXI()
-    
-    await initGameBoard(50, 1940, 1080)
+
+    await initGameBoard(database.sceneData.grid_size, database.sceneData.width, database.sceneData.height)
+
+    gameBoardPan(1000, 1000, 1)
+
     await initGameBoardFunctions()
 
-    await conjureCharToken(player.charId)
-    await conjureGroundToken(player.charId)
+    await initScene()
 })

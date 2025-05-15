@@ -86,3 +86,9 @@ function gameBoardPan(x = null, y = null, scale = null) {
     boardEvent.panY = y;
     boardEvent.scale = scale;
 }
+
+function gameBoardShowOutline(state = true){
+    gameBoardData.chars.forEach(char => {
+        char.setShowOutline(state);
+    });
+}

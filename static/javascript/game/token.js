@@ -67,7 +67,7 @@ class HdTokenObject {
             });
         }
 
-        stage.addChild(sprite);
+
 
         this.sprite = sprite;
 
@@ -84,6 +84,8 @@ class HdTokenObject {
             sprite.addChild(nameText);
             this.nameText = nameText;
         }
+
+        stage.addChild(sprite);
     }
     
 
@@ -109,6 +111,19 @@ class HdTokenObject {
         }
     }
     
+    setShowOutline(state = true, color = 0xFF0000) {
+        if (state) {
+            const graphics = new PIXI.Graphics();
+            graphics.lineStyle(2, color); // Set the line style (width and color)
+            graphics.drawRect(0, 0, this.width, this.height); // Draw a rectangle around the sprite
+            this.sprite.addChild(graphics);
+            this.outline = graphics;
+        } else if (this.outline) {
+            this.outline.destroy();
+            this.outline = null;
+        }
+    }
+
     setVisible(state = true) {
         if (this.sprite) {
             this.sprite.visible = state;

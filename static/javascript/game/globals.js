@@ -56,9 +56,13 @@ const database = {
     serverRules: {}
 }
 
-const gameSceneData = {
+const gameBoardData = {
     portals : [],
     chars : [],
     objects : [],
     npcs: [],
+}
+
+const settings = {
+    showOutlines : false,
 }

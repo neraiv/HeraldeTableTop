@@ -55,6 +55,7 @@ gameButton.onclick =  (event) =>{
     urlParams.set("userName", userName.value)
     urlParams.set("charId", userData.charId)
     urlParams.set("key", userData.key)
+    urlParams.set("gameId", userData.gameId)
     window.location.href = "/game?" + urlParams.toString();  // Redirect to the game page with the game ID and user information
 };
 
@@ -63,5 +64,6 @@ editorButton.onclick = (event) =>{
     urlParams = new URLSearchParams();
     urlParams.set("userName", userName.value)
     urlParams.set("key", userData.key)
+    urlParams.set("gameId", userData.gameId)
     window.location.href = "/editor?" + urlParams.toString();  // Redirect to the editor page with the game ID and user information
 };

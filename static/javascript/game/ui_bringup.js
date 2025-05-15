@@ -46,6 +46,11 @@ infoButton.id = "ui-account-button"
 infoButton.style.fontFamily = 'Material Icons Outlined'
 leftSideBar.appendChild(infoButton);
 
+const personButton = createImageButton(40, {icon: "person"})
+personButton.id = "ui-account-button"
+personButton.style.fontFamily = 'Material Icons Outlined'
+leftSideBar.appendChild(personButton);
+
 addSpacer(leftSideBar)
 
 const logOutButton = createImageButton(40, {icon: "logout"})

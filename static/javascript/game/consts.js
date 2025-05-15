@@ -13,3 +13,9 @@ const groundTokenZIndex = 0
 
 /// Timouts
 const hideCharTokenButtonsTimeout = 500;
+
+
+const outlineColorChar = 0xFF0000;
+const outlineColorPortal = 0x0000FF;
+const outlineColorObject = 0x00FF00;
+const outlineColorNpc = 0x0000FF;

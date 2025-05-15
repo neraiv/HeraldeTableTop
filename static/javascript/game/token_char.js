@@ -117,20 +117,30 @@ class HdCharToken extends HdTokenObject {
 }
   
 
-async function conjureCharToken(charID) {
-    console.log('Conjuring char token for:', charID);
+async function conjureCharToken(charId) {
+    console.log('Conjuring char token for:', charId);
+
+    if (!database.chars[charId]) {
+        const res = await sendRequest({event: 'get', payload: {type: "char", id: charId}});
+        if(res.success){
+            database.chars[charId] = res.data;
+        } else {
+            return null;
+        }
+    }
+
     const char = new HdCharToken({
-        charID: charID,
+        charId: charId,
         x: 200,
         y: 200,
-        width: 100,
-        height: 100,
-        texturePath: '../static/images/character/void_elf/char.png',
-        name: 'Void Elf'
+        width: database.chars[charId].width,
+        height: database.chars[charId].height,
+        texturePath: '../static/images/character/' + database.chars[charId].img,
+        name: database.chars[charId].char.name
     });
     await char.load();
     char.addToStage(gameLayer);
-    
+    gameBoardData.chars.push(char);
     return char;
 }
 

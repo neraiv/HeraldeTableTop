@@ -7,11 +7,9 @@ import json
 import os
 import atexit
 
-from __socket_event import SocketReply, SocketUpdate
 from _1_database_handler import DatabaseHandeler
 from _2_user_handler import UserHandler
 from _3_scene_handler import SceneHandler
-
 from handler_keys import controlKey
 
 db = DatabaseHandeler()
@@ -28,6 +26,8 @@ CORS(app)  # Enable CORS for all routes
 atexit.register(db.on_exit)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+db.registerGame("random_game_id")
 
 connections = {}
 
@@ -46,22 +46,61 @@ def handle_register(msg :dict):
     except Exception as e:
         emit("response", {"success": False, "error": str(e)}, room=request.sid)
         
-
-        
-@socketio.on('database')
-def handle_message(msg :dict):
+@socketio.on("database")
+def handle_database(msg :dict):
     try:
         key = msg["key"]
         
         userId, userInfo = userHandler.controlKey(key)
         
+        if not userId and not userInfo:
+            emit("error", jsonify({"error": "Not a valid key!"}), room=request.sid)
+        else:
+            emit("response", {"success": True}, room=request.sid)
+            
+    except Exception as e:
+        emit("error", jsonify({"error": str(e)}), room=request.sid)
         
+@socketio.on('get')
+def handle_get(msg :dict):
+    try:
+        key = msg["key"]
+        userId, userInfo = userHandler.controlKey(key) 
+        if not userId and not userInfo:
+            emit("error", jsonify({"error": "Not a valid key!"}), room=request.sid)
+        else:
+            payload = msg["payload"]
+            data = db.get(payload["type"], payload["id"])
+            
+            if data:
+                emit("response", {"success": True, "data": data}, room=request.sid)
+            else:
+                emit("error", jsonify({"success": False, "error": "Data not found!"}), room=request.sid)
+    except Exception as e:
+        emit("error", jsonify({"error": str(e)}), room=request.sid)
+                  
+@socketio.on('sync')
+def handle_message(msg :dict):
+    try:
+        key = msg["key"]
+        userId, userInfo = userHandler.controlKey(key)
+        reply = {}
         
-        
+        if userId and userInfo:
+            payload = msg["payload"]
+            if payload["scene"] == True:
+                reply["scene"] = sceneHandler.getCharScene(charId=userInfo["charId"])
+            reply["success"] = True
+            emit("response", reply, room=request.sid)
+        else:
+            reply["success"] = False
+            reply["error"] = "Not a valid key!"
+            emit("error", jsonify(reply), room=request.sid)
     except json.JSONDecodeError:
         # Send back the response
         emit("error", jsonify({"error": f"Error decoding JSON in function {__name__}"}), room=request.sid)
-    
+
+### ROUTES ###
 @app.route('/')  # Renamed this route
 def home():
     return render_template('debug_login.html')  # Render the HTML file
@@ -97,11 +136,11 @@ def login():
         password = data.get('password')
         
         if  username and password:
-            status, newKey, charId = db.userLogin(username, password) 
-            if status == "ok":
-                return jsonify({"success": True, "key": newKey, "charId": charId}), 200
+            success, key_error, charId = userHandler.loginUser(username, password) 
+            if success:
+                return jsonify({"success": True, "key": key_error, "charId": charId, "gameId": db.server.info["gameId"]}), 200
             else:
-                return jsonify({"error": status}), 200
+                return jsonify({"error": key_error}), 200
         else:
             return jsonify({"error": "Missing username or password"}), 400       
     except json.JSONDecodeError:

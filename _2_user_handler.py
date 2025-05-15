@@ -23,8 +23,7 @@ class UserHandlerError(Enum):
     
 
 class UserHandler():
-    def __init__(self, user):
-        self.user = user
+    def __init__(self):
         self.db : DatabaseHandeler = None # Assigned with game manager
     
     def _setDatabaseReference(self, db : DatabaseHandeler):
@@ -32,52 +31,52 @@ class UserHandler():
         
     def checkUserStatus(self):
         # Check if the user is online or offline
-        for username, user in self.db.server_info.users.items():
+        for username, user in self.db.server.users.items():
             if user['status'] == UserStatus.ONLINE.value:
                 # Perform periodic checks for online users
                 if abs(self.db.getTimeDifference(user['last_seen'])) > USER_SYNC_DICONNECT_TIMEOUT:
                     # If the user has been offline for too long, set them to offline
-                    self.db.server_info.users[username]['status'] = UserStatus.OFFLINE.value
+                    self.db.server.users[username]['status'] = UserStatus.OFFLINE.value
                     self.db.syncFile(server_users=True)
                     print(f"User {username} is now offline.")
 
     def generate_key(self):     
         # Generate a secure random key using secrets
         res = secrets.token_urlsafe(16)  # 16 bytes, which is 128 bits long
-        while any(user['key'] == res and user['status'] == 'online' for user in self.db.server_info.users.values()):
+        while any(user['key'] == res and user['status'] == 'online' for user in self.db.server.users.values()):
             res = secrets.token_urlsafe(16)  # Regenerate the key if it already exists
 
         return res
 
     def controlKey(self, key: str) -> tuple[str, dict]:
         # Check if the key is valid and return the corresponding user
-        for username, user in self.db.server_info.users.items():
+        for username, user in self.db.server.users.items():
             if user['key'] == key:
                 return username, user
         return None, None
     
     def setUserStatus(self, username: str, status: UserStatus) -> bool:
         # Check if the user exists in the database
-        if username not in self.db.server_info.users:
+        if username not in self.db.server.users:
             return False, UserHandlerError.USER_NOT_FOUND.value
         # Update the user's status
-        self.db.server_info.users[username]['status'] = status.value
+        self.db.server.users[username]['status'] = status.value
         self.db.syncFile(server_users=True)
         return True, None
         
     def registerUser(self, username: str, password: str) -> tuple[bool, str]:
         # Check if the username already exists
-        if username in self.db.server_info.users:
+        if username in self.db.server.users:
             return False, UserHandlerError.USER_ALREADY_EXISTS.value
         # Generate a secure random key for the user
         key = self.generate_key()
         # Create a new user entry
-        self.db.server_info.users[username] = {
+        self.db.server.users[username] = {
             'password': password,
             'key': key,
             'status': 'offline',
             'type': 'adventurer',
-            "character": None,
+            "charId": None,
             "last_seen": "2025-04-16 10:04:39 UTC"
         }
         self.db.syncFile(server_users=True)
@@ -85,14 +84,14 @@ class UserHandler():
     
     def loginUser(self, username: str, password: str) -> tuple[bool, str]:
         # Check if the user exists and the password is correct
-        if username not in self.db.server_info.users:
-            return False, UserHandlerError.USER_NOT_FOUND.value
-        if self.db.server_info.users[username]['password'] != password:
-            return False, UserHandlerError.INVALID_CREDENTIALS.value
+        if username not in self.db.server.users:
+            return False, UserHandlerError.USER_NOT_FOUND.value, None
+        if self.db.server.users[username]['password'] != password:
+            return False, UserHandlerError.INVALID_CREDENTIALS.value, None
         
         # Update the user's status to online
-        self.db.server_info.users[username]['status'] = 'online'
+        self.db.server.users[username]['status'] = 'online'
         self.db.syncFile(server_users=True)
-        return True, None
+        return True, self.db.server.users[username]['key'], self.db.server.users[username]['charId']
 
     

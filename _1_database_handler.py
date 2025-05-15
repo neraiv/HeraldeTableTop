@@ -10,11 +10,10 @@ class DatabaseHandeler():
     DB_GAMES_PATH = os.path.join(DB_MAIN_PATH, 'database', 'games')
     
     def __init__(self):
+        self.server = dbt.ServerInfoHolder()
         
-        self.server_info = dbt.ServerInfoHolder()
-        
-        self.server_info.status = self.loadGameFile("status.json", dbt.Where.FROM_ROOT)
-        self.server_info.users  = self.loadGameFile("users.json", dbt.Where.FROM_ROOT)
+        self.server.info = self.loadGameFile("status.json", dbt.Where.FROM_ROOT)
+        self.server.users  = self.loadGameFile("users.json", dbt.Where.FROM_ROOT)
         
         self.data = dbt.DataHolder()
         
@@ -28,26 +27,34 @@ class DatabaseHandeler():
         self.data.npcs         = self.loadGameFile("npcs.json")
         self.data.summonables  = self.loadGameFile("summonables.json")
         
-        self.data_core = dbt.DataHolder()
+        self.data_defaults = dbt.DataHolder()
         
-        self.data_core.session_info = self.loadGameFile("session_info.json", dbt.Where.FROM_DEFAULTS)
-        self.data_core.rules        = self.loadGameFile("rules.json", dbt.Where.FROM_DEFAULTS)
-        self.data_core.spells       = self.loadGameFile("spells.json", dbt.Where.FROM_DEFAULTS)
-        self.data_core.chars        = self.loadGameFile("chars.json", dbt.Where.FROM_DEFAULTS)
-        self.data_core.scenes       = self.loadGameFile("scenes.json", dbt.Where.FROM_DEFAULTS)
-        self.data_core.objects      = self.loadGameFile("objects.json", dbt.Where.FROM_DEFAULTS)
-        self.data_core.quests       = self.loadGameFile("quests.json", dbt.Where.FROM_DEFAULTS)
-        self.data_core.npcs         = self.loadGameFile("npcs.json", dbt.Where.FROM_DEFAULTS)
-        self.data_core.summonables  = self.loadGameFile("summonables.json", dbt.Where.FROM_DEFAULTS)
+        self.data_defaults.session_info = self.loadGameFile("session_info.json", dbt.Where.FROM_DEFAULTS)
+        self.data_defaults.rules        = self.loadGameFile("rules.json", dbt.Where.FROM_DEFAULTS)
+        self.data_defaults.spells       = self.loadGameFile("spells.json", dbt.Where.FROM_DEFAULTS)
+        self.data_defaults.chars        = self.loadGameFile("chars.json", dbt.Where.FROM_DEFAULTS)
+        self.data_defaults.scenes       = self.loadGameFile("scenes.json", dbt.Where.FROM_DEFAULTS)
+        self.data_defaults.objects      = self.loadGameFile("objects.json", dbt.Where.FROM_DEFAULTS)
+        self.data_defaults.quests       = self.loadGameFile("quests.json", dbt.Where.FROM_DEFAULTS)
+        self.data_defaults.npcs         = self.loadGameFile("npcs.json", dbt.Where.FROM_DEFAULTS)
+        self.data_defaults.summonables  = self.loadGameFile("summonables.json", dbt.Where.FROM_DEFAULTS)
+        
+    def registerGame(self, gameId):
+        self.server.info["gameId"] = gameId
+        self.syncFile(server_status=True)
         
     def checkFiles(self):
         pass
+        
+    def get(self, type, id):
+        if type == "char":
+            return self.data.chars[id]
         
     def updateServerTime(self):
         """
         Updates the server time in the database.
         """
-        self.server_info.status["server_time"] = self.getCurrentTime()
+        self.server.info["server_time"] = self.getCurrentTime()
         self.syncFile(server_status=True)
         
     def getCurrentTime(self):
@@ -66,7 +73,7 @@ class DatabaseHandeler():
         try: 
             path = ""
             if where == dbt.Where.FROM_SESSION:
-                path = os.path.join(DatabaseHandeler.DB_GAMES_PATH, self.server_info.status["active_session"]   , name)
+                path = os.path.join(DatabaseHandeler.DB_GAMES_PATH, self.server.info["active_session"]   , name)
             elif where == dbt.Where.FROM_DEFAULTS:
                 path = os.path.join(DatabaseHandeler.DB_MAIN_PATH,"database", "defaults", name)
             else:
@@ -81,7 +88,7 @@ class DatabaseHandeler():
     def saveGameFile(self, data, name, where = dbt.Where.FROM_SESSION):
         path = ""
         if where == dbt.Where.FROM_SESSION:
-            path = os.path.join(DatabaseHandeler.DB_GAMES_PATH, self.server_info.status["active_session"]    , name)
+            path = os.path.join(DatabaseHandeler.DB_GAMES_PATH, self.server.info["active_session"]    , name)
         elif where == dbt.Where.FROM_DEFAULTS:
             path = os.path.join(DatabaseHandeler.DB_MAIN_PATH,"database", "defaults", name)
         else:
@@ -111,14 +118,14 @@ class DatabaseHandeler():
         
         selected : dbt.DataHolder = None 
         if isCore:
-            selected = self.data_core
+            selected = self.data_defaults
         else:
             selected = self.data
             
         if server_status:
-            self.saveGameFile(self.server_info.status, "status.json", dbt.Where.FROM_ROOT)
+            self.saveGameFile(self.server.info, "status.json", dbt.Where.FROM_ROOT)
         if server_users:
-            self.saveGameFile(self.server_info.users,  "users.json",  dbt.Where.FROM_ROOT) 
+            self.saveGameFile(self.server.users,  "users.json",  dbt.Where.FROM_ROOT) 
         if session_info:
             self.saveGameFile(selected.session_info, "session_info.json")
         if rules:
@@ -139,4 +146,4 @@ class DatabaseHandeler():
             self.saveGameFile(selected.objects,      "objects.json")
             
     def on_exit(self):
-        self.server_info["status"] = "offline"    
+        self.server.info["status"] = "offline"    

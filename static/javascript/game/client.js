@@ -1,3 +1,5 @@
+const serverUrl = "http://localhost:5000"
+
 async function  initDatabase(initStates){
     try {
         // Fetch server info

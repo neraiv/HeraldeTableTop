@@ -1,11 +1,10 @@
-
 import copy
 from enum import Enum
 
 import numpy as np
 
 import _1_database_handler as dbt
-from __socket_event import SocketUpdate, SocketReply, checkDistance
+from _0_common import checkDistance
 
 PORTAL_PASS_DISTANCE = 75
 
@@ -16,93 +15,93 @@ class FogType(Enum):
     SIMPLE_GROUP_FOG = 3
     
 class SceneHandler():
-    def __init__(self, scene):
+    def __init__(self):
         self.db : dbt.DatabaseHandeler = None  # Assigned with game manager
-        self.fog_type = None
+        self.fogType = None
         self.visibleAreas = {}
         
     def _setDatabaseReference(self, db):
         self.db = db
-        self.fog_type = self.db.data.rules["fog_type"]
+        self.fogType = self.db.data.rules["fogType"]
         
-    def getCharSceneNameLayer(self, charId: str) -> dict:
+    def getCharSceneNameLayer(self, charId: str) -> dict:       
         try: 
-            currentScene =  self.db.data.session_info["locations"][charId]["currentScene"]
-            return self.db.data.scenes[currentScene["name"]]["layers"][currentScene["layer"]]
+            return self.db.data.session_info["locations"][charId]["currentScene"] 
         except KeyError:
-            print(f"ERROR: Character {charId} not found in session info.")
+            return {"error": f"ERROR: Character {charId} not found in session info."}
             
     def getSceneLocations(self, sceneName, sceneLayer) -> dict:
         try:
             return self.db.data.scenes[sceneName]["layers"][sceneLayer]["locations"]
         except KeyError:
-            print(f"ERROR: Scene {sceneName} not found in session info.")
+            return {"error": f"ERROR: Scene {sceneName} not found in session info."}
             
     def  getSceneMovableArea(self, sceneName, sceneLayer) -> dict:
         try:
             return self.db.data.scenes[sceneName]["layers"][sceneLayer]["movableAreas"]
         except KeyError:
-            print(f"ERROR: Scene {sceneName} not found in session info.")
+            return {"error": f"ERROR: Scene {sceneName} not found in session info."}
+        
+    def getScene(self, sceneName) -> dict:
+        try:
+            return self.db.data.scenes[sceneName]
+        except KeyError:
+            return {"error": f"ERROR: Scene {sceneName} not found in session info."}
+    
+    def getLayer(self, sceneName, sceneLayer) -> dict:
+        try:
+            return self.db.data.scenes[sceneName]["layers"][sceneLayer]
+        except KeyError:
+            return {"error": f"ERROR: Scene {sceneName} not found in session info."}
             
-    def calcVisibleArea(self, calculateForCharId) -> dict:
+    def calcVisibleArea(self, charId) -> dict:
         
         try: 
-            scene = self.getCharSceneNameLayer(calculateForCharId)
+            currentScene = self.getCharSceneNameLayer(charId)
+            scene = self.getLayer(currentScene["name"], currentScene["layer"])
             
             visible_areas = []
-            
-            if self.fog_type == FogType.SIMPLE_GROUP_FOG.name:
-                visionSources : dict = scene["locations"]["chars"]
 
-                for id in visionSources.keys():
-                    pos: dict = visionSources.get(id, None)
-                    loc_x  = pos.get("x")
-                    loc_y = pos.get("y")
-                    
-                    if self.fog_type == FogType.FACTION_BASED.name:
-                        charInfo: dict = self.db.data.chars.get(id, None)
-                    
-                        vision: str = charInfo["char"]["vision"]
-                        
-                        visible_areas.append({
-                            "x": loc_x,
-                            "y": loc_y,
-                            "shape": "circle",
-                            "radius": vision
-                        })
-                        
-            else:
-                visible_areas.append({
-                    "x": loc_x,
-                    "y": loc_y,
-                    "shape": "circle",
-                    "radius": 250
-                })
+            visionSources : dict = scene["locations"]["chars"]
+
+            for id in visionSources.keys():
+                pos: dict = visionSources.get(id, None)
+                loc_x  = pos.get("x")
+                loc_y = pos.get("y")
                 
-            self.visibleAreas[scene["name"]] = {scene["layer"]: visible_areas}
+                if self.fogType == FogType.FACTION_BASED.name:
+                    charInfo: dict = self.db.data.chars.get(id, None)
+                
+                    vision: str = charInfo["char"]["vision"]
+                    
+                    visible_areas.append({
+                        "x": loc_x,
+                        "y": loc_y,
+                        "shape": "circle",
+                        "radius": vision
+                    })
+                    
+                else:
+                    visible_areas.append({
+                        "x": loc_x,
+                        "y": loc_y,
+                        "shape": "circle",
+                        "radius": 250
+                    })
+                
+            self.visibleAreas[currentScene["name"]] = {currentScene["layer"]: visible_areas}
         except KeyError as e:
             print(f"ERROR: Cannot calculate visible areas. -> ", e)
                    
-    def applyMask(self, calculateForCharId) -> dict:
+    def applyMaskLocations(self, locations, visibleAreas) -> dict:
         """
         Applies fog to given locations
         
         locations dict items must contain x and y values.
         """ 
-        
-        scene = self.getCharSceneNameLayer(calculateForCharId)
-        
-        locations = self.getSceneLocations(scene["name"], scene["layer"])
-        
-        try: 
-            visableAreas = self.visibleAreas[scene["name"]][scene["layer"]]
-        except KeyError:
-            self.calcVisibleArea(calculateForCharId)
-            visableAreas = self.visibleAreas[scene["name"]][scene["layer"]]
-        
         visable_items = {}
         
-        for area in visableAreas:
+        for area in visibleAreas:
             x = area.get("x")
             y = area.get("y")
             shape = area.get("shape")
@@ -113,7 +112,7 @@ class SceneHandler():
                 if x is None or y is None or radius is None:
                     raise ValueError(f"Invalid area values: {area}")
                 
-                for key in locations:
+                for key in locations.keys():
                     item = locations[key]
                     loc_x = item.get("x")
                     loc_y = item.get("y")
@@ -130,23 +129,33 @@ class SceneHandler():
     
     def getCharScene(self, charId: str) -> dict:
         try: 
-            currentScene =  self.getCharSceneNameLayer(charId)
+            charScene =  self.getCharSceneNameLayer(charId)
+            scene = self.getScene(charScene["name"])
+            layer = self.getLayer(charScene["name"], charScene["layer"])
             maskedScene = {
-                'discovered': self.scenes[currentScene["name"]]['discovered'], 
-                'width'     : self.scenes[currentScene["name"]]['width'     ], 
-                'height'    : self.scenes[currentScene["name"]]['height'    ], 
-                'grid_size' : self.scenes[currentScene["name"]]['grid_size' ],
-                "layer"     : copy.deepcopy(self.scenes[currentScene["name"]]["layers"][currentScene["layer"]])
+                'discovered': scene['discovered'], 
+                'width'     : scene['width'     ], 
+                'height'    : scene['height'    ], 
+                'grid_size' : scene['grid_size' ],
+                "layer"     : copy.deepcopy(layer)  
             }
             
-            for key in maskedScene["layer"]["locations"].keys():
-                maskedScene["layer"]["locations"][key] = self.applyMask(charId)
+            try:
+                visibleAreas = self.visibleAreas[charScene["name"]][charScene["layer"]]
+            except KeyError:
+                self.calcVisibleArea(charId)
+                visibleAreas = self.visibleAreas[charScene["name"]][charScene["layer"]]
                 
-            maskedScene["visibleArea"] = self.visibleAreas[currentScene["name"]][currentScene["layer"]]
+            for key in maskedScene["layer"]["locations"].keys():
+                maskedScene["layer"]["locations"][key] = self.applyMaskLocations(
+                    maskedScene["layer"]["locations"][key], 
+                    visibleAreas)
+                
+            maskedScene["visibleArea"] = self.visibleAreas[charScene["name"]][charScene["layer"]]
 
             return maskedScene                    
-        except KeyError:
-            print(f"ERROR: Character {charId} not found in session info.")
+        except Exception as e:
+            return {"error": f"{e}"}
             
     # ALL scene action methods    
     def actionPortal(self, charId, portalId):
@@ -159,14 +168,14 @@ class SceneHandler():
             portal = self.db.data.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["portals"][portalId]
             
             if portal["status"] != "open":
-                return SocketReply(False, "Portal is closed.")
+                return {'status': False, 'message': 'Portal is closed.', 'data': None}
             
             if not checkDistance(
                 self.db.data.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["chars"][charId],
                 self.db.data.scenes[currentScene["name"]]["layers"][currentScene["layer"]]["locations"]["portals"][portalId],
                 PORTAL_PASS_DISTANCE
             ):
-                return SocketReply(False, "You are too far away from the portal.")
+                return {'status': False, 'message': 'You are too far away from the portal.', 'data': None}
 
             # Assign new scene and layer to character
             self.db.data.session_info["locations"][charId]["currentScene"]["name"] = portal["scene"]
@@ -182,10 +191,10 @@ class SceneHandler():
             
             self.db.syncFile(scenes=True, session_info=True)
             
-            return SocketReply(True, "You have entered a new scene.")
+            return {'status': True, 'message': 'You have entered a new scene.', 'data': None}
             
         except KeyError:
-            return SocketReply(False, "Portal not found.")
+            return {'status': False, 'message': 'Portal not found.', 'data': None}
     
     def actionMove(self, charId, x, y):
         """
@@ -197,14 +206,14 @@ class SceneHandler():
             movableAreas = self.getSceneMovableArea(currentScene["name"], currentScene["layer"])
             
             if movableAreas["type"] == "limitless":
-                return SocketReply(True, "You have moved to a new location.")
+                return {'status': True, 'message': 'You have moved to a new location.', 'data': None}
             
             elif movableAreas["type"] == "limited":
-                masked = self.applyMask(charId) ## FUTURE Need to be opitmized to use here
+                masked = self.applyMaskLocations(charId) ## FUTURE Need to be opitmized to use here
             
             self.db.syncFile(scenes=True, session_info=True)
             
-            return SocketReply(True, "You have moved to a new location.")
+            return {'status': True, 'message': 'You have moved to a new location.', 'data': None}
             
         except KeyError:
-            return SocketReply(False, "Character not found.")
+            return {'status': False, 'message': 'Character not found.', 'data': None}

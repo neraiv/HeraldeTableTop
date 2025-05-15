@@ -68,6 +68,11 @@
     transition: all 0.3s ease; /* Smooth transition */
 }
 
+.image-button.active{
+    border-color: #ae00ff; /* Border color on hover */
+    color: #ae00ff; /* Optional: Change text color */
+}
+
 .image-button:active{
     transform: scale(0.95); /* Slightly shrink on click */
     background-color: #007BFF;
